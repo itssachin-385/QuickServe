@@ -18,5 +18,6 @@ client/android/local.properties
 server/data/persistent/*.tmp*
 server/data/persistent/*.bak
 *.apk
+!server/public/QuickServe_v2.apk
 client/public/downloads/*.apk
 client/public/downloads/

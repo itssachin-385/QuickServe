@@ -21,6 +21,22 @@ app.use(express.json());
 
 // Serve production client build if exists
 app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Direct APK Download Endpoint
+app.get(['/download-apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
+  const possiblePaths = [
+    path.join(__dirname, 'public/QuickServe_v2.apk'),
+    path.join(__dirname, '../client/dist/QuickServe_v2.apk'),
+    path.join(__dirname, '../QuickServe_v2.apk')
+  ];
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      return res.download(p, 'QuickServe_v2.apk');
+    }
+  }
+  res.status(404).send('APK file not found.');
+});
 
 // Persistent Database Collections (Auto-saved to disk and survived across restarts)
 let categories = db.getCategories();
