@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  quickserve-app:
+    build: .
+    container_name: quickserve-production-app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://quickserve:quickserve_secret@postgres:5432/quickserve_db
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: quickserve-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: quickserve
+      POSTGRES_PASSWORD: quickserve_secret
+      POSTGRES_DB: quickserve_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/db/schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:

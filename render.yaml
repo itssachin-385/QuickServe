@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: quickserve-api
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm --prefix client install && npm --prefix client run build
+    startCommand: node server/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

@@ -1,0 +1,42 @@
+{
+  "commission": {
+    "globalCommissionPercent": 15,
+    "globalPlatformFee": 29,
+    "categoryRules": {
+      "cat-plumber": {
+        "commissionPercent": 15,
+        "platformFee": 29
+      },
+      "cat-electrician": {
+        "commissionPercent": 15,
+        "platformFee": 29
+      },
+      "cat-maid": {
+        "commissionPercent": 10,
+        "platformFee": 19
+      },
+      "cat-caretaker": {
+        "commissionPercent": 12,
+        "platformFee": 25
+      },
+      "cat-ac-repair": {
+        "commissionPercent": 18,
+        "platformFee": 39
+      },
+      "cat-deep-cleaning": {
+        "commissionPercent": 18,
+        "platformFee": 39
+      }
+    },
+    "updatedAt": "2026-10-02T11:37:26.996Z"
+  },
+  "gateway": {
+    "fast2smsApiKey": "",
+    "fast2smsRoute": "otp",
+    "razorpayKeyId": "rzp_test_51aQuickServe",
+    "razorpayKeySecret": "qs_test_secret_123",
+    "upiVpa": "sachinsb68741@nyes",
+    "merchantPhone": "9570151834",
+    "upiMerchantName": "Sachin Kumar"
+  }
+}

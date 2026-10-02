@@ -1,0 +1,477 @@
+[
+  {
+    "id": "cat-plumber",
+    "name": "Plumber",
+    "name_hi": "प्लम्बर (नलसाज)",
+    "slug": "plumber",
+    "icon": "Wrench",
+    "tagline": "Taps, leakages, bathroom & pipe repairs",
+    "description": "Expert local plumbers for home water fixtures, leakage fixes, and fittings.",
+    "is_active": true,
+    "is_mvp_launch": true,
+    "display_order": 1,
+    "starting_price": 299,
+    "sub_services": [
+      {
+        "id": "sub-p1",
+        "name": "Tap repair / replacement",
+        "price": 299,
+        "duration": "45 mins"
+      },
+      {
+        "id": "sub-p2",
+        "name": "Pipe leakage / seepage fix",
+        "price": 399,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-p3",
+        "name": "Bathroom drainage / clog clear",
+        "price": 449,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-p4",
+        "name": "Sink & washbasin repair",
+        "price": 349,
+        "duration": "45 mins"
+      },
+      {
+        "id": "sub-p5",
+        "name": "Toilet / flush tank repair",
+        "price": 399,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-p6",
+        "name": "New sanitary fitting installation",
+        "price": 499,
+        "duration": "90 mins"
+      },
+      {
+        "id": "sub-p7",
+        "name": "General plumbing inspection / Other",
+        "price": 249,
+        "duration": "30 mins"
+      }
+    ]
+  },
+  {
+    "id": "cat-electrician",
+    "name": "Electrician",
+    "name_hi": "इलेक्ट्रीशियन (बिजली मिस्त्री)",
+    "slug": "electrician",
+    "icon": "Zap",
+    "tagline": "Fans, lights, wiring & MCB short circuits",
+    "description": "Certified electricians for safe electrical repairs, wiring, switches, and appliance setup.",
+    "is_active": true,
+    "is_mvp_launch": true,
+    "display_order": 2,
+    "starting_price": 249,
+    "sub_services": [
+      {
+        "id": "sub-e1",
+        "name": "Ceiling / exhaust fan installation & repair",
+        "price": 249,
+        "duration": "45 mins"
+      },
+      {
+        "id": "sub-e2",
+        "name": "Light fitting / chandelier / LED setup",
+        "price": 199,
+        "duration": "30 mins"
+      },
+      {
+        "id": "sub-e3",
+        "name": "Switch, socket & regulator fix",
+        "price": 199,
+        "duration": "30 mins"
+      },
+      {
+        "id": "sub-e4",
+        "name": "Short circuit & MCB tripping diagnosis",
+        "price": 499,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-e5",
+        "name": "Inverter & battery wiring check",
+        "price": 399,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-e6",
+        "name": "Appliance power point installation",
+        "price": 299,
+        "duration": "45 mins"
+      },
+      {
+        "id": "sub-e7",
+        "name": "General electrical inspection / Other",
+        "price": 249,
+        "duration": "30 mins"
+      }
+    ]
+  },
+  {
+    "id": "cat-maid",
+    "name": "Maid / Home Helper",
+    "name_hi": "घरेलू सहायिका (कामवाली बाई)",
+    "slug": "maid-helper",
+    "icon": "Sparkles",
+    "tagline": "Cooking, sweeping, utensils & daily household help",
+    "description": "Reliable, background-verified home helpers for daily chores, cleaning, and cooking assistance.",
+    "is_active": true,
+    "is_mvp_launch": true,
+    "display_order": 3,
+    "starting_price": 349,
+    "sub_services": [
+      {
+        "id": "sub-m1",
+        "name": "Floor sweeping & mopping (2BHK/3BHK)",
+        "price": 349,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-m2",
+        "name": "Utensil washing & kitchen sink clearing",
+        "price": 299,
+        "duration": "45 mins"
+      },
+      {
+        "id": "sub-m3",
+        "name": "One-time meal cooking (North/South Indian)",
+        "price": 499,
+        "duration": "90 mins"
+      },
+      {
+        "id": "sub-m4",
+        "name": "Laundry washing & cloth folding",
+        "price": 349,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-m5",
+        "name": "Full-day helper assistance (8 Hours)",
+        "price": 1199,
+        "duration": "480 mins"
+      },
+      {
+        "id": "sub-m6",
+        "name": "Dusting & kitchen slab deep scrubbing",
+        "price": 399,
+        "duration": "60 mins"
+      },
+      {
+        "id": "sub-m7",
+        "name": "Emergency same-day household help",
+        "price": 449,
+        "duration": "60 mins"
+      }
+    ]
+  },
+  {
+    "id": "cat-caretaker",
+    "name": "Caretaker / Patient Attendant",
+    "name_hi": "देखभालकर्ता / अटेंडेंट",
+    "slug": "caretaker",
+    "icon": "HeartHandshake",
+    "tagline": "Compassionate elder care & non-medical recovery support",
+    "description": "Empathetic, verified caretakers for non-medical elder care, mobility aid, and companionship.",
+    "is_active": true,
+    "is_mvp_launch": true,
+    "display_order": 4,
+    "starting_price": 699,
+    "non_medical_disclaimer": "QuickServe caretakers provide non-medical caregiving (companionship, mobility, feeding, hygiene). For injections, IV lines or specialized medical treatment, please consult a registered medical hospital or licensed nursing bureau.",
+    "sub_services": [
+      {
+        "id": "sub-c1",
+        "name": "Elderly assistance & companionship (4 hrs)",
+        "price": 699,
+        "duration": "240 mins"
+      },
+      {
+        "id": "sub-c2",
+        "name": "Post-surgery home recovery support (Day Shift)",
+        "price": 999,
+        "duration": "480 mins"
+      },
+      {
+        "id": "sub-c3",
+        "name": "Night care attendant (10 PM to 6 AM)",
+        "price": 1199,
+        "duration": "480 mins"
+      },
+      {
+        "id": "sub-c4",
+        "name": "Hospital bedside patient assistance",
+        "price": 899,
+        "duration": "360 mins"
+      },
+      {
+        "id": "sub-c5",
+        "name": "Mobility, bath & hygiene care support",
+        "price": 599,
+        "duration": "120 mins"
+      },
+      {
+        "id": "sub-c6",
+        "name": "Medication reminder & basic vital check",
+        "price": 499,
+        "duration": "90 mins"
+      }
+    ]
+  },
+  {
+    "id": "cat-deep-clean",
+    "name": "Full Home Deep Cleaning",
+    "name_hi": "घर की गहरी सफाई",
+    "slug": "deep-cleaning",
+    "icon": "SprayCan",
+    "tagline": "Machine scrubbing, balcony & bathroom deep wash",
+    "description": "Complete home deep cleaning with industrial vacuums and eco-friendly chemicals.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 10,
+    "starting_price": 1499,
+    "group": "HOME SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-1",
+        "name": "2BHK Deep Cleaning",
+        "price": 1899
+      }
+    ]
+  },
+  {
+    "id": "cat-ac-repair",
+    "name": "AC Repair & Service",
+    "name_hi": "एसी रिपेयर और सर्विस",
+    "slug": "ac-repair",
+    "icon": "Wind",
+    "tagline": "Jet pump foam wash, gas leak fix & cooling check",
+    "description": "Split and window AC maintenance by certified HVAC technicians.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 11,
+    "starting_price": 499,
+    "group": "HOME SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-2",
+        "name": "Power Jet AC Servicing",
+        "price": 499
+      }
+    ]
+  },
+  {
+    "id": "cat-carpenter",
+    "name": "Carpenter",
+    "name_hi": "बढ़ई (कारपेंटर)",
+    "slug": "carpenter",
+    "icon": "Hammer",
+    "tagline": "Door locks, hinges, furniture assembly & fixes",
+    "description": "Skilled woodwork, handle fixing, and modular furniture setup.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 12,
+    "starting_price": 349,
+    "group": "HOME SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-3",
+        "name": "Door lock & hinge repair",
+        "price": 349
+      }
+    ]
+  },
+  {
+    "id": "cat-painter",
+    "name": "Home Painting",
+    "name_hi": "पेंटिंग सर्विस",
+    "slug": "home-painting",
+    "icon": "Paintbrush",
+    "tagline": "Interior, exterior, moisture touch-ups",
+    "description": "Professional wall painting, primer, and waterproof coatings.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 13,
+    "starting_price": 2499,
+    "group": "HOME SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-4",
+        "name": "1 Room Repainting",
+        "price": 2499
+      }
+    ]
+  },
+  {
+    "id": "cat-packers",
+    "name": "Packers & Movers",
+    "name_hi": "पैकर्स एंड मूवर्स",
+    "slug": "packers-movers",
+    "icon": "Truck",
+    "tagline": "Careful household shifting & safe transit",
+    "description": "Multi-layer packing, loading, transport and unloading for local shifting.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 20,
+    "starting_price": 2999,
+    "group": "MOVING & LOGISTICS",
+    "sub_services": [
+      {
+        "id": "fc-5",
+        "name": "1BHK Local Shifting",
+        "price": 3499
+      }
+    ]
+  },
+  {
+    "id": "cat-tempo",
+    "name": "Mini Truck / Tempo on Demand",
+    "name_hi": "छोटा हाथी / टेम्पो",
+    "slug": "mini-truck",
+    "icon": "Package",
+    "tagline": "Tata Ace & pickup tempo for bulky transport",
+    "description": "Instant local logistics for furniture, commercial goods, and home appliances.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 21,
+    "starting_price": 799,
+    "group": "MOVING & LOGISTICS",
+    "sub_services": [
+      {
+        "id": "fc-6",
+        "name": "Tata Ace 2-Hour Hire",
+        "price": 799
+      }
+    ]
+  },
+  {
+    "id": "cat-driver",
+    "name": "Personal Driver on Demand",
+    "name_hi": "कार ड्राइवर",
+    "slug": "driver",
+    "icon": "Car",
+    "tagline": "Hourly & outstation verified chauffeurs",
+    "description": "Professional drivers for your automatic or manual transmission vehicle.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 30,
+    "starting_price": 399,
+    "group": "PERSONAL SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-7",
+        "name": "4-Hour City Driver",
+        "price": 499
+      }
+    ]
+  },
+  {
+    "id": "cat-cook",
+    "name": "Dedicated Home Cook",
+    "name_hi": "घर का रसोइया / कुक",
+    "slug": "cook",
+    "icon": "UtensilsCrossed",
+    "tagline": "Healthy home-style regional meals",
+    "description": "Trained cooks for breakfast, lunch, and dinner according to dietary preferences.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 31,
+    "starting_price": 599,
+    "group": "PERSONAL SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-8",
+        "name": "Party Meal Prep (5-8 People)",
+        "price": 999
+      }
+    ]
+  },
+  {
+    "id": "cat-beauty",
+    "name": "Salon & Grooming at Home",
+    "name_hi": "घर पर ब्यूटी और ग्रूमिंग",
+    "slug": "beauty-grooming",
+    "icon": "Scissors",
+    "tagline": "Waxing, facial, haircut & styling at home",
+    "description": "Hygienic salon treatments delivered right into the comfort of your room.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 32,
+    "starting_price": 499,
+    "group": "PERSONAL SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-9",
+        "name": "Men Haircut & Beard",
+        "price": 399
+      }
+    ]
+  },
+  {
+    "id": "cat-cctv",
+    "name": "CCTV & Wi-Fi Setup",
+    "name_hi": "सीसीटीवी और वाई-फाई",
+    "slug": "cctv-wifi",
+    "icon": "ShieldCheck",
+    "tagline": "Security cameras, routers & home network wiring",
+    "description": "Professional installation of IP cameras, smart doorbells, and mesh Wi-Fi.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 40,
+    "starting_price": 699,
+    "group": "TECH SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-10",
+        "name": "2-Camera CCTV Installation",
+        "price": 899
+      }
+    ]
+  },
+  {
+    "id": "cat-appliance",
+    "name": "Washing Machine & Fridge Repair",
+    "name_hi": "वाशिंग मशीन व फ्रिज रिपेयर",
+    "slug": "appliance-repair",
+    "icon": "Cpu",
+    "tagline": "Genuine spare parts & diagnostic check",
+    "description": "Doorstep repair for front/top load washing machines, refrigerators, and microwaves.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 41,
+    "starting_price": 399,
+    "group": "TECH SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-11",
+        "name": "Washing Machine Drum Check",
+        "price": 399
+      }
+    ]
+  },
+  {
+    "id": "cat-pest",
+    "name": "Pest Control",
+    "name_hi": "पेस्ट कंट्रोल (कीट नियंत्रण)",
+    "slug": "pest-control",
+    "icon": "Bug",
+    "tagline": "Cockroach gel, termite treatment & bedbugs",
+    "description": "Odorless herbal treatments safe for kids and pets.",
+    "is_active": false,
+    "is_mvp_launch": false,
+    "display_order": 42,
+    "starting_price": 899,
+    "group": "HOME SERVICES",
+    "sub_services": [
+      {
+        "id": "fc-12",
+        "name": "Kitchen & Bathroom Cockroach Gel",
+        "price": 899
+      }
+    ]
+  }
+]

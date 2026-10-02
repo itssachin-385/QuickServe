@@ -1,0 +1,21 @@
+[
+  {
+    "id": "cust-verified-1",
+    "name": "Sachin Kumar",
+    "phone": "+91 95701 51834",
+    "email": "kumar@quickserve.in",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+    "saved_addresses": [
+      {
+        "id": "addr-home-1",
+        "label": "Home",
+        "flat": "Flat 302, Sector 18",
+        "area": "Sector 18, Noida",
+        "city": "Noida",
+        "landmark": "Near Wave Mall",
+        "is_default": true
+      }
+    ],
+    "default_address_id": "addr-home-1"
+  }
+]
