@@ -23,6 +23,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=10000
 
 # Copy root package and install production dependencies only
 COPY package*.json ./
@@ -32,6 +33,6 @@ RUN npm install --only=production
 COPY server ./server
 COPY --from=builder /app/client/dist ./client/dist
 
-EXPOSE 5000 10000
+EXPOSE 10000
 
 CMD ["node", "server/server.js"]
