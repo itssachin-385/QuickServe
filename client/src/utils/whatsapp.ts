@@ -33,7 +33,7 @@ export function generateWhatsAppBookingMessage(booking: WhatsAppBookingInfo): st
     : `⚡ *Arrival:* Partner reaching in ~15 Mins`;
 
   // Dynamic live tracking URL based on current host or tunnel
-  const publicDefaultUrl = 'https://hollow-typically-readers-dept.trycloudflare.com';
+  const publicDefaultUrl = 'https://quickserve-3lhk.onrender.com';
   let currentOrigin = publicDefaultUrl;
   if (typeof window !== 'undefined') {
     const isLocalOrCapacitor = 

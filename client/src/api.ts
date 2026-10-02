@@ -1,6 +1,6 @@
 // API Client for QuickServe with live Express integration and safe fallback
 import { ServiceCategory, ServiceZone, Professional, Booking, SupportTicket, SupplyDemandItem, AdminStats, MicroHub, CustomerUser, SavedAddress } from './types';
-const CLOUDFLARE_TUNNEL_URL = 'https://hollow-typically-readers-dept.trycloudflare.com';
+const RENDER_CLOUD_URL = 'https://quickserve-3lhk.onrender.com';
 
 const getApiBase = () => {
   if ((import.meta as any).env?.VITE_API_URL) return (import.meta as any).env.VITE_API_URL;
@@ -12,11 +12,11 @@ const getApiBase = () => {
       (window.location.hostname === 'localhost' && window.location.protocol === 'https:')
     );
     if (isCapacitor) {
-      return `${CLOUDFLARE_TUNNEL_URL}/api`;
+      return `${RENDER_CLOUD_URL}/api`;
     }
 
     // If accessed directly on live public tunnel / domain
-    if (window.location.hostname.includes('trycloudflare.com') || window.location.hostname.includes('quickserve')) {
+    if (window.location.hostname.includes('onrender.com') || window.location.hostname.includes('trycloudflare.com') || window.location.hostname.includes('quickserve')) {
       return `${window.location.origin}/api`;
     }
 
