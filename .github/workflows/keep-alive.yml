@@ -1,0 +1,17 @@
+name: 24x7 QuickServe Keep-Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free-tier from sleeping
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping QuickServe Render Cloud
+        run: |
+          echo "Pinging QuickServe at $(date)"
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" https://quickserve-3lhk.onrender.com/api/health)
+          echo "$RESPONSE"
