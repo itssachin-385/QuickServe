@@ -1441,8 +1441,8 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`QuickServe Production API listening on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`QuickServe Production API listening on http://0.0.0.0:${PORT}`);
 });
 
 
