@@ -19,6 +19,37 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Public Health Check Endpoint for external uptime monitors & crawlers
+app.get(['/health', '/api/health'], (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'QuickServe Hyperlocal Services Marketplace',
+    version: '2.1.0',
+    hub: 'Greater Noida & NCR Hub',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Explicit robots.txt Endpoint with proper text/plain header
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(`User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nAllow: /\n\nUser-agent: ChatGPT-User\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: Twitterbot\nAllow: /\n\nUser-agent: facebookexternalhit\nAllow: /\n\nSitemap: https://quickserve-3lhk.onrender.com/sitemap.xml\n`);
+});
+
+// Explicit sitemap.xml Endpoint with proper application/xml header
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  const sitemapDist = path.join(__dirname, '../client/dist/sitemap.xml');
+  const sitemapPublic = path.join(__dirname, 'public/sitemap.xml');
+  if (fs.existsSync(sitemapDist)) {
+    return res.sendFile(sitemapDist);
+  }
+  if (fs.existsSync(sitemapPublic)) {
+    return res.sendFile(sitemapPublic);
+  }
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://quickserve-3lhk.onrender.com/</loc>\n    <lastmod>2026-10-03</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n  <url>\n    <loc>https://quickserve-3lhk.onrender.com/download-apk</loc>\n    <lastmod>2026-10-03</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n  <url>\n    <loc>https://quickserve-3lhk.onrender.com/QuickServe_v2.apk</loc>\n    <lastmod>2026-10-03</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n</urlset>`);
+});
+
 // Serve production client build if exists
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(express.static(path.join(__dirname, 'public')));

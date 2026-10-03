@@ -23,6 +23,9 @@ client/public/downloads/*.apk
 client/public/downloads/
 handbook_*.html
 *.txt
+!robots.txt
+!client/public/robots.txt
+!server/public/robots.txt
 build_mega_handbook.js
 generate_perfect_handbook.js
 fix_*.py
