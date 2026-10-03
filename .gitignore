@@ -21,3 +21,10 @@ server/data/persistent/*.bak
 !server/public/QuickServe_v2.apk
 client/public/downloads/*.apk
 client/public/downloads/
+handbook_*.html
+*.txt
+build_mega_handbook.js
+generate_perfect_handbook.js
+fix_*.py
+scan.py
+generate_*.py

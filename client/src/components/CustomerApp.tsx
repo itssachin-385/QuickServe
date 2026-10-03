@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, 
   Wrench, 
@@ -284,22 +284,43 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
   // Tracking modal / view for an active booking
   const [trackingBooking, setTrackingBooking] = useState<Booking | null>(null);
 
+  // Filter bookings for current logged-in user so other users' demo orders don't appear
+  const userBookings = useMemo(() => {
+    if (!currentUser) {
+      // If guest user, check local storage for bookings created in this guest session
+      try {
+        const guestIds: string[] = JSON.parse(localStorage.getItem('quickserve_guest_booking_ids') || '[]');
+        if (guestIds.length > 0) {
+          return activeBookings.filter(b => guestIds.includes(b.id) || guestIds.includes(b.booking_reference));
+        }
+      } catch (e) {}
+      return [];
+    }
+    const userDigits = (currentUser.phone || '').replace(/\D/g, '').slice(-10);
+    return activeBookings.filter(b => {
+      const bDigits = (b.customer_phone || '').replace(/\D/g, '').slice(-10);
+      if (userDigits && bDigits) {
+        return bDigits === userDigits;
+      }
+      return b.customer_name?.toLowerCase() === currentUser.name?.toLowerCase();
+    });
+  }, [activeBookings, currentUser]);
+
   // Review modal
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isProblemReported, setIsProblemReported] = useState(false);
 
-  // Real-time tracking auto-sync
+  // Keep tracking modal in sync with latest booking status if it's currently open
   useEffect(() => {
-    if (activeBookings.length > 0 && !trackingBooking) {
-      // Find ongoing booking
-      const ongoing = activeBookings.find(b => ['confirmed', 'on_the_way', 'started'].includes(b.status));
-      if (ongoing) {
-        setTrackingBooking(ongoing);
+    if (trackingBooking) {
+      const updated = activeBookings.find(b => b.id === trackingBooking.id);
+      if (updated && updated.status !== trackingBooking.status) {
+        setTrackingBooking(updated);
       }
     }
-  }, [activeBookings]);
+  }, [activeBookings, trackingBooking]);
 
   // Handle smart search
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -417,6 +438,13 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
       });
 
       if (result.success) {
+        try {
+          const guestIds: string[] = JSON.parse(localStorage.getItem('quickserve_guest_booking_ids') || '[]');
+          if (!guestIds.includes(result.booking.id)) {
+            guestIds.push(result.booking.id);
+            localStorage.setItem('quickserve_guest_booking_ids', JSON.stringify(guestIds));
+          }
+        } catch (e) {}
         onRefreshBookings();
         setTrackingBooking(result.booking);
         setSelectedCategory(null);
@@ -697,9 +725,9 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
         )}
 
         {/* 2. ONGOING ORDER BANNER (IF ACTIVE - ONLY ON HOME TAB) */}
-        {activeTab === 'home' && activeBookings.some(b => ['confirmed', 'on_the_way', 'started'].includes(b.status)) && (
+        {activeTab === 'home' && userBookings.some(b => ['confirmed', 'on_the_way', 'started'].includes(b.status)) && (
           <div className="px-4 pt-3 relative z-10">
-            {activeBookings
+            {userBookings
               .filter(b => ['confirmed', 'on_the_way', 'started'].includes(b.status))
               .slice(0, 1)
               .map(b => (
@@ -895,7 +923,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
         {/* TAB 2: MY BOOKINGS & SCHEDULE (WITH CALENDAR & RICH ACTIONS) */}
         {activeTab === 'bookings' && (
           <CustomerBookingsScreen
-            bookings={activeBookings}
+            bookings={userBookings}
             categories={categories}
             onNavigateTab={setActiveTab}
             onTrackBooking={(b) => setTrackingBooking(b)}
