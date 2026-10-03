@@ -24,7 +24,14 @@ export const LocationModal: React.FC<LocationModalProps> = ({
       if (saved) {
         const parsed = JSON.parse(saved);
         const full = `${parsed.fullCompleteAddress || ''} ${parsed.areaCity || ''} ${parsed.landmark || ''}`.toLowerCase();
-        if (full.includes('aishani') || full.includes('château') || full.includes('chateau') || full.includes('ifs villas')) {
+        if (
+          full.includes('aishani') || 
+          full.includes('château') || 
+          full.includes('chateau') || 
+          full.includes('ifs villas') ||
+          full.includes('ber sarai') ||
+          full.includes('galileo')
+        ) {
           setInitialCoords({});
         } else if (parsed.lat && parsed.lon) {
           setInitialCoords({ lat: parsed.lat, lon: parsed.lon });
@@ -47,7 +54,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
     lat: number;
     lon: number;
   }) => {
-    const displayZone = locationData.areaCity || 'Ber Sarai, New Delhi';
+    const displayZone = locationData.areaCity || 'Ansal Golf Links 1, Greater Noida';
     const fullCompleteAddress = locationData.fullAddress || `${displayZone}, India`;
 
     localStorage.setItem(

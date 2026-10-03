@@ -96,14 +96,22 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
   } else if (combinedText.includes('r.k. puram') || combinedText.includes('rk puram')) {
     sectorOrArea = 'R.K. Puram';
     city = 'New Delhi';
-  } else if (combinedText.includes('ansal golf') || combinedText.includes('golf link') || combinedText.includes('golf links') || combinedText.includes('om proptech') || combinedText.includes('shreeniwasm') || combinedText.includes('wayfarer')) {
+  } else if (
+    combinedText.includes('ansal golf') || 
+    combinedText.includes('golf link') || 
+    combinedText.includes('golf links') || 
+    combinedText.includes('om proptech') || 
+    combinedText.includes('shreeniwasm') || 
+    combinedText.includes('wayfarer') ||
+    combinedText.includes('ifs villas') || 
+    combinedText.includes('aishani') || 
+    combinedText.includes('château') || 
+    combinedText.includes('chateau')
+  ) {
     sectorOrArea = 'Ansal Golf Links 1';
     city = 'Greater Noida';
   } else if (combinedText.includes('omega 1') || combinedText.includes('shafipur') || combinedText.includes('psi i')) {
     sectorOrArea = 'Ansal Golf Links 1';
-    city = 'Greater Noida';
-  } else if (combinedText.includes('ifs villas') || combinedText.includes('aishani') || combinedText.includes('château') || combinedText.includes('chateau')) {
-    sectorOrArea = 'IFS Villas';
     city = 'Greater Noida';
   } else if (combinedText.includes('pari chowk')) {
     sectorOrArea = 'Pari Chowk';

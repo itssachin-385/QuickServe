@@ -87,19 +87,23 @@ export const InteractiveMapPicker: React.FC<InteractiveMapPickerProps> = ({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
-  // Default coordinate fallback: Ber Sarai, New Delhi (or user coordinates)
-  const defaultLat = initialLat || 28.5478;
-  const defaultLon = initialLon || 77.1824;
+  // Default coordinate fallback: Ansal Golf Links 1, Greater Noida (never Ber Sarai)
+  const defaultLat = initialLat || 28.4518;
+  const defaultLon = initialLon || 77.5068;
 
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lon: number }>({
     lat: defaultLat,
     lon: defaultLon
   });
-  const [currentLocality, setCurrentLocality] = useState(currentZone || 'Ber Sarai');
-  const [currentFullAddress, setCurrentFullAddress] = useState(
-    'Ber Sarai, New Delhi, Delhi, India, 110016'
+  const [currentLocality, setCurrentLocality] = useState(
+    initialLat ? (currentZone || 'Ansal Golf Links 1') : 'Detecting your live location...'
   );
-  const [isLocating, setIsLocating] = useState(false);
+  const [currentFullAddress, setCurrentFullAddress] = useState(
+    initialLat 
+      ? 'Ansal Golf Links 1, Greater Noida, Uttar Pradesh, India' 
+      : 'Acquiring satellite GPS... Please allow location access'
+  );
+  const [isLocating, setIsLocating] = useState(!initialLat);
   const [isDragging, setIsDragging] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [googleSuggestions, setGoogleSuggestions] = useState<GooglePlaceSuggestion[]>([]);
@@ -170,23 +174,24 @@ export const InteractiveMapPicker: React.FC<InteractiveMapPickerProps> = ({
       }, 400);
     });
 
-    // Initial address fetch
-    fetchAddressForCoordinates(defaultLat, defaultLon);
-
-    // Auto-detect GPS on first load if no coordinates provided OR if coordinates are default
-    const isDefaultCoordinates = !initialLat || !initialLon || 
-      (Math.abs(initialLat - 28.5478) < 0.001 && Math.abs(initialLon - 77.1824) < 0.001);
-
-    if (isDefaultCoordinates) {
+    // If verified coordinates were provided by parent, fetch their address
+    if (initialLat && initialLon) {
+      fetchAddressForCoordinates(initialLat, initialLon);
+    } else {
+      // Auto-detect fresh high-accuracy hardware GPS immediately
       setIsLocating(true);
       getHighAccuracyPosition().then((pos) => {
         if (pos && mapInstanceRef.current) {
-          mapInstanceRef.current.setView([pos.lat, pos.lon], 17, { animate: true });
+          mapInstanceRef.current.flyTo([pos.lat, pos.lon], 18, { duration: 1.2 });
           setCurrentCoords({ lat: pos.lat, lon: pos.lon });
           fetchAddressForCoordinates(pos.lat, pos.lon);
+        } else {
+          // Fallback gracefully to Greater Noida (user's home area)
+          fetchAddressForCoordinates(28.4518, 77.5068);
         }
       }).catch((err) => {
         console.warn('Initial GPS auto-detect failed:', err);
+        fetchAddressForCoordinates(28.4518, 77.5068);
       }).finally(() => {
         setIsLocating(false);
       });
@@ -449,10 +454,14 @@ export const InteractiveMapPicker: React.FC<InteractiveMapPickerProps> = ({
           {/* Big Green Confirm Location Button */}
           <button
             onClick={() => setShowDoorstepDrawer(true)}
-            disabled={isLocating}
-            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black rounded-2xl text-sm shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
+            disabled={isLocating || currentLocality.includes('Detecting')}
+            className={`w-full py-3.5 ${
+              isLocating || currentLocality.includes('Detecting')
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                : 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white shadow-lg shadow-emerald-500/25'
+            } font-black rounded-2xl text-sm transition-all flex items-center justify-center gap-2`}
           >
-            <span>Confirm location</span>
+            <span>{isLocating || currentLocality.includes('Detecting') ? 'Detecting satellite GPS...' : 'Confirm location'}</span>
           </button>
         </div>
       </div>

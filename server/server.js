@@ -320,17 +320,8 @@ app.post('/api/auth/verify-otp', (req, res) => {
         phone: cleanPhone,
         email: `${cleanPhone}@quickserve.in`,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        saved_addresses: [
-          {
-            id: `addr-${Date.now()}`,
-            label: 'Home',
-            flat: 'Flat 101, Apartment',
-            area: '100ft Road, Indiranagar',
-            city: 'Bengaluru',
-            is_default: true
-          }
-        ],
-        default_address_id: `addr-${Date.now()}`
+        saved_addresses: [],
+        default_address_id: null
       };
       customers.push(user);
     } else if (name && (user.name === 'QuickServe Customer' || !user.name)) {

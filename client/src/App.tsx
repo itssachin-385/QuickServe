@@ -15,6 +15,7 @@ import { fetchCategories, fetchZones, fetchProfessionals, fetchBookings } from '
 import { resolveNoidaOrGreaterNoida, sanitizeNoidaLocationStorage } from './utils/locationHelper';
 import { reverseGeocodeGoogle } from './utils/googleMapsService';
 import { OnboardingLoginScreen } from './components/OnboardingLoginScreen';
+import { AppSplashScreen } from './components/AppSplashScreen';
 import { App as CapacitorApp } from '@capacitor/app';
 
 export function App() {
@@ -24,13 +25,14 @@ export function App() {
     window.location.search.includes('app')
   );
 
+  const [showSplash, setShowSplash] = useState(true);
   const [activeModule, setActiveModule] = useState<ActiveModule>(() => {
     return isMobileOrNative ? 'customer_app' : 'website';
   });
   const [lang, setLang] = useState<'en' | 'hi'>('en');
   const [isMobileDeviceFrame, setIsMobileDeviceFrame] = useState(false);
   const [activeCityZone, setActiveCityZone] = useState(() => {
-    return localStorage.getItem('quickserve_active_zone') || 'Sector 18, Noida';
+    return localStorage.getItem('quickserve_active_zone') || 'Ansal Golf Links 1, Greater Noida';
   });
   const [isGatewayModalOpen, setIsGatewayModalOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -115,6 +117,15 @@ export function App() {
 
     // Sanitize any existing cached storage from old runs
     sanitizeNoidaLocationStorage();
+    try {
+      localStorage.removeItem('quickserve_guest_booking_ids');
+      localStorage.removeItem('quickserve_active_tracking_id');
+      const activeZ = localStorage.getItem('quickserve_active_zone');
+      if (activeZ && /ber sarai|galileo|indiranagar|shafipur|aishani|ifs villas/i.test(activeZ)) {
+        localStorage.setItem('quickserve_active_zone', 'Ansal Golf Links 1, Greater Noida');
+        setActiveCityZone('Ansal Golf Links 1, Greater Noida');
+      }
+    } catch {}
 
     // Check saved location or attempt auto-detect via GPS / IP
     const fetchIpLocation = async () => {
@@ -250,17 +261,8 @@ export function App() {
     setActiveModule('customer_app');
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
-        <div className="w-12 h-12 rounded-xl bg-brand-500 animate-pulse flex items-center justify-center font-black text-2xl text-slate-950 shadow-lg shadow-brand-500/30">
-          Q
-        </div>
-        <p className="mt-4 text-xs text-brand-300 font-semibold tracking-wider uppercase">
-          QuickServe • Bengaluru Hub Initializing...
-        </p>
-      </div>
-    );
+  if (showSplash || isLoading) {
+    return <AppSplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
   return (

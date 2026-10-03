@@ -302,7 +302,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
       if (userDigits && bDigits) {
         return bDigits === userDigits;
       }
-      return b.customer_name?.toLowerCase() === currentUser.name?.toLowerCase();
+      return false;
     });
   }, [activeBookings, currentUser]);
 
