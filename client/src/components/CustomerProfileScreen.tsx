@@ -330,7 +330,7 @@ export const CustomerProfileScreen: React.FC<CustomerProfileScreenProps> = ({
     : (currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U');
 
   return (
-    <div className="w-full bg-slate-50/60 pb-20 font-sans text-slate-900 select-none">
+    <div className="w-full bg-slate-50/60 pb-36 font-sans text-slate-900 select-none">
       
       {/* 1. DEDICATED PROFESSIONAL HEADER (NO SEARCH BAR) */}
       <div className="bg-white border-b border-slate-200/80 sticky top-0 z-20 px-4 py-3.5 flex items-center justify-between shadow-xs">

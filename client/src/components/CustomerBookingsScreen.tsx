@@ -205,8 +205,13 @@ export const CustomerBookingsScreen: React.FC<CustomerBookingsScreenProps> = ({
     }
   };
 
+  const cleanPartnerName = (name?: string) => {
+    if (!name) return 'Assigned Partner';
+    return name.replace(/\s*\([★\d\.\s]+\)/g, '').trim();
+  };
+
   return (
-    <div className="w-full bg-slate-50/60 pb-20 font-sans text-slate-900 select-none">
+    <div className="w-full bg-slate-50/60 pb-36 font-sans text-slate-900 select-none">
       
       {/* 1. TOP HEADER */}
       <div className="bg-white border-b border-slate-200/80 sticky top-0 z-20 px-4 py-3.5 flex items-center justify-between shadow-xs">
@@ -464,19 +469,19 @@ export const CustomerBookingsScreen: React.FC<CustomerBookingsScreenProps> = ({
                   <div className="flex items-center justify-between bg-slate-50/80 rounded-2xl p-3 border border-slate-100">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-slate-900 text-white font-black text-sm flex items-center justify-center shadow-xs">
-                        {b.professional_name ? b.professional_name.charAt(0) : 'P'}
+                        {cleanPartnerName(b.professional_name).charAt(0) || 'P'}
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
                           <h5 className="font-bold text-slate-900 text-xs">
-                            {b.professional_name || 'Assigned Partner'}
+                            {cleanPartnerName(b.professional_name)}
                           </h5>
                           <span className="text-[10px] text-amber-600 font-bold flex items-center">
                             ★ {b.professional_rating || 4.9}
                           </span>
                         </div>
                         <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                          <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
                           Police & Aadhaar Verified
                         </span>
                       </div>

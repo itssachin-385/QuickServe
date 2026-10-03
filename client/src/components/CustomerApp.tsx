@@ -728,7 +728,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
 
         {/* 3. MAIN BODY ACCORDING TO ACTIVE TAB */}
         {activeTab === 'home' && (
-          <div className={`p-4 space-y-4 ${stackedChores.length > 0 ? 'pb-36' : 'pb-20'}`}>
+          <div className={`p-4 space-y-4 ${stackedChores.length > 0 ? 'pb-44' : 'pb-36'}`}>
             {/* QUICKSERVE HERO BANNER */}
             <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-4 shadow-sm relative overflow-hidden">
               <div className="relative z-10">
@@ -908,7 +908,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
 
         {/* TAB 3: SUPPORT & HELP */}
         {activeTab === 'support' && (
-          <div className="p-4 space-y-4 pb-20">
+          <div className="p-4 space-y-4 pb-36">
             <h3 className="font-bold text-slate-900 text-base">QuickServe Help & Support</h3>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs space-y-3">
               <div className="flex items-center gap-2 font-bold text-slate-800">
@@ -1886,7 +1886,9 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                   />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <h4 className="font-bold text-slate-900 text-xs">{trackingBooking.professional_name}</h4>
+                      <h4 className="font-bold text-slate-900 text-xs">
+                        {trackingBooking.professional_name?.replace(/\s*\([★\d\.\s]+\)/g, '') || 'Assigned Partner'}
+                      </h4>
                       <span className="text-[9px] bg-emerald-100 text-emerald-800 font-semibold px-1 rounded">
                         ✓ Verified Pro
                       </span>
