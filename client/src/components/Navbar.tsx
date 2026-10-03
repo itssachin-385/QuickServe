@@ -84,9 +84,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   Select Bengaluru Cluster:
                 </span>
                 {[
-                  { name: 'Indiranagar Hub 01', area: '100ft Rd / Defence Colony' },
-                  { name: 'Koramangala Hub 02', area: '4th Block / Sony World' },
-                  { name: 'HSR Layout Hub 03', area: 'Sector 1 / 27th Main' }
+                  { name: 'Ansal Golf Links 1, Greater Noida', area: 'Greater Noida Head Hub' },
+                  { name: 'Pari Chowk, Greater Noida', area: 'Central Gr. Noida Cluster' },
+                  { name: 'Sector 135 Expressway, Noida', area: 'Noida Expressway Hub' },
+                  { name: 'Ber Sarai, South Delhi', area: 'South Delhi Hub' }
                 ].map(cluster => (
                   <button
                     key={cluster.name}
@@ -95,13 +96,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setIsZoneMenuOpen(false);
                     }}
                     className={`w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center justify-between transition-colors ${
-                      activeCityZone.includes(cluster.name.split(' ')[0]) 
+                      activeCityZone.includes(cluster.name.split(',')[0]) 
                         ? 'text-emerald-700 font-bold bg-emerald-50/60' 
                         : 'text-slate-700'
                     }`}
                   >
                     <div>
-                      <span className="block font-semibold">{cluster.name}</span>
+                      <span className="block font-semibold">{cluster.name.split(',')[0]}</span>
                       <span className="text-[10px] text-slate-400">{cluster.area}</span>
                     </div>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
@@ -116,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Language Switcher */}
           <button 
             onClick={onToggleLang}
-            className="flex items-center gap-1 text-slate-300 hover:text-white px-2 py-1 rounded transition-colors text-xs"
+            className="flex items-center gap-1 text-slate-300 hover:text-white px-2 py-1 rounded transition-colors text-xs cursor-pointer"
             title="Switch Language"
           >
             <Languages className="w-3 h-3 text-amber-400" />
@@ -141,14 +142,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-xl font-black tracking-tight text-[#04b565] font-sans">
-                  Quick<span className="text-[#364854]">Serve</span>
+                  Quick<span className="text-slate-800">Serve</span>
                 </span>
                 <span className="text-[9px] uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold border border-emerald-200">
                   Verified
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
-                Home & Local Services
+                Hyperlocal Home & Local Services
               </p>
             </div>
           </div>
@@ -162,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
                 }, 50);
               }}
-              className={`hover:text-emerald-600 transition-colors ${
+              className={`hover:text-emerald-600 transition-colors cursor-pointer ${
                 activeModule === 'website' ? 'text-emerald-600 font-bold' : ''
               }`}
             >
@@ -170,8 +171,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
+              onClick={() => {
+                if (activeModule !== 'website') onSelectModule('website');
+                setTimeout(() => {
+                  document.getElementById('coverage')?.scrollIntoView({ behavior: 'smooth' });
+                }, 50);
+              }}
+              className="hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              Coverage Areas
+            </button>
+
+            <button
+              onClick={() => {
+                if (activeModule !== 'website') onSelectModule('website');
+                setTimeout(() => {
+                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                }, 50);
+              }}
+              className="hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              How It Works
+            </button>
+
+            <button
               onClick={() => onSelectModule('customer_app')}
-              className={`hover:text-emerald-600 transition-colors flex items-center gap-1.5 ${
+              className={`hover:text-emerald-600 transition-colors flex items-center gap-1.5 cursor-pointer ${
                 activeModule === 'customer_app' ? 'text-emerald-600 font-bold' : ''
               }`}
             >

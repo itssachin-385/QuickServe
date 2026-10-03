@@ -315,59 +315,52 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       {/* ========================================================================= */}
       {/* 2. MINIMAL CLEAN HEADER (MOBILE ONLY, DESKTOP USES MAIN NAVBAR) */}
       {/* ========================================================================= */}
-      <header className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <header className="md:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between gap-3">
           
           {/* Logo & Locality */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
               <img 
                 src="/images/quickserve_app_icon.png" 
                 alt="QuickServe" 
-                className="w-8 h-8 rounded-xl object-contain" 
+                className="w-8 h-8 rounded-xl object-contain shadow-2xs" 
               />
               <span className="text-xl font-black tracking-tight text-[#04b565]">
-                Quick<span className="text-[#364854]">Serve</span>
+                Quick<span className="text-slate-800">Serve</span>
               </span>
             </div>
 
             {/* Location Pill */}
             <button
               onClick={onOpenLocationModal}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200/80 rounded-lg text-xs font-bold text-slate-800 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 rounded-full text-xs font-bold text-slate-800 border border-slate-200/70 hover:border-emerald-300 transition-all cursor-pointer min-w-0"
             >
-              <MapPin className="w-3.5 h-3.5 text-[#04b565]" />
-              <span className="max-w-[120px] truncate">{activeCityZone.split(',')[0]}</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+              <MapPin className="w-3.5 h-3.5 text-[#04b565] flex-shrink-0" />
+              <span className="truncate max-w-[110px]">{activeCityZone.split(',')[0]}</span>
+              <ChevronDown className="w-3 h-3 text-slate-400 flex-shrink-0" />
             </button>
           </div>
 
           {/* Quick Nav / Auth */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hidden md:inline-block text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              Services
-            </button>
-
+          <div className="flex items-center gap-2 flex-shrink-0">
             {currentUser ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-xs font-bold text-slate-800"
+                className="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-xs font-bold text-slate-800 border border-slate-200/60"
               >
-                <div className="w-6 h-6 rounded-full bg-[#04b565] text-white flex items-center justify-center font-bold text-[10px]">
+                <div className="w-6 h-6 rounded-full bg-[#04b565] text-white flex items-center justify-center font-bold text-[10px] shadow-2xs">
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <span className="max-w-[80px] truncate">{currentUser.name.split(' ')[0]}</span>
+                <span className="max-w-[70px] truncate">{currentUser.name.split(' ')[0]}</span>
               </button>
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="px-3 py-1.5 bg-[#04b565] hover:bg-[#039e57] text-white font-bold text-xs rounded-xl transition-all shadow-xs"
+                className="px-3.5 py-1.5 bg-[#04b565] hover:bg-[#039e57] active:scale-95 text-white font-black text-xs rounded-xl transition-all shadow-xs"
               >
                 Log In
               </button>
@@ -377,39 +370,58 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       </header>
 
       {/* ========================================================================= */}
-      {/* 3. HERO (CLEAN, DIRECT, BLINKIT/URBAN COMPANY STYLE) */}
+      {/* 3. HERO (PREMIUM, TRUSTWORTHY & NATURAL STARTUP STYLE) */}
       {/* ========================================================================= */}
-      <section className="bg-gradient-to-b from-slate-50 to-white pt-8 pb-6 px-4 border-b border-slate-100">
+      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50/40 via-white to-slate-50/40 pt-10 sm:pt-14 pb-8 sm:pb-12 px-4 border-b border-slate-200/70">
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
+
         <div className="max-w-4xl mx-auto text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-            Reliable Help in Minutes.
+          
+          {/* Verified Dispatch Trust Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-emerald-200/80 shadow-2xs text-xs font-bold text-emerald-800 animate-in fade-in duration-300">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#04b565]"></span>
+            </span>
+            <span>⚡ 15-Minute Doorstep Help • Greater Noida & NCR Hub</span>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
+            Ghar Ka Har Kaam, <br className="hidden sm:inline" />
+            <span className="text-[#04b565]">15 Minute</span> Me Aasaan.
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto font-medium">
-            Book verified house cleaners, electricians, plumbers & caretakers at transparent rates.
+
+          {/* Subtitle */}
+          <p className="text-xs sm:text-base text-slate-600 max-w-xl mx-auto font-medium leading-relaxed">
+            Book police-verified house maids, certified electricians, skilled plumbers & care attendants with flat upfront pricing and pay-after-service assurance.
           </p>
 
-          {/* Minimal Search Bar */}
-          <div className="max-w-lg mx-auto relative pt-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 'Sweeping', 'Fan repair', 'Tap fix'..."
-              className="w-full pl-10 pr-8 py-2.5 bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:border-[#04b565] shadow-xs"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+          {/* Premium Search Bar */}
+          <div className="max-w-xl mx-auto relative pt-2">
+            <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/90 shadow-sm shadow-slate-900/5 focus-within:border-[#04b565] focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all duration-200">
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search 'Sweeping & mopping', 'Fan repair', 'Tap fix', 'AC'..."
+                className="w-full pl-11 pr-10 py-3 bg-transparent text-xs sm:text-sm text-slate-900 placeholder-slate-400 rounded-2xl focus:outline-none font-medium"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3.5 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 4 Launch Categories (Quick 1-Tap Filter / Booking Cards) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 text-left">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-3 text-left">
             
             {/* Maid */}
             <div 
@@ -418,18 +430,18 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                 const svc = professionalHomeServices.find(s => s.id === 's-hourly');
                 if (svc) setActiveScopeService(svc);
               }}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-2.5 group hover:shadow-xs ${
+              className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 group bg-white shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
                 selectedFilter === 'cleaning'
-                  ? 'border-[#04b565] bg-emerald-50/50 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
+                  ? 'border-[#04b565] bg-emerald-50/60 ring-2 ring-emerald-500/20'
+                  : 'border-slate-200 hover:border-emerald-300'
               }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
                 🧹
               </div>
               <div className="min-w-0">
-                <span className="font-extrabold text-xs text-slate-900 block truncate group-hover:text-emerald-700 transition-colors">House Maid</span>
-                <span className="text-[10px] text-emerald-700 font-bold">Scope & Rates →</span>
+                <span className="font-extrabold text-xs sm:text-sm text-slate-900 block truncate group-hover:text-emerald-700 transition-colors">House Maid</span>
+                <span className="text-[11px] text-[#04b565] font-bold">From ₹199 • Scope →</span>
               </div>
             </div>
 
@@ -440,18 +452,18 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                 const svc = professionalHomeServices.find(s => s.id === 's-fan');
                 if (svc) setActiveScopeService(svc);
               }}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-2.5 group hover:shadow-xs ${
+              className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 group bg-white shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
                 selectedFilter === 'repairs'
-                  ? 'border-[#04b565] bg-emerald-50/50 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
+                  ? 'border-[#04b565] bg-emerald-50/60 ring-2 ring-emerald-500/20'
+                  : 'border-slate-200 hover:border-amber-300'
               }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
                 ⚡
               </div>
               <div className="min-w-0">
-                <span className="font-extrabold text-xs text-slate-900 block truncate group-hover:text-amber-700 transition-colors">Electrician</span>
-                <span className="text-[10px] text-amber-700 font-bold">Scope & Rates →</span>
+                <span className="font-extrabold text-xs sm:text-sm text-slate-900 block truncate group-hover:text-amber-700 transition-colors">Electrician</span>
+                <span className="text-[11px] text-amber-700 font-bold">From ₹149 • Scope →</span>
               </div>
             </div>
 
@@ -462,14 +474,14 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                 const svc = professionalHomeServices.find(s => s.id === 's-plumbing-tap');
                 if (svc) setActiveScopeService(svc);
               }}
-              className="p-3 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer flex items-center gap-2.5 group hover:shadow-xs"
+              className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-3 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
                 🔧
               </div>
               <div className="min-w-0">
-                <span className="font-extrabold text-xs text-slate-900 block truncate group-hover:text-blue-700 transition-colors">Plumber</span>
-                <span className="text-[10px] text-blue-700 font-bold">Scope & Rates →</span>
+                <span className="font-extrabold text-xs sm:text-sm text-slate-900 block truncate group-hover:text-blue-700 transition-colors">Plumber</span>
+                <span className="text-[11px] text-blue-700 font-bold">From ₹149 • Scope →</span>
               </div>
             </div>
 
@@ -479,71 +491,91 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                 const svc = professionalHomeServices.find(s => s.id === 's-hourly');
                 if (svc) setActiveScopeService(svc);
               }}
-              className="p-3 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition-all cursor-pointer flex items-center gap-2.5 group hover:shadow-xs"
+              className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-rose-300 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-3 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-rose-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
                 🤝
               </div>
               <div className="min-w-0">
-                <span className="font-extrabold text-xs text-slate-900 block truncate group-hover:text-rose-700 transition-colors">Caretaker</span>
-                <span className="text-[10px] text-rose-700 font-bold">Scope & Rates →</span>
+                <span className="font-extrabold text-xs sm:text-sm text-slate-900 block truncate group-hover:text-rose-700 transition-colors">Caretaker</span>
+                <span className="text-[11px] text-rose-700 font-bold">From ₹349 • Scope →</span>
               </div>
             </div>
 
+          </div>
+
+          {/* 3-Point Quick Guarantee Strip */}
+          <div className="pt-2 flex items-center justify-center flex-wrap gap-4 sm:gap-8 text-xs text-slate-500 font-semibold">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#04b565]" />
+              <span>100% Police Verified</span>
+            </span>
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <Timer className="w-4 h-4 text-amber-500" />
+              <span>10-15 Min Fast Dispatch</span>
+            </span>
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <CreditCard className="w-4 h-4 text-blue-500" />
+              <span>Pay After Service (UPI/Cash)</span>
+            </span>
           </div>
 
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. CHORES GRID (SIMPLE, CLEAN, WITH REAL "+ ADD" BUTTONS) */}
+      {/* 4. CHORES GRID (POLISHED, CLEAN WITH TACTILE "+ ADD" BUTTONS) */}
       {/* ========================================================================= */}
-      <section id="services" className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <section id="services" className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         
-        {/* Category Tabs */}
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        {/* Category Tabs & Status */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
             {[
-              { id: 'all', label: 'All Services' },
-              { id: 'cleaning', label: 'Cleaning & Maid' },
-              { id: 'kitchen', label: 'Kitchen & Cooking' },
-              { id: 'repairs', label: 'Repairs & Electrician' }
+              { id: 'all', label: 'All Services', icon: '⚡' },
+              { id: 'cleaning', label: 'Cleaning & Maid', icon: '🧹' },
+              { id: 'kitchen', label: 'Kitchen & Cooking', icon: '🍳' },
+              { id: 'repairs', label: 'Repairs & Electrician', icon: '🔧' }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setSelectedFilter(tab.id as any)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
                   selectedFilter === tab.id
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                 }`}
               >
-                {tab.label}
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
 
-          <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-            {filteredServices.length} options available • Tap card for Do's & Don'ts
+          <span className="text-xs text-slate-500 font-semibold hidden sm:flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>{filteredServices.length} services available • Click card for Do's & Don'ts</span>
           </span>
         </div>
 
-        {/* Clean Chores Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        {/* Polished Chores Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
           {filteredServices.map(item => {
             const isSelected = stackedChores.some(c => c.id === item.id);
             return (
               <div
                 key={item.id}
                 onClick={() => setActiveScopeService(item)}
-                className={`bg-white rounded-2xl p-3 border transition-all flex flex-col justify-between cursor-pointer group hover:shadow-md hover:border-emerald-300 ${
+                className={`bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-300 flex flex-col justify-between cursor-pointer group shadow-2xs hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-1 ${
                   isSelected
                     ? 'border-[#04b565] ring-2 ring-emerald-500/20 shadow-sm'
-                    : 'border-slate-200'
+                    : 'border-slate-200/80 hover:border-emerald-300'
                 }`}
               >
-                {/* 3D Image */}
-                <div className="aspect-square w-full rounded-xl bg-slate-50 flex items-center justify-center p-2 mb-2 relative overflow-hidden">
+                {/* 3D Image & Badges */}
+                <div className="aspect-square w-full rounded-xl bg-slate-50/80 group-hover:bg-emerald-50/30 flex items-center justify-center p-2.5 mb-2.5 relative overflow-hidden transition-colors">
                   <img 
                     src={item.image} 
                     alt={item.title} 
@@ -551,46 +583,50 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                     loading="lazy"
                   />
                   {isSelected && (
-                    <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#04b565] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+                    <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#04b565] text-white flex items-center justify-center text-[10px] font-black shadow-xs">
                       ✓
                     </span>
                   )}
-                  {/* Subtle Scope Badge */}
-                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[9px] font-bold text-emerald-800 border border-emerald-200/60 shadow-2xs group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                  {/* Scope Badge */}
+                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[9px] font-bold text-emerald-800 border border-emerald-200/70 shadow-2xs group-hover:bg-[#04b565] group-hover:text-white group-hover:border-transparent transition-all">
                     Do's & Don'ts ℹ️
                   </span>
                 </div>
 
                 {/* Details */}
                 <div className="space-y-1">
-                  <h3 className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-emerald-700 transition-colors">
+                  <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-emerald-700 transition-colors">
                     {lang === 'en' ? item.title : item.title_hi}
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-semibold">
-                    ₹{item.startingPrice} <span className="text-slate-300">•</span> {item.duration_mins}m
-                  </p>
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <span className="font-black text-slate-900 text-sm">₹{item.startingPrice}</span>
+                    <span className="text-[11px] text-slate-500 font-semibold flex items-center gap-0.5">
+                      <Clock className="w-3 h-3 text-slate-400" />
+                      <span>{item.duration_mins}m</span>
+                    </span>
+                  </div>
                 </div>
 
-                {/* Clean + Add / Remove Button */}
+                {/* Tactile + Add / Remove Button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleChoreInStack(item);
                   }}
-                  className={`mt-3 w-full py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 ${
+                  className={`mt-3 w-full py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer ${
                     isSelected
                       ? 'bg-emerald-50 text-[#04b565] border border-emerald-300 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300'
-                      : 'bg-slate-100 hover:bg-[#04b565] hover:text-white text-slate-800'
+                      : 'bg-slate-100 hover:bg-[#04b565] hover:text-white text-slate-800 shadow-2xs'
                   }`}
                 >
                   {isSelected ? (
                     <>
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
                       <span>Added</span>
                     </>
                   ) : (
                     <>
-                      <Plus className="w-3.5 h-3.5" />
+                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
                       <span>Add</span>
                     </>
                   )}
@@ -603,126 +639,310 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       </section>
 
       {/* ========================================================================= */}
+      {/* 5. COVERAGE AREAS & HYPERLOCAL HUBS (CLEAN, SCAN-FRIENDLY & MODERN) */}
       {/* ========================================================================= */}
-      {/* 5. MINIMAL 3-STEP "HOW IT WORKS" */}
+      <section id="coverage" className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-slate-100">
+        <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-2xs">
+            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Hyperlocal Micro-Hubs Active</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Active Coverage Areas
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Dispatched within 10 to 15 minutes from our dedicated staging hubs across Greater Noida & NCR.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          
+          {/* Greater Noida Primary Hub */}
+          <div className="p-5 rounded-2xl bg-white border-2 border-emerald-500/30 shadow-xs hover:shadow-md transition-all space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-base shadow-2xs">
+                  📍
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">Greater Noida</h3>
+                  <span className="text-[10px] text-emerald-700 font-bold">Primary Launch Cluster</span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-200">
+                ⚡ 10-15 Min
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 font-medium">
+              Immediate doorstep dispatch across:
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {[
+                'Ansal Golf Links 1',
+                'Pari Chowk',
+                'Knowledge Park',
+                'Alpha 1 & 2',
+                'Beta 1 & 2',
+                'Gamma 1 & 2',
+                'Delta 1 & 2',
+                'Omega & Chi',
+                'Gaur City (Gr. Noida W)'
+              ].map(area => (
+                <span 
+                  key={area}
+                  onClick={() => onOpenLocationModal && onOpenLocationModal()}
+                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200/80 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
+                >
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Noida Expressway Hub */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-base shadow-2xs">
+                  🚗
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">Noida Expressway</h3>
+                  <span className="text-[10px] text-slate-500 font-medium">Fast Dispatch Corridor</span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-black border border-blue-200">
+                ~20 Min
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 font-medium">
+              Key residential sectors served:
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {[
+                'Sector 135 Expressway',
+                'Sector 18 (Atta)',
+                'Sector 62 IT Hub',
+                'Sector 76',
+                'Sector 128 Wish Town'
+              ].map(area => (
+                <span 
+                  key={area}
+                  onClick={() => onOpenLocationModal && onOpenLocationModal()}
+                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200/80 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
+                >
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* South Delhi Hub */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-base shadow-2xs">
+                  🏙️
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">South Delhi</h3>
+                  <span className="text-[10px] text-slate-500 font-medium">Active Service Zone</span>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-200">
+                Scheduled & Fast
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 font-medium">
+              Colonies & university clusters:
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {[
+                'Ber Sarai (IIT)',
+                'Munirka',
+                'Hauz Khas',
+                'Green Park',
+                'Safdarjung Enclave',
+                'Malviya Nagar & Saket'
+              ].map(area => (
+                <span 
+                  key={area}
+                  onClick={() => onOpenLocationModal && onOpenLocationModal()}
+                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-amber-50 hover:text-amber-700 border border-slate-200/80 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
+                >
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Auto-detect prompt */}
+        <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs text-slate-700 font-semibold">
+              Current Active Hub: <strong className="text-slate-900 font-extrabold">{activeCityZone}</strong>
+            </span>
+          </div>
+          <button
+            onClick={onOpenLocationModal}
+            className="px-4 py-2 rounded-xl bg-white border border-slate-300 hover:border-emerald-500 text-xs font-black text-slate-800 hover:text-emerald-700 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Change / Auto-Detect Location</span>
+          </button>
+        </div>
+      </section>
+
       {/* ========================================================================= */}
-      <section id="how-it-works" className="max-w-4xl mx-auto px-4 sm:px-6 py-10 border-t border-slate-100">
-        <div className="text-center mb-6">
-          <h3 className="text-lg font-black text-slate-900">How QuickServe Works</h3>
-          <p className="text-xs text-slate-500 mt-0.5">Simple 3-step home service booking</p>
+      {/* 6. POLISHED 3-STEP "HOW IT WORKS" */}
+      {/* ========================================================================= */}
+      <section id="how-it-works" className="max-w-4xl mx-auto px-4 sm:px-6 py-12 border-t border-slate-100">
+        <div className="text-center mb-8 space-y-1">
+          <h3 className="text-xl sm:text-2xl font-black text-slate-900">How QuickServe Works</h3>
+          <p className="text-xs sm:text-sm text-slate-500">Simple 3-step home service booking with zero advance payment</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-center sm:text-left">
           
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-            <span className="text-xs font-black text-[#04b565]">01. SELECT</span>
-            <h4 className="font-extrabold text-slate-900 text-sm">Choose Services</h4>
-            <p className="text-xs text-slate-500">Pick any individual chore or stack multiple services in one visit.</p>
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2">
+            <span className="text-[11px] font-black text-[#04b565] tracking-wider uppercase block">01. SELECT</span>
+            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Choose Services</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">Pick any single chore or stack multiple home tasks into one single visit.</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-            <span className="text-xs font-black text-[#f9ba17]">02. DISPATCH</span>
-            <h4 className="font-extrabold text-slate-900 text-sm">Verified Pro Assigned</h4>
-            <p className="text-xs text-slate-500">Background-verified professional dispatched promptly to your doorstep.</p>
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2">
+            <span className="text-[11px] font-black text-amber-500 tracking-wider uppercase block">02. DISPATCH</span>
+            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Verified Partner Assigned</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">A police-verified, background-checked professional is dispatched in minutes.</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-            <span className="text-xs font-black text-blue-600">03. CASHLESS</span>
-            <h4 className="font-extrabold text-slate-900 text-sm">Pay After Work</h4>
-            <p className="text-xs text-slate-500">Inspect the work and settle easily via UPI, Card, or Cash on service.</p>
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2">
+            <span className="text-[11px] font-black text-blue-600 tracking-wider uppercase block">03. PAY AFTER WORK</span>
+            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Inspect & Settle</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">Verify the quality of work first, then pay easily via UPI, Card, or Cash on site.</p>
           </div>
 
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 5b. "WHY QUICKSERVE" */}
+      {/* 7. "WHY QUICKSERVE" */}
       {/* ========================================================================= */}
-      <section id="why-quickserve" className="max-w-4xl mx-auto px-4 sm:px-6 py-10 border-t border-slate-100">
-        <div className="text-center mb-6">
-          <h3 className="text-lg font-black text-slate-900">Why QuickServe</h3>
-          <p className="text-xs text-slate-500 mt-0.5">Built for speed, safety, and transparent home help</p>
+      <section id="why-quickserve" className="max-w-4xl mx-auto px-4 sm:px-6 py-12 border-t border-slate-100">
+        <div className="text-center mb-8 space-y-1">
+          <h3 className="text-xl sm:text-2xl font-black text-slate-900">Why QuickServe</h3>
+          <p className="text-xs sm:text-sm text-slate-500">Built for speed, safety, and transparent home help</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 text-center sm:text-left">
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-[#04b565] flex items-center justify-center mx-auto sm:mx-0">
-              <ShieldCheck className="w-5 h-5" />
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2.5 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#04b565] flex items-center justify-center mx-auto sm:mx-0 shadow-2xs">
+              <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <h4 className="font-extrabold text-slate-900 text-sm">100% Verified Pros</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">Police-checked, identity-verified professionals with verified skill ratings.</p>
+            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">100% Verified Pros</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">Aadhaar verified and background-checked professionals with strict quality checks.</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 text-center sm:text-left">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto sm:mx-0">
-              <CreditCard className="w-5 h-5" />
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2.5 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto sm:mx-0 shadow-2xs">
+              <CreditCard className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <h4 className="font-extrabold text-slate-900 text-sm">Transparent Pricing</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">Standard upfront rates with zero surprise charges or surge fees.</p>
+            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Transparent Pricing</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">Standard upfront pricing with zero surge fees, hidden charges, or visit surprise costs.</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 text-center sm:text-left">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto sm:mx-0">
-              <UserCheck className="w-5 h-5" />
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2.5 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto sm:mx-0 shadow-2xs">
+              <UserCheck className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <h4 className="font-extrabold text-slate-900 text-sm">Pay After Service</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">Check the quality first, pay only after you are completely satisfied.</p>
+            <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Pay After Service</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">Never pay upfront. Complete work first, inspect result, and settle via UPI or cash.</p>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 6. MINIMAL APP DOWNLOAD STRIP */}
+      {/* 8. MODERN APP DOWNLOAD STRIP */}
       {/* ========================================================================= */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <div className="p-4 sm:p-5 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h4 className="font-extrabold text-sm text-white">QuickServe Android App</h4>
-            <p className="text-xs text-slate-400">Track professionals live on map and rebook your favorites.</p>
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl border border-slate-800 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+              <img 
+                src="/images/quickserve_app_icon.png" 
+                alt="QuickServe App" 
+                className="w-10 h-10 rounded-xl object-contain" 
+              />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 justify-center sm:justify-start">
+                <h4 className="font-black text-sm sm:text-base text-white">QuickServe Android App</h4>
+                <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  v2.1
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Track partners live with GPS, manage orders, and rebook in seconds.</p>
+            </div>
           </div>
           <a
             href="/downloads/QuickServe_v2.apk"
             download="QuickServe_v2.apk"
-            className="px-4 py-2 bg-[#04b565] hover:bg-[#039e57] text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+            className="px-5 py-3 bg-[#04b565] hover:bg-[#039e57] active:scale-95 text-white font-black text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all flex-shrink-0"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download APK</span>
+            <Download className="w-4 h-4" />
+            <span>Download APK (14.6 MB)</span>
           </a>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 7. MINIMAL CLEAN FOOTER */}
+      {/* 9. MINIMAL CLEAN FOOTER */}
       {/* ========================================================================= */}
-      <footer className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-6 border-t border-slate-100 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-8 border-t border-slate-200/80 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-extrabold text-slate-900">QuickServe</span>
+          <span className="font-black text-slate-900 text-sm">QuickServe</span>
           <span>•</span>
-          <span>Home & Local Services</span>
+          <span>Hyperlocal Home Services</span>
+          <span>•</span>
+          <span className="text-emerald-700 font-semibold">Greater Noida & NCR</span>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-semibold">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
+          <a href="#services" className="hover:text-slate-900 transition-colors">
+            Services
+          </a>
+          <a href="#coverage" className="hover:text-slate-900 transition-colors">
+            Coverage Areas
+          </a>
           <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
             How It Works
           </a>
           <a href="#why-quickserve" className="hover:text-slate-900 transition-colors">
             Why QuickServe
           </a>
-          <button onClick={onNavigateToProRegister} className="hover:text-slate-900 transition-colors">
+          <button onClick={onNavigateToProRegister} className="hover:text-slate-900 transition-colors cursor-pointer">
             Partner Onboarding
           </button>
           {onNavigateToAdmin && (
-            <button onClick={onNavigateToAdmin} className="hover:text-slate-900 transition-colors">
+            <button onClick={onNavigateToAdmin} className="hover:text-slate-900 transition-colors cursor-pointer">
               Admin
             </button>
           )}
           {onNavigateToProApp && (
-            <button onClick={onNavigateToProApp} className="hover:text-slate-900 transition-colors">
+            <button onClick={onNavigateToProApp} className="hover:text-slate-900 transition-colors cursor-pointer">
               Pro App
             </button>
           )}
         </div>
 
-        <span>© 2026 QuickServe India</span>
+        <span>© 2026 QuickServe Technologies</span>
       </footer>
 
       {/* ========================================================================= */}
