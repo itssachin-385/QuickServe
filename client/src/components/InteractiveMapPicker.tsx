@@ -21,6 +21,44 @@ import {
   GooglePlaceSuggestion 
 } from '../utils/googleMapsService';
 import { parseSuggestionItem } from '../utils/locationHelper';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
+
+const getHighAccuracyPosition = async (): Promise<{ lat: number; lon: number } | null> => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const perm = await Geolocation.checkPermissions();
+      if (perm.location !== 'granted') {
+        await Geolocation.requestPermissions();
+      }
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0
+      });
+      if (pos?.coords) {
+        return { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      }
+    } catch (e) {
+      console.warn('Capacitor native geolocation error, falling back:', e);
+    }
+  }
+
+  if (typeof navigator !== 'undefined' && navigator.geolocation) {
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        (err) => {
+          console.warn('Browser geolocation error:', err);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    });
+  }
+
+  return null;
+};
 
 interface InteractiveMapPickerProps {
   initialLat?: number;
@@ -135,20 +173,23 @@ export const InteractiveMapPicker: React.FC<InteractiveMapPickerProps> = ({
     // Initial address fetch
     fetchAddressForCoordinates(defaultLat, defaultLon);
 
-    // Auto-detect GPS on first load if no coordinates provided
-    if (!initialLat && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          map.setView([latitude, longitude], 17, { animate: true });
-          setCurrentCoords({ lat: latitude, lon: longitude });
-          fetchAddressForCoordinates(latitude, longitude);
-        },
-        () => {
-          // keep default
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+    // Auto-detect GPS on first load if no coordinates provided OR if coordinates are default
+    const isDefaultCoordinates = !initialLat || !initialLon || 
+      (Math.abs(initialLat - 28.5478) < 0.001 && Math.abs(initialLon - 77.1824) < 0.001);
+
+    if (isDefaultCoordinates) {
+      setIsLocating(true);
+      getHighAccuracyPosition().then((pos) => {
+        if (pos && mapInstanceRef.current) {
+          mapInstanceRef.current.setView([pos.lat, pos.lon], 17, { animate: true });
+          setCurrentCoords({ lat: pos.lat, lon: pos.lon });
+          fetchAddressForCoordinates(pos.lat, pos.lon);
+        }
+      }).catch((err) => {
+        console.warn('Initial GPS auto-detect failed:', err);
+      }).finally(() => {
+        setIsLocating(false);
+      });
     }
 
     return () => {
@@ -156,28 +197,25 @@ export const InteractiveMapPicker: React.FC<InteractiveMapPickerProps> = ({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, [defaultLat, defaultLon, fetchAddressForCoordinates, initialLat]);
+  }, [defaultLat, defaultLon, fetchAddressForCoordinates, initialLat, initialLon]);
 
   // Recenter to Current GPS
-  const handleRecenterGPS = () => {
-    if (!navigator.geolocation) return;
+  const handleRecenterGPS = async () => {
     setIsLocating(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
+    try {
+      const pos = await getHighAccuracyPosition();
+      if (pos) {
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([latitude, longitude], 18, { duration: 1.2 });
+          mapInstanceRef.current.flyTo([pos.lat, pos.lon], 18, { duration: 1.2 });
         }
-        setCurrentCoords({ lat: latitude, lon: longitude });
-        fetchAddressForCoordinates(latitude, longitude);
-      },
-      (err) => {
-        console.warn('GPS recenter failed:', err);
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-    );
+        setCurrentCoords({ lat: pos.lat, lon: pos.lon });
+        await fetchAddressForCoordinates(pos.lat, pos.lon);
+      }
+    } catch (err) {
+      console.warn('GPS recenter failed:', err);
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   // Search input debouncer

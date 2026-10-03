@@ -23,7 +23,10 @@ export const LocationModal: React.FC<LocationModalProps> = ({
       const saved = localStorage.getItem('quickserve_doorstep_details');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.lat && parsed.lon) {
+        const full = `${parsed.fullCompleteAddress || ''} ${parsed.areaCity || ''} ${parsed.landmark || ''}`.toLowerCase();
+        if (full.includes('aishani') || full.includes('château') || full.includes('chateau') || full.includes('ifs villas')) {
+          setInitialCoords({});
+        } else if (parsed.lat && parsed.lon) {
           setInitialCoords({ lat: parsed.lat, lon: parsed.lon });
         }
       }

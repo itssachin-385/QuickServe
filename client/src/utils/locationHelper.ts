@@ -125,14 +125,14 @@ const NCR_SECTOR_ZONES: SectorZone[] = [
     defaultGali: 'Sector B / C Pocket Corridor',
     defaultLandmark: 'Near Ambience & Promenade Malls'
   },
-  // 1. Omega 1 (User's location: ~28.4558, 77.5063 - Om Proptech, AWHO Apartments, Gurjinder Vihar, Expo Mart)
+  // 1. Ansal Golf Links 1 (User's location: ~28.452, 77.506 - Om Proptech, MG Rd, AWHO, Expo Mart)
   {
-    name: 'Omega 1',
+    name: 'Ansal Golf Links 1',
     city: 'Greater Noida',
     minLat: 28.4480, maxLat: 28.4680,
     minLon: 77.4980, maxLon: 77.5250,
-    defaultGali: 'Block AC, Omega 1 (near Expo Mart)',
-    defaultLandmark: 'Near India Expo Mart & AWHO Apartments'
+    defaultGali: 'Block A / MG Road, Ansal Golf Links 1',
+    defaultLandmark: 'Near Om Proptech & Shree Niwasm'
   },
   // 2. Knowledge Park I, II, III (Sharda, Galgotias, Expo Mart Metro)
   {
@@ -913,9 +913,9 @@ export function sanitizeNoidaLocationStorage(): void {
                            .replace(/psi\s*i/gi, 'Block AC, Omega 1');
           localStorage.setItem(key, cleaned);
         }
-        // Purge Indiranagar Bengaluru default
-        if (/indiranagar/i.test(cleaned)) {
-          cleaned = 'Omega 1, Greater Noida';
+        // Purge Indiranagar Bengaluru default and archaic / misidentified localities
+        if (/indiranagar|shafipur|château|chateau|aishani|ifs villas/i.test(cleaned)) {
+          cleaned = 'Ansal Golf Links 1, Greater Noida';
           localStorage.setItem(key, cleaned);
         }
         // Correct Noida sectors mislabeled as Greater Noida
@@ -943,33 +943,33 @@ export function sanitizeNoidaLocationStorage(): void {
         let changed = false;
 
         // Clean areaCity
-        if (parsed.areaCity && /shafipur|psi i/i.test(parsed.areaCity)) {
-          parsed.areaCity = 'Omega 1, Greater Noida';
+        if (parsed.areaCity && /shafipur|psi i|château|chateau|aishani|ifs villas/i.test(parsed.areaCity)) {
+          parsed.areaCity = 'Ansal Golf Links 1, Greater Noida';
           changed = true;
         } else if (parsed.areaCity && /indiranagar/i.test(parsed.areaCity)) {
-          parsed.areaCity = 'Omega 1, Greater Noida';
+          parsed.areaCity = 'Ansal Golf Links 1, Greater Noida';
           changed = true;
         }
 
         // Clean streetGali
-        if (parsed.streetGali && /psi i/i.test(parsed.streetGali)) {
-          parsed.streetGali = 'Block AC, Omega 1 (near Expo Mart)';
+        if (parsed.streetGali && /psi i|ifs villas|aishani|château|chateau/i.test(parsed.streetGali)) {
+          parsed.streetGali = 'Block A / MG Road, Ansal Golf Links 1';
           changed = true;
         }
 
         // Clean landmark
-        if (!parsed.landmark || /indiranagar/i.test(parsed.landmark)) {
-          parsed.landmark = 'Near India Expo Mart & AWHO Apartments';
+        if (!parsed.landmark || /indiranagar|aishani|ifs villas|château|chateau/i.test(parsed.landmark)) {
+          parsed.landmark = 'Near Om Proptech & Shree Niwasm';
           changed = true;
         }
 
         // Clean fullCompleteAddress
-        if (parsed.fullCompleteAddress && /shafipur|psi i|indiranagar/i.test(parsed.fullCompleteAddress)) {
+        if (parsed.fullCompleteAddress && /shafipur|psi i|indiranagar|château|chateau|aishani|ifs villas/i.test(parsed.fullCompleteAddress)) {
           parsed.fullCompleteAddress = [
             parsed.houseNo ? `House/Flat: ${parsed.houseNo}` : null,
-            parsed.streetGali ? `Gali/Road: ${parsed.streetGali}` : 'Gali/Road: Block AC, Omega 1',
-            parsed.landmark ? `Landmark: ${parsed.landmark}` : 'Landmark: Near India Expo Mart',
-            'Omega 1, Greater Noida'
+            'Block A, MG Road',
+            'Near Om Proptech & Shree Niwasm',
+            'Ansal Golf Links 1, Greater Noida'
           ].filter(Boolean).join(', ');
           changed = true;
         }

@@ -96,8 +96,14 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
   } else if (combinedText.includes('r.k. puram') || combinedText.includes('rk puram')) {
     sectorOrArea = 'R.K. Puram';
     city = 'New Delhi';
-  } else if (combinedText.includes('omega 1') || combinedText.includes('shafipur')) {
-    sectorOrArea = 'Omega 1';
+  } else if (combinedText.includes('ansal golf') || combinedText.includes('golf link') || combinedText.includes('golf links') || combinedText.includes('om proptech') || combinedText.includes('shreeniwasm') || combinedText.includes('wayfarer')) {
+    sectorOrArea = 'Ansal Golf Links 1';
+    city = 'Greater Noida';
+  } else if (combinedText.includes('omega 1') || combinedText.includes('shafipur') || combinedText.includes('psi i')) {
+    sectorOrArea = 'Ansal Golf Links 1';
+    city = 'Greater Noida';
+  } else if (combinedText.includes('ifs villas') || combinedText.includes('aishani') || combinedText.includes('château') || combinedText.includes('chateau')) {
+    sectorOrArea = 'IFS Villas';
     city = 'Greater Noida';
   } else if (combinedText.includes('pari chowk')) {
     sectorOrArea = 'Pari Chowk';
@@ -194,22 +200,51 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
     streetGali = displayName;
   }
 
-  // Construct landmark
+  const placeTypes = place.types || [];
+  const isHousing = placeTypes.includes('housing_complex') || placeTypes.includes('residential');
+  const isCommercialOrPrivate = 
+    placeTypes.includes('liquor_store') || placeTypes.includes('store') || 
+    placeTypes.includes('restaurant') || placeTypes.includes('food') || 
+    placeTypes.includes('health') || placeTypes.includes('doctor') || 
+    placeTypes.includes('dentist') || placeTypes.includes('bank') || 
+    placeTypes.includes('finance') || placeTypes.includes('school');
+
+  // Resolved display title (like Google Maps)
+  let resolvedDisplayTitle = '';
+  if (sectorOrArea) {
+    if (sublocality2 && !sectorOrArea.toLowerCase().includes(sublocality2.toLowerCase())) {
+      resolvedDisplayTitle = `${sublocality2}, ${sectorOrArea}`;
+    } else {
+      resolvedDisplayTitle = sectorOrArea;
+    }
+  } else if (sublocality1) {
+    resolvedDisplayTitle = sublocality2 ? `${sublocality2}, ${sublocality1}` : sublocality1;
+  } else if (isHousing && displayName) {
+    resolvedDisplayTitle = displayName;
+  } else if (neighborhood) {
+    resolvedDisplayTitle = neighborhood;
+  } else if (displayName && !isCommercialOrPrivate) {
+    resolvedDisplayTitle = displayName;
+  } else {
+    resolvedDisplayTitle = city || 'Service Area';
+  }
+
+  // Construct landmark: store POIs in landmark so they don't overwrite locality name
   let landmark = landmarkComp;
-  if (!landmark && displayName && displayName !== streetGali) {
+  if (!landmark && displayName && displayName !== resolvedDisplayTitle) {
     landmark = `Near ${displayName}`;
   } else if (!landmark && sectorOrArea) {
     landmark = `Near ${sectorOrArea} Market`;
   }
 
-  // Formatted Area / City (e.g. "Ber Sarai, New Delhi" or "Omega 1, Greater Noida")
-  let areaCity = `${sectorOrArea}, ${city}`;
-  if (sectorOrArea.toLowerCase() === city.toLowerCase()) {
+  // Formatted Area / City (e.g. "Ansal Golf Links 1, Greater Noida" or "Ber Sarai, New Delhi")
+  let areaCity = `${sectorOrArea || resolvedDisplayTitle}, ${city}`;
+  if (sectorOrArea && sectorOrArea.toLowerCase() === city.toLowerCase()) {
     areaCity = city;
   }
 
   return {
-    displayName: displayName || sectorOrArea,
+    displayName: resolvedDisplayTitle,
     formattedAddress: place.formattedAddress || areaCity,
     houseNo: premise,
     streetGali: streetGali,
@@ -287,11 +322,11 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
         'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.addressComponents,places.location,places.types'
       },
       body: JSON.stringify({
-        maxResultCount: 5,
+        maxResultCount: 8,
         locationRestriction: {
           circle: {
             center: { latitude: lat, longitude: lon },
-            radius: 120.0
+            radius: 200.0
           }
         }
       })
@@ -300,6 +335,23 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     if (response.ok) {
       const data = await response.json();
       if (data.places && data.places.length > 0) {
+        // Consensus sublocality across nearby places (e.g. "Ansal Golf Links 1")
+        const sublocCounts: Record<string, number> = {};
+        for (const p of data.places) {
+          const s1 = p.addressComponents?.find((c: any) => c.types && c.types.includes('sublocality_level_1'))?.longText;
+          if (s1 && !/district|division|gautam/i.test(s1)) {
+            sublocCounts[s1] = (sublocCounts[s1] || 0) + 1;
+          }
+        }
+        let topSubloc = '';
+        let topCount = 0;
+        for (const [sub, cnt] of Object.entries(sublocCounts)) {
+          if (cnt > topCount) {
+            topSubloc = sub;
+            topCount = cnt;
+          }
+        }
+
         // Sort places by true Euclidean distance to (lat, lon)
         const sortedPlaces = [...data.places].sort((a, b) => {
           const distA = Math.hypot((a.location?.latitude ?? lat) - lat, (a.location?.longitude ?? lon) - lon);
@@ -311,8 +363,19 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
         const nearest = sortedPlaces[0];
         const parsed = parseGooglePlace(nearest, lat, lon);
 
+        // If strong consensus sublocality found (e.g. "Ansal Golf Links 1")
+        if (topSubloc && topCount >= 2) {
+          if (/ansal golf/i.test(topSubloc)) {
+            parsed.displayName = 'Ansal Golf Links 1';
+            parsed.areaCity = 'Ansal Golf Links 1, Greater Noida';
+          } else if (!parsed.displayName.toLowerCase().includes(topSubloc.toLowerCase())) {
+            parsed.displayName = topSubloc;
+            parsed.areaCity = `${topSubloc}, ${parsed.city}`;
+          }
+        }
+
         // If local ground-truth bounding box (e.g. Ber Sarai) matched, ensure areaCity is exact:
-        if (localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'Sector 18') {
+        if (localExact && localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'Sector 18') {
           parsed.areaCity = localExact.formattedArea;
           parsed.city = localExact.city;
           if (!parsed.streetGali) parsed.streetGali = localExact.suggestedGali || '';
