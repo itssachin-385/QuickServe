@@ -1476,7 +1476,15 @@ app.use((err, req, res, next) => {
 
 // 3. Catch-all fallback route to serve React SPA for browser page navigation
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  const distIndex = path.join(__dirname, '../client/dist/index.html');
+  const publicIndex = path.join(__dirname, 'public/index.html');
+  if (fs.existsSync(distIndex)) {
+    return res.sendFile(distIndex);
+  }
+  if (fs.existsSync(publicIndex)) {
+    return res.sendFile(publicIndex);
+  }
+  res.sendFile(distIndex);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
