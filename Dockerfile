@@ -8,7 +8,7 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 
 # Install dependencies
-RUN npm install
+RUN npm install --ignore-scripts
 RUN cd client && npm install
 
 # Copy source code
@@ -27,7 +27,7 @@ ENV PORT=10000
 
 # Copy root package and install production dependencies only
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install --omit=dev --ignore-scripts
 
 # Copy built server and client artifacts
 COPY server ./server

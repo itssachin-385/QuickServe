@@ -1,0 +1,11 @@
+node_modules
+client/node_modules
+client/dist
+.git
+.github
+client/android
+*.apk
+!server/public/QuickServe_v2.apk
+handbook_*.html
+*.tmp*
+*.bak
