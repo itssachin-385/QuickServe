@@ -90,7 +90,7 @@ export const ProfessionalRegister: React.FC<ProfessionalRegisterProps> = ({
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold mb-3 border border-emerald-300">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Join Bengaluru's Leading On-Demand Network</span>
+            <span>Join NCR's Leading On-Demand Network</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Turn your skills into daily local opportunities.
@@ -108,7 +108,7 @@ export const ProfessionalRegister: React.FC<ProfessionalRegisterProps> = ({
             </div>
             <h2 className="text-2xl font-bold text-slate-900">Application Submitted Successfully!</h2>
             <p className="text-xs text-slate-600 max-w-md mx-auto">
-              Your application reference is <strong className="font-mono text-brand-600">{applicationId}</strong>. Our Bengaluru Ground Onboarding Team will review your KYC documents and call you for an in-person trade check within 24 hours.
+              Your application reference is <strong className="font-mono text-brand-600">{applicationId}</strong>. Our Ground Onboarding Team will review your KYC documents and call you for an in-person trade check within 24 hours.
             </p>
 
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left text-xs max-w-md mx-auto space-y-2">
@@ -319,7 +319,7 @@ export const ProfessionalRegister: React.FC<ProfessionalRegisterProps> = ({
                 <p className="text-xs text-slate-500">Pick where you want to receive customer calls without excessive travel.</p>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Primary Operational Cluster (Bengaluru Launch)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Primary Operational Cluster (Greater Noida & NCR Launch)</label>
                   <select
                     value={selectedZoneId}
                     onChange={(e) => setSelectedZoneId(e.target.value)}

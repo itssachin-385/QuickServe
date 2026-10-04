@@ -76,56 +76,56 @@ let professionals = db.getProfessionals();
 let bookings = db.getBookings();
 let supportTickets = db.getSupportTickets();
 
-// QuickServe Hyperlocal Micro-Hubs (10-15 Min Dispatch Clusters)
+// QuickServe Hyperlocal Micro-Hubs (10-15 Min Dispatch Clusters in Greater Noida & NCR)
 let microHubs = [
   {
-    id: 'hub-indiranagar-01',
-    name: 'Indiranagar Cluster Hub 01 (100ft Rd / Defence Colony)',
-    locality: 'Indiranagar',
-    city: 'Bengaluru',
-    lat: 12.9719,
-    lng: 77.6412,
+    id: 'hub-gnoida-01',
+    name: 'Ansal Golf Links 1 & Pari Chowk Cluster Hub 01',
+    locality: 'Ansal Golf Links 1, Greater Noida',
+    city: 'Greater Noida & NCR',
+    lat: 28.4744,
+    lng: 77.5040,
     active_pros_count: 8,
-    dispatched_pros_count: 3,
-    available_pros_count: 5,
+    dispatched_pros_count: 2,
+    available_pros_count: 6,
     average_dispatch_seconds: 42,
-    staging_kits_count: 14,
-    camera_units_available: 6
+    staging_kits_count: 15,
+    camera_units_available: 8
   },
   {
-    id: 'hub-koramangala-02',
-    name: 'Koramangala Cluster Hub 02 (4th Block / Sony World)',
-    locality: 'Koramangala',
-    city: 'Bengaluru',
-    lat: 12.9352,
-    lng: 77.6245,
+    id: 'hub-noida-02',
+    name: 'Sector 18 & Expressway Cluster Hub 02',
+    locality: 'Sector 18 & Sector 135, Noida',
+    city: 'Noida & NCR',
+    lat: 28.5708,
+    lng: 77.3271,
     active_pros_count: 7,
     dispatched_pros_count: 2,
     available_pros_count: 5,
-    average_dispatch_seconds: 48,
+    average_dispatch_seconds: 45,
     staging_kits_count: 12,
-    camera_units_available: 5
+    camera_units_available: 6
   },
   {
-    id: 'hub-hsr-03',
-    name: 'HSR Layout Cluster Hub 03 (Sector 1 / 27th Main)',
-    locality: 'HSR Layout',
-    city: 'Bengaluru',
-    lat: 12.9121,
-    lng: 77.6446,
-    active_pros_count: 9,
-    dispatched_pros_count: 4,
+    id: 'hub-delhi-03',
+    name: 'South Delhi & Ber Sarai Cluster Hub 03',
+    locality: 'Ber Sarai, Munirka & Hauz Khas',
+    city: 'Delhi NCR',
+    lat: 28.5450,
+    lng: 77.1850,
+    active_pros_count: 6,
+    dispatched_pros_count: 1,
     available_pros_count: 5,
-    average_dispatch_seconds: 39,
-    staging_kits_count: 16,
-    camera_units_available: 8
+    average_dispatch_seconds: 48,
+    staging_kits_count: 10,
+    camera_units_available: 5
   }
 ];
 
 // Hubs Endpoint
 app.get('/api/hubs', (req, res) => {
   res.json({
-    city: 'Bengaluru',
+    city: 'Greater Noida & NCR',
     total_hubs: microHubs.length,
     hubs: microHubs
   });
@@ -134,36 +134,30 @@ app.get('/api/hubs', (req, res) => {
 // ==========================================
 // 0. CUSTOMER AUTHENTICATION (Zomato / Swiggy Style OTP Login)
 // ==========================================
-let customers = [
-  {
-    id: 'cust-ananya',
-    name: 'Ananya Sharma',
-    phone: '9845011223',
-    email: 'ananya.sharma@gmail.com',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    saved_addresses: [
-      {
-        id: 'addr-home',
-        label: 'Home',
-        flat: 'Flat 402, Sai Orchid',
-        area: '12th Main, Indiranagar',
-        city: 'Bengaluru',
-        landmark: 'Near Corner House',
-        is_default: true
-      },
-      {
-        id: 'addr-work',
-        label: 'Work',
-        flat: '4th Floor, Salarpuria Towers',
-        area: '80ft Road, Koramangala 4th Block',
-        city: 'Bengaluru',
-        landmark: 'Opposite Sony World',
-        is_default: false
-      }
-    ],
-    default_address_id: 'addr-home'
-  }
-];
+let customers = db.getCustomers ? db.getCustomers() : [];
+if (!customers || customers.length === 0) {
+  customers = [
+    {
+      id: 'cust-admin',
+      name: 'Sachin Kumar',
+      phone: '9570151834',
+      email: 'kumar@quickserve.in',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      saved_addresses: [
+        {
+          id: 'addr-home',
+          label: 'Home',
+          flat: 'Villa 14, Ansal Golf Links 1',
+          area: 'Ansal Golf Links 1',
+          city: 'Greater Noida',
+          landmark: 'Near Jaypee Greens',
+          is_default: true
+        }
+      ],
+      default_address_id: 'addr-home'
+    }
+  ];
+}
 
 let pendingOtps = {}; // phone -> { otp, expiresAt }
 
@@ -390,8 +384,8 @@ app.post('/api/auth/save-address', (req, res) => {
     id: `addr-${Date.now()}`,
     label: address.label || 'Home',
     flat: address.flat || '',
-    area: address.area || 'Indiranagar',
-    city: address.city || 'Bengaluru',
+    area: address.area || 'Pari Chowk',
+    city: address.city || 'Greater Noida',
     landmark: address.landmark || '',
     is_default: Boolean(address.is_default)
   };
@@ -704,7 +698,7 @@ app.post('/api/admin/categories', (req, res) => {
 // ==========================================
 app.get('/api/zones', (req, res) => {
   res.json({
-    launch_city: 'Bengaluru',
+    launch_city: 'Greater Noida & Delhi-NCR',
     zones
   });
 });
@@ -982,7 +976,7 @@ app.post('/api/bookings', (req, res) => {
     const rawSum = choreItems.reduce((acc, c) => acc + c.price, 0);
     // QuickServe Stack Discount: ₹99 off if 3 or more chores are stacked in single visit
     const stackDiscount = choreItems.length >= 3 ? 99 : 0;
-    baseCharge = Math.max(rawSum - stackDiscount, 199);
+    baseCharge = Math.max(rawSum - stackDiscount, 49);
     duration = choreItems.reduce((acc, c) => acc + c.duration_mins, 0);
   } else {
     const subItem = category?.sub_services?.find(s => s.name === sub_service_selected);
@@ -1026,12 +1020,12 @@ app.post('/api/bookings', (req, res) => {
 
   const newBooking = {
     id: `bk-${Date.now().toString().slice(-4)}`,
-    booking_reference: `QS-BLR-${Math.floor(1000 + Math.random() * 9000)}`,
-    customer_name: customer_name || 'Ananya Sharma',
-    customer_phone: customer_phone || '+91 98450 11223',
-    customer_address: customer_address || 'Flat 402, Sai Orchid, 12th Main, Indiranagar, Bengaluru',
-    locality: locality || 'Indiranagar',
-    zone_id: zone_id || 'zone-blr-indira',
+    booking_reference: `QS-NCR-${Math.floor(1000 + Math.random() * 9000)}`,
+    customer_name: customer_name || 'Customer',
+    customer_phone: customer_phone || '',
+    customer_address: customer_address || 'Ansal Golf Links 1, Greater Noida',
+    locality: locality || 'Ansal Golf Links 1, Greater Noida',
+    zone_id: zone_id || 'zone-gnoida-ansal',
     service_id: category ? category.id : 'cat-maid',
     service_title: category ? category.name : 'Household Chores',
     sub_service_selected: choreItems.map(c => c.title).join(' + '),
@@ -1070,6 +1064,17 @@ app.post('/api/bookings', (req, res) => {
   };
 
   db.addBooking(newBooking);
+
+  // Send real Fast2SMS confirmation SMS to customer phone if available!
+  const cleanPhone = (customer_phone || '').replace(/\D/g, '').slice(-10);
+  if (cleanPhone.length === 10 && gatewayConfig.fast2smsApiKey) {
+    try {
+      sendFast2SmsOtp(cleanPhone, startOtp).catch(e => console.warn('Booking SMS notice:', e.message));
+    } catch (e) {
+      console.warn('Booking SMS notify notice:', e);
+    }
+  }
+
   res.status(201).json({ success: true, booking: newBooking });
 });
 
@@ -1333,7 +1338,7 @@ app.get('/api/admin/stats', (req, res) => {
     platformCommission,
     openDisputes,
     activeEmergencies: 0,
-    launch_city: 'Bengaluru (5 Operational Clusters)'
+    launch_city: 'Greater Noida & Delhi-NCR (Operational Hubs)'
   });
 });
 
@@ -1455,7 +1460,7 @@ app.get('/api/health', (req, res) => {
     mvp_mode: {
       active_services_count: categories.filter(c => c.is_active).length,
       launch_categories: ['Plumber', 'Electrician', 'Maid / Home Helper', 'Caretaker / Patient Attendant'],
-      launch_city: 'Bengaluru'
+      launch_city: 'Greater Noida & Delhi-NCR'
     }
   });
 });

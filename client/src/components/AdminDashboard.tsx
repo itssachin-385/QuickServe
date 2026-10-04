@@ -77,18 +77,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     platformCommission: Math.round((bookings.reduce((sum, b) => sum + b.total_amount, 0) + 18450) * 0.10),
     openDisputes: 1,
     activeEmergencies: 0,
-    launch_city: 'Bengaluru (5 Operational Clusters)'
+    launch_city: 'Greater Noida & Delhi-NCR (Operational Hubs)'
   });
 
   const [hubs, setHubs] = useState<MicroHub[]>([
     {
-      id: 'hub-indiranagar-01',
-      name: 'Indiranagar Hub 01',
-      code: 'HUB-INDIRA-01',
-      locality: 'Indiranagar 100ft Road',
-      city: 'Bengaluru',
-      lat: 12.9716,
-      lng: 77.6412,
+      id: 'hub-gnoida-01',
+      name: 'Ansal Golf Links 1 & Pari Chowk Hub',
+      code: 'HUB-GNOIDA-01',
+      locality: 'Pari Chowk & Ansal Golf Links 1',
+      city: 'Greater Noida',
+      lat: 28.4744,
+      lng: 77.5040,
       active_pros_count: 18,
       dispatched_pros_count: 6,
       available_pros_count: 12,
@@ -102,13 +102,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       status: 'active'
     },
     {
-      id: 'hub-koramangala-02',
-      name: 'Koramangala Hub 02',
-      code: 'HUB-KORAM-02',
-      locality: '80ft Road, 4th Block',
-      city: 'Bengaluru',
-      lat: 12.9352,
-      lng: 77.6245,
+      id: 'hub-noida-02',
+      name: 'Sector 18 & Expressway Hub',
+      code: 'HUB-NOIDA-02',
+      locality: 'Sector 18 & Expressway',
+      city: 'Noida',
+      lat: 28.5708,
+      lng: 77.3271,
       active_pros_count: 16,
       dispatched_pros_count: 5,
       available_pros_count: 11,
@@ -122,13 +122,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       status: 'active'
     },
     {
-      id: 'hub-hsr-03',
-      name: 'HSR Layout Hub 03',
-      code: 'HUB-HSR-03',
-      locality: 'Sector 2, 27th Main',
-      city: 'Bengaluru',
-      lat: 12.9121,
-      lng: 77.6446,
+      id: 'hub-delhi-03',
+      name: 'South Delhi Cluster Hub',
+      code: 'HUB-DELHI-03',
+      locality: 'Ber Sarai, Munirka & Hauz Khas',
+      city: 'Delhi NCR',
+      lat: 28.5450,
+      lng: 77.1850,
       active_pros_count: 14,
       dispatched_pros_count: 4,
       available_pros_count: 10,
@@ -365,7 +365,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="p-5 bg-slate-800/80 rounded-2xl border border-slate-700/80 shadow-premium">
                 <span className="text-xs text-slate-400 font-medium">Total Registered Customers</span>
                 <h3 className="text-2xl font-extrabold text-white mt-1">{stats.totalCustomers}</h3>
-                <span className="text-[11px] text-emerald-400 font-semibold mt-1 block">Active in Bengaluru</span>
+                <span className="text-[11px] text-emerald-400 font-semibold mt-1 block">Active in Greater Noida & NCR</span>
               </div>
 
               <div className="p-5 bg-slate-800/80 rounded-2xl border border-slate-700/80 shadow-premium">
@@ -451,7 +451,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-white">Bengaluru Hyperlocal Micro-Hub Network</h2>
+                  <h2 className="text-lg font-bold text-white">Greater Noida & Delhi-NCR Hyperlocal Micro-Hub Network</h2>
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">
                     3 Operational Staging Clusters
                   </span>
@@ -463,7 +463,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => alert('Inventory replenishment request sent to Indiranagar, Koramangala & HSR warehouse.')}
+                  onClick={() => alert('Inventory replenishment request sent to Greater Noida, Noida & Delhi warehouse.')}
                   className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold"
                 >
                   Restock Kits
@@ -994,7 +994,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div>
               <h2 className="text-lg font-bold text-white">Live Dispatch & Order State Machine</h2>
               <p className="text-xs text-slate-400">
-                Track full booking progression across all Bengaluru clusters.
+                Track full booking progression across all Greater Noida & NCR clusters.
               </p>
             </div>
 

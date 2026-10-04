@@ -57,7 +57,7 @@ ${scheduleText}
 📍 *Address:* ${address}
 
 👷 *Assigned Partner:* ${pro}${proRating}
-📞 *Partner Contact:* ${booking.professional_phone || '+91 98450 11223'}
+📞 *Partner Contact:* ${booking.professional_phone || '+91 95701 51834'}
 
 🔐 *START WORK OTP:* *${otp}*
 _(Share this 4-digit code with partner ONLY after they reach your doorstep)_
@@ -72,7 +72,7 @@ ${trackingUrl}
 🤝 *QuickServe 100% Safety Guarantee:*
 • Partner identity verified with Police/Aadhaar
 • Zero Advance Cash Policy
-• 24x7 Priority Support: 1800-120-0555 / +91 95701 51834
+• 24x7 Priority Support: +91 95701 51834
 
 _Thank you for choosing QuickServe! Have a great experience._`;
 }
@@ -87,10 +87,35 @@ export function getWhatsAppUrl(message: string, phone?: string): string {
   return `https://api.whatsapp.com/send?text=${encoded}`;
 }
 
-export function openWhatsAppBookingShare(booking: WhatsAppBookingInfo, phone?: string): void {
+export function openWhatsAppToSupport(booking: WhatsAppBookingInfo): void {
   const msg = generateWhatsAppBookingMessage(booking);
-  const url = getWhatsAppUrl(msg, phone);
+  const encoded = encodeURIComponent(msg);
+  const targetPhone = '919570151834';
   if (typeof window !== 'undefined') {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window as any).Capacitor?.isNativePlatform?.();
+    if (isMobile) {
+      window.location.href = `whatsapp://send?phone=${targetPhone}&text=${encoded}`;
+      setTimeout(() => {
+        window.open(`https://wa.me/${targetPhone}?text=${encoded}`, '_blank');
+      }, 700);
+    } else {
+      window.open(`https://wa.me/${targetPhone}?text=${encoded}`, '_blank', 'noopener,noreferrer');
+    }
+  }
+}
+
+export function openWhatsAppBookingShare(booking: WhatsAppBookingInfo, _customerPhone?: string): void {
+  const msg = generateWhatsAppBookingMessage(booking);
+  const encoded = encodeURIComponent(msg);
+  if (typeof window !== 'undefined') {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (window as any).Capacitor?.isNativePlatform?.();
+    if (isMobile) {
+      window.location.href = `whatsapp://send?text=${encoded}`;
+      setTimeout(() => {
+        window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+      }, 700);
+    } else {
+      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank', 'noopener,noreferrer');
+    }
   }
 }

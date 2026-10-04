@@ -85,12 +85,12 @@ export const MarketplaceSimulator: React.FC<MarketplaceSimulatorProps> = ({
   };
 
   const stepsGuide = [
-    { s: 0, title: 'Idle Marketplace', desc: 'Customer and Partner ready in Indiranagar cluster.' },
-    { s: 1, title: 'Step 1: QuickServe Multi-Chore Stacking', desc: 'Ananya Sharma stacks 3 chores: Bathroom Clean + Utensils + Mopping (75 mins) with 15-min Instant delivery from Indiranagar Hub 01.' },
-    { s: 2, title: 'Step 2: Partner Receives Stacked Job', desc: 'Rahul Kumar (⭐4.8 Partner) receives instant push alert with 3 stacked tasks and accepts.' },
-    { s: 3, title: 'Step 3: Staged Hub Dispatch & Live Tracking', desc: 'Rahul dispatched from Indiranagar Hub 01 with uniform & equipment kit. Customer Start OTP: 4821.' },
-    { s: 4, title: 'Step 4: Live Service Timer & Chore Checklist', desc: 'Start OTP 4821 verified! Live countdown clock ticks, QuickServe bodycam active, tasks marked complete.' },
-    { s: 5, title: 'Step 5: Completion OTP Verified • 100% Cashless Paid', desc: 'Completion OTP 7392 verified. ₹898 credited to Rahul\'s wallet with 5★ review!' }
+    { s: 0, title: 'Idle Marketplace', desc: 'Customer and Partner ready in Pari Chowk, Greater Noida cluster.' },
+    { s: 1, title: 'Step 1: QuickServe Multi-Chore Stacking', desc: 'Pooja Sharma stacks 3 chores: Bathroom Clean + Utensils + Mopping (75 mins) with 15-min Instant delivery from Pari Chowk Hub 01.' },
+    { s: 2, title: 'Step 2: Partner Receives Stacked Job', desc: 'Rahul Kumar (⭐4.9 Partner) receives instant push alert with 3 stacked tasks and accepts.' },
+    { s: 3, title: 'Step 3: Staged Hub Dispatch & Live Tracking', desc: 'Rahul dispatched from Pari Chowk Hub 01 with uniform & equipment kit. Customer Start OTP: 4821.' },
+    { s: 4, title: 'Step 4: Live Service Timer & Chore Checklist', desc: 'Start OTP 4821 verified! Live countdown clock ticks, QuickServe verified checklist active, tasks marked complete.' },
+    { s: 5, title: 'Step 5: Completion OTP Verified • Pay After Service', desc: 'Completion OTP 7392 verified. ₹898 paid after service with 5★ review!' }
   ];
 
   return (
@@ -188,7 +188,7 @@ export const MarketplaceSimulator: React.FC<MarketplaceSimulatorProps> = ({
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-300">
               <Smartphone className="w-4 h-4 text-brand-400" />
-              <span>Customer Screen (Ananya Sharma • Indiranagar)</span>
+              <span>Customer Screen (Pooja Sharma • Greater Noida)</span>
             </div>
 
             <div className="w-full max-w-[380px] rounded-[44px] p-3 bg-slate-900 shadow-2xl border-4 border-slate-700 text-slate-900 overflow-hidden min-h-[640px] flex flex-col justify-between">
@@ -199,7 +199,7 @@ export const MarketplaceSimulator: React.FC<MarketplaceSimulatorProps> = ({
                   <div className="flex justify-between items-center text-[10px] text-slate-500 mb-1.5">
                     <span className="font-semibold text-emerald-700 flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-emerald-600" />
-                      Indiranagar, Bengaluru
+                      Pari Chowk, Greater Noida
                     </span>
                     <span className="font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                       ⚡ 15 min arrival
@@ -541,7 +541,7 @@ export const MarketplaceSimulator: React.FC<MarketplaceSimulatorProps> = ({
                       </div>
 
                       <p className="text-slate-400 text-[11px]">
-                        When all 3 chores are finished, request Completion OTP from Ananya:
+                        When all 3 chores are finished, request Completion OTP from customer:
                       </p>
                       <div className="flex gap-2">
                         <input 

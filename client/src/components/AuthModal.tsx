@@ -401,7 +401,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <option value="Greater Noida">Greater Noida</option>
                     <option value="Noida">Noida</option>
                     <option value="Delhi NCR">Delhi NCR</option>
-                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Gurugram">Gurugram</option>
                   </select>
                 </div>
               </div>

@@ -549,10 +549,10 @@ export const ProfessionalApp: React.FC<ProfessionalAppProps> = ({
                 </div>
 
                 <div className="text-xs text-slate-300 space-y-1">
-                  <p className="font-semibold text-white">Tap & flush valve repair in Indiranagar</p>
+                  <p className="font-semibold text-white">Tap & flush valve repair in Pari Chowk</p>
                   <p className="text-slate-400 text-[11px] flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-slate-400" />
-                    <span>Defence Colony, 100ft Road, Bengaluru</span>
+                    <span>Sector Alpha 1, Pari Chowk, Greater Noida</span>
                   </p>
                 </div>
 
