@@ -599,168 +599,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
 
       </section>
 
-      {/* ========================================================================= */}
-      {/* 5. COVERAGE AREAS & HYPERLOCAL HUBS (CLEAN, SCAN-FRIENDLY & MODERN) */}
-      {/* ========================================================================= */}
-      <section id="coverage" className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-slate-100">
-        <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-2xs">
-            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Hyperlocal Micro-Hubs Active</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Active Coverage Areas
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Dispatched within 10 to 15 minutes from our dedicated staging hubs across Greater Noida & NCR.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          
-          {/* Greater Noida Primary Hub */}
-          <div className="p-5 rounded-2xl bg-white border-2 border-emerald-500/30 shadow-xs hover:shadow-md transition-all space-y-3 relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-base shadow-2xs">
-                  📍
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900">Greater Noida</h3>
-                  <span className="text-[10px] text-emerald-700 font-bold">Primary Launch Cluster</span>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-200">
-                ⚡ 10-15 Min
-              </span>
-            </div>
-
-            <p className="text-xs text-slate-500 font-medium">
-              Immediate doorstep dispatch across:
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {[
-                'Ansal Golf Links 1',
-                'Pari Chowk',
-                'Knowledge Park',
-                'Alpha 1 & 2',
-                'Beta 1 & 2',
-                'Gamma 1 & 2',
-                'Delta 1 & 2',
-                'Omega & Chi',
-                'Gaur City (Gr. Noida W)'
-              ].map(area => (
-                <span 
-                  key={area}
-                  onClick={() => onOpenLocationModal && onOpenLocationModal()}
-                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200/80 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
-                >
-                  {area}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Noida Expressway Hub */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-base shadow-2xs">
-                  🚗
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900">Noida Expressway</h3>
-                  <span className="text-[10px] text-slate-500 font-medium">Fast Dispatch Corridor</span>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-black border border-blue-200">
-                ~20 Min
-              </span>
-            </div>
-
-            <p className="text-xs text-slate-500 font-medium">
-              Key residential sectors served:
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {[
-                'Sector 135 Expressway',
-                'Sector 18 (Atta)',
-                'Sector 62 IT Hub',
-                'Sector 76',
-                'Sector 128 Wish Town'
-              ].map(area => (
-                <span 
-                  key={area}
-                  onClick={() => onOpenLocationModal && onOpenLocationModal()}
-                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200/80 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
-                >
-                  {area}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* South Delhi Hub */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-base shadow-2xs">
-                  🏙️
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900">South Delhi</h3>
-                  <span className="text-[10px] text-slate-500 font-medium">Active Service Zone</span>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-200">
-                Scheduled & Fast
-              </span>
-            </div>
-
-            <p className="text-xs text-slate-500 font-medium">
-              Colonies & university clusters:
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {[
-                'Ber Sarai (IIT)',
-                'Munirka',
-                'Hauz Khas',
-                'Green Park',
-                'Safdarjung Enclave',
-                'Malviya Nagar & Saket'
-              ].map(area => (
-                <span 
-                  key={area}
-                  onClick={() => onOpenLocationModal && onOpenLocationModal()}
-                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-amber-50 hover:text-amber-700 border border-slate-200/80 text-[11px] font-semibold text-slate-700 transition-colors cursor-pointer"
-                >
-                  {area}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Auto-detect prompt */}
-        <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs text-slate-700 font-semibold">
-              Current Active Hub: <strong className="text-slate-900 font-extrabold">{activeCityZone}</strong>
-            </span>
-          </div>
-          <button
-            onClick={onOpenLocationModal}
-            className="px-4 py-2 rounded-xl bg-white border border-slate-300 hover:border-emerald-500 text-xs font-black text-slate-800 hover:text-emerald-700 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer active:scale-95"
-          >
-            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Change / Auto-Detect Location</span>
-          </button>
-        </div>
-      </section>
 
       {/* ========================================================================= */}
       {/* 6. POLISHED 3-STEP "HOW IT WORKS" */}
@@ -864,27 +703,16 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       </section>
 
       {/* ========================================================================= */}
-      <footer className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-8 border-t border-slate-200/80 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-slate-900 text-sm">QuickServe</span>
-            <span>•</span>
-            <span>Hyperlocal Home Services</span>
-            <span>•</span>
-            <span className="text-emerald-700 font-semibold">Greater Noida & NCR</span>
-          </div>
-          <span className="hidden sm:inline text-slate-300">•</span>
-          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-bold">
-            🛡️ MSME Reg: UDYAM-DL-08-0138659
-          </span>
+      <footer className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8 border-t border-slate-200/80 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="font-black text-slate-900 text-sm">QuickServe</span>
+          <span>•</span>
+          <span>Hyperlocal Home Services</span>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
           <a href="#services" className="hover:text-slate-900 transition-colors">
             Services
-          </a>
-          <a href="#coverage" className="hover:text-slate-900 transition-colors">
-            Coverage Areas
           </a>
           <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
             How It Works
@@ -895,16 +723,6 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
           <button onClick={onNavigateToProRegister} className="hover:text-slate-900 transition-colors cursor-pointer">
             Partner Onboarding
           </button>
-          {onNavigateToAdmin && (
-            <button onClick={onNavigateToAdmin} className="hover:text-slate-900 transition-colors cursor-pointer">
-              Admin
-            </button>
-          )}
-          {onNavigateToProApp && (
-            <button onClick={onNavigateToProApp} className="hover:text-slate-900 transition-colors cursor-pointer">
-              Pro App
-            </button>
-          )}
         </div>
 
         <span>© 2026 QuickServe Technologies</span>
