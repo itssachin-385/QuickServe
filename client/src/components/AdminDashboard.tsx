@@ -1251,7 +1251,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     <div className="space-y-1">
                       <span className="font-bold text-emerald-400 flex items-center gap-1">
-                        💳 Case 2: Customer Pays Online (UPI / Card / Netbanking):
+                        💳 Case 2: Customer Pays Online (UPI Prepaid):
                       </span>
                       <p className="text-slate-300 text-[11px] leading-relaxed">
                         Full ₹{simulatedOrderAmount} escrowed via Razorpay. QuickServe retains ₹{totalCompanyRevenue} platform earnings and disburses <strong>₹{proShare}</strong> directly to the partner's account.

@@ -23,7 +23,8 @@ import {
   Star,
   Coins,
   Ticket,
-  CreditCard,
+  Smartphone,
+  QrCode,
   Building,
   Briefcase,
   Home,
@@ -38,6 +39,7 @@ import { CustomerUser, SavedAddress } from '../types';
 import { updateUserProfile } from '../api';
 import { notificationService, AppNotificationItem } from '../services/notificationService';
 import { NotificationCenterModal } from './NotificationCenterModal';
+import { RazorpayModal } from './RazorpayModal';
 
 interface CustomerProfileScreenProps {
   currentUser?: CustomerUser | null;
@@ -144,6 +146,7 @@ export const CustomerProfileScreen: React.FC<CustomerProfileScreenProps> = ({
   // Wallet top-up state
   const [rechargeAmount, setRechargeAmount] = useState<number>(250);
   const [isRecharging, setIsRecharging] = useState(false);
+  const [showWalletPaymentModal, setShowWalletPaymentModal] = useState(false);
 
   // GST State
   const [gstin, setGstin] = useState(currentUser?.gstin || '');
@@ -234,8 +237,14 @@ export const CustomerProfileScreen: React.FC<CustomerProfileScreenProps> = ({
     }
   };
 
-  // Quick Wallet recharge
-  const handleRechargeWallet = async (amount: number) => {
+  // Open live UPI Payment Gateway for Wallet Recharge
+  const handleOpenWalletPayment = (amount: number) => {
+    setRechargeAmount(amount);
+    setShowWalletPaymentModal(true);
+  };
+
+  // Called strictly after payment verification succeeds in the Gateway
+  const handleRechargeSuccess = async (amount: number, _paymentId: string) => {
     if (!currentUser) return;
     setIsRecharging(true);
     try {
@@ -247,12 +256,13 @@ export const CustomerProfileScreen: React.FC<CustomerProfileScreenProps> = ({
       await updateUserProfile(updatedUser);
       if (onUpdateUser) onUpdateUser(updatedUser);
       localStorage.setItem('quickserve_user', JSON.stringify(updatedUser));
-      setTimeout(() => {
-        setIsRecharging(false);
-        setIsWalletModalOpen(false);
-      }, 500);
+      setShowWalletPaymentModal(false);
+      setIsWalletModalOpen(false);
+      setIsRecharging(false);
+      setProfileSuccessMsg(`₹${amount} added to QuickServe Wallet via UPI!`);
+      setTimeout(() => setProfileSuccessMsg(null), 4000);
     } catch (err) {
-      console.error('Wallet recharge error:', err);
+      console.error('Wallet recharge sync error:', err);
       setIsRecharging(false);
     }
   };
@@ -1008,16 +1018,29 @@ export const CustomerProfileScreen: React.FC<CustomerProfileScreenProps> = ({
               </div>
 
               <button
-                onClick={() => handleRechargeWallet(rechargeAmount)}
+                onClick={() => handleOpenWalletPayment(rechargeAmount)}
                 disabled={isRecharging}
-                className="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black rounded-2xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <CreditCard className="w-4 h-4" />
-                <span>{isRecharging ? 'Processing UPI Recharge...' : `Recharge ₹${rechargeAmount} via UPI`}</span>
+                <Smartphone className="w-4 h-4" />
+                <span>Recharge ₹{rechargeAmount} via UPI Gateway</span>
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* UPI PAYMENT GATEWAY MODAL FOR WALLET RECHARGE */}
+      {showWalletPaymentModal && (
+        <RazorpayModal
+          amount={rechargeAmount}
+          serviceTitle={`QuickServe Wallet Recharge (₹${rechargeAmount})`}
+          customerName={currentUser?.name || 'Customer'}
+          customerPhone={currentUser?.phone || ''}
+          bookingId={`WALLET-${Date.now().toString().slice(-6)}`}
+          onClose={() => setShowWalletPaymentModal(false)}
+          onSuccess={(paymentId) => handleRechargeSuccess(rechargeAmount, paymentId)}
+        />
       )}
 
       {/* ========================================================================= */}

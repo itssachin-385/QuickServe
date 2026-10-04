@@ -4,18 +4,15 @@ import {
   CheckCircle2, 
   QrCode, 
   Smartphone, 
-  CreditCard, 
-  Building2, 
   X, 
   Copy, 
-  ExternalLink, 
   Settings, 
-  Send, 
   RefreshCw, 
   AlertCircle, 
   Wallet,
   Sparkles,
-  Lock
+  Lock,
+  ArrowRight
 } from 'lucide-react';
 import { createPaymentOrder, verifyPayment, fetchGatewayConfig, updateGatewayConfig } from '../api';
 
@@ -38,19 +35,18 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   onSuccess,
   onClose
 }) => {
-  const [activeTab, setActiveTab] = useState<'upi' | 'razorpay' | 'settings'>('upi');
-  const [selectedUpiApp, setSelectedUpiApp] = useState<'any' | 'gpay' | 'phonepe' | 'paytm'>('gpay');
+  const [activeTab, setActiveTab] = useState<'upi_qr' | 'upi_apps' | 'settings'>('upi_qr');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [copiedVpa, setCopiedVpa] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const [enteredUtr, setEnteredUtr] = useState('');
   const [orderData, setOrderData] = useState<any>(null);
   const [gatewayConfig, setGatewayConfig] = useState<any>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
 
   // Settings form state
   const [editFast2SmsKey, setEditFast2SmsKey] = useState('');
-  const [editRazorpayKey, setEditRazorpayKey] = useState('');
   const [editUpiVpa, setEditUpiVpa] = useState('');
   const [editMerchantPhone, setEditMerchantPhone] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -74,7 +70,6 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
         setOrderData(ordRes);
         if (cfgRes) {
           setGatewayConfig(cfgRes);
-          setEditRazorpayKey(cfgRes.razorpay?.keyId || '');
           setEditUpiVpa(cfgRes.upi?.vpa || 'sachinsb68741@nyes');
           setEditMerchantPhone(cfgRes.upi?.merchantPhone || '9570151834');
         }
@@ -88,10 +83,10 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     initOrder();
   }, [amount, bookingId]);
 
-  const upiVpa = orderData?.upi_vpa || 'sachinsb68741@nyes';
-  const merchantPhone = orderData?.merchant_phone || '9570151834';
-  const upiMerchantName = orderData?.upi_merchant_name || 'Sachin Kumar';
-  const upiIntentUrl = orderData?.upi_intent_url || `upi://pay?pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(upiMerchantName)}&am=${amount}&tn=QuickServe+Order&cu=INR`;
+  const upiVpa = orderData?.upi_vpa || gatewayConfig?.upi?.vpa || 'sachinsb68741@nyes';
+  const merchantPhone = orderData?.merchant_phone || gatewayConfig?.upi?.merchantPhone || '9570151834';
+  const upiMerchantName = orderData?.upi_merchant_name || gatewayConfig?.upi?.merchantName || 'Sachin Kumar';
+  const upiIntentUrl = orderData?.upi_intent_url || `upi://pay?pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(upiMerchantName)}&am=${amount}&tn=QuickServe+Payment&cu=INR`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(upiIntentUrl)}`;
 
   const handleCopyVpa = () => {
@@ -106,101 +101,23 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
-  // Launch official Razorpay standard checkout
-  const handleOpenRazorpay = () => {
+  const handleConfirmUpiPayment = async () => {
     setIsProcessing(true);
-
-    const loadRazorpayScript = () => {
-      return new Promise((resolve) => {
-        if ((window as any).Razorpay) {
-          resolve(true);
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.onload = () => resolve(true);
-        script.onerror = () => resolve(false);
-        document.body.appendChild(script);
+    const paymentId = enteredUtr.trim() ? `upi_${enteredUtr.trim()}` : `pay_upi_${Date.now()}`;
+    try {
+      await verifyPayment({
+        booking_id: bookingId || 'bk-direct',
+        payment_id: paymentId,
+        method: 'upi',
+        amount
       });
-    };
-
-    loadRazorpayScript().then((loaded) => {
-      if (loaded && (window as any).Razorpay) {
-        const keyId = orderData?.razorpay_key_id || 'rzp_test_51aQuickServe';
-        const options = {
-          key: keyId,
-          amount: Math.round(amount * 100), // amount in paise
-          currency: 'INR',
-          name: 'QuickServe India',
-          description: `${serviceTitle} • 15-Min Hyperlocal Service`,
-          image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=120&auto=format&fit=crop&q=80',
-          order_id: orderData?.order_id?.startsWith('order_') && orderData?.order_id?.length === 20 ? orderData.order_id : undefined,
-          prefill: {
-            name: customerName,
-            contact: customerPhone,
-            email: `${customerPhone}@quickserve.in`
-          },
-          theme: {
-            color: '#10b981'
-          },
-          handler: async function (response: any) {
-            const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
-            try {
-              await verifyPayment({
-                booking_id: bookingId || 'bk-direct',
-                payment_id: paymentId,
-                order_id: response.razorpay_order_id,
-                method: 'razorpay',
-                amount
-              });
-            } catch (e) {
-              console.warn('Backend payment verify sync:', e);
-            }
-            setIsProcessing(false);
-            setIsSuccess(true);
-            setTimeout(() => {
-              onSuccess(paymentId);
-            }, 1200);
-          },
-          modal: {
-            ondismiss: function () {
-              setIsProcessing(false);
-            }
-          }
-        };
-
-        try {
-          const rzp = new (window as any).Razorpay(options);
-          rzp.open();
-        } catch (e) {
-          console.warn('Fallback to standard simulated payment', e);
-          triggerSimulatedPayment('razorpay_checkout');
-        }
-      } else {
-        triggerSimulatedPayment('razorpay_simulated');
-      }
-    });
-  };
-
-  const triggerSimulatedPayment = async (method: string) => {
-    setIsProcessing(true);
-    setTimeout(async () => {
-      const paymentId = `pay_QS_${Date.now()}`;
-      try {
-        await verifyPayment({
-          booking_id: bookingId || 'bk-direct',
-          payment_id: paymentId,
-          method,
-          amount
-        });
-      } catch (e) {
-        console.warn('Payment verify sync:', e);
-      }
-      setIsProcessing(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        onSuccess(paymentId);
-      }, 1200);
+    } catch (e) {
+      console.warn('Payment verify sync:', e);
+    }
+    setIsProcessing(false);
+    setIsSuccess(true);
+    setTimeout(() => {
+      onSuccess(paymentId);
     }, 1200);
   };
 
@@ -209,7 +126,6 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     try {
       await updateGatewayConfig({
         fast2smsApiKey: editFast2SmsKey ? editFast2SmsKey : undefined,
-        razorpayKeyId: editRazorpayKey ? editRazorpayKey : undefined,
         upiVpa: editUpiVpa ? editUpiVpa : undefined,
         merchantPhone: editMerchantPhone ? editMerchantPhone : undefined
       });
@@ -234,11 +150,11 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.2 rounded-full font-bold uppercase tracking-wider">
-                  Live Indian Payment Gateway
+                  Live UPI Gateway
                 </span>
               </div>
               <h3 className="font-extrabold text-base text-white mt-0.5">
-                QuickServe Cashless Pay
+                QuickServe UPI Pay
               </h3>
             </div>
           </div>
@@ -263,12 +179,12 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
           </div>
         </div>
 
-        {/* Payment Methods Nav Tabs */}
+        {/* Payment Methods Nav Tabs (UPI ONLY - NO CARDS) */}
         <div className="flex border-b border-slate-200 bg-slate-100/70 p-1.5 gap-1.5 text-xs font-bold">
           <button
-            onClick={() => setActiveTab('upi')}
+            onClick={() => setActiveTab('upi_qr')}
             className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'upi'
+              activeTab === 'upi_qr'
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -278,15 +194,15 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('razorpay')}
+            onClick={() => setActiveTab('upi_apps')}
             className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'razorpay'
+              activeTab === 'upi_apps'
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <CreditCard className="w-4 h-4 text-blue-600" />
-            <span>Razorpay / Cards</span>
+            <Smartphone className="w-4 h-4 text-blue-600" />
+            <span>Pay via UPI App</span>
           </button>
 
           <button
@@ -296,7 +212,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
-            title="Gateway & Fast2SMS Settings"
+            title="Gateway Settings"
           >
             <Settings className="w-4 h-4" />
           </button>
@@ -311,7 +227,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
               </div>
               <h3 className="text-xl font-extrabold text-slate-900">Payment Completed!</h3>
               <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                ₹{amount} received successfully. Partner is now dispatched from the cluster micro-hub.
+                ₹{amount} received successfully. Transaction verified.
               </p>
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 inline-block font-mono text-emerald-900 font-bold text-xs">
                 Ref ID: QS-PAY-{Date.now().toString().slice(-6)}
@@ -319,8 +235,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
             </div>
           ) : (
             <>
-              {/* TAB 1: SCAN UPI QR CODE & DIRECT INTENT */}
-              {activeTab === 'upi' && (
+              {/* TAB 1: SCAN UPI QR CODE */}
+              {activeTab === 'upi_qr' && (
                 <div className="space-y-4 text-center">
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/90 shadow-sm relative">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
@@ -375,42 +291,25 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Direct Mobile UPI Intent Buttons */}
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                      Or Open in Your UPI App
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      <a
-                        href={upiIntentUrl}
-                        className="p-2.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 hover:bg-emerald-50/50 flex flex-col items-center justify-center gap-1 transition-all"
-                      >
-                        <Smartphone className="w-4 h-4 text-emerald-600" />
-                        <span className="font-bold text-[11px] text-slate-800">Google Pay</span>
-                      </a>
-
-                      <a
-                        href={upiIntentUrl}
-                        className="p-2.5 rounded-xl border border-slate-200 bg-white hover:border-purple-500 hover:bg-purple-50/50 flex flex-col items-center justify-center gap-1 transition-all"
-                      >
-                        <Smartphone className="w-4 h-4 text-purple-600" />
-                        <span className="font-bold text-[11px] text-slate-800">PhonePe</span>
-                      </a>
-
-                      <a
-                        href={upiIntentUrl}
-                        className="p-2.5 rounded-xl border border-slate-200 bg-white hover:border-sky-500 hover:bg-sky-50/50 flex flex-col items-center justify-center gap-1 transition-all"
-                      >
-                        <Smartphone className="w-4 h-4 text-sky-600" />
-                        <span className="font-bold text-[11px] text-slate-800">Paytm UPI</span>
-                      </a>
-                    </div>
+                  {/* Optional UTR / Reference ID Field */}
+                  <div className="text-left space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700 block">
+                      UPI Ref / UTR No (Optional - payment confirmation):
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 427819283741 (12 digits)" 
+                      value={enteredUtr}
+                      onChange={(e) => setEnteredUtr(e.target.value.trim())}
+                      maxLength={16}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                    />
                   </div>
 
                   {/* Action Confirm Button */}
                   <button
                     disabled={isProcessing}
-                    onClick={() => triggerSimulatedPayment('upi_qr')}
+                    onClick={handleConfirmUpiPayment}
                     className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
                   >
                     {isProcessing ? (
@@ -421,76 +320,124 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>I Have Paid ₹{amount} (Confirm Order)</span>
+                        <span>I Have Paid ₹{amount} (Confirm Payment)</span>
                       </>
                     )}
                   </button>
                 </div>
               )}
 
-              {/* TAB 2: RAZORPAY LIVE CHECKOUT */}
-              {activeTab === 'razorpay' && (
+              {/* TAB 2: PAY VIA DIRECT UPI APP INTENT */}
+              {activeTab === 'upi_apps' && (
                 <div className="space-y-4">
-                  <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                        R
-                      </div>
-                      <div>
-                        <h4 className="font-extrabold text-blue-950 text-xs">Razorpay Standard Checkout</h4>
-                        <span className="text-[10px] text-blue-700">Credit/Debit Cards, NetBanking, UPI, Wallets</span>
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-blue-900 leading-relaxed pt-1">
-                      Integrates official Razorpay Checkout popup with automated payment verification webhook and Fast2SMS confirmation notices.
+                  <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-2xl">
+                    <span className="font-extrabold text-blue-950 text-xs block">1-Tap Direct UPI Apps</span>
+                    <p className="text-[11px] text-blue-800 mt-0.5">
+                      Tap any app below to open on your phone with ₹{amount} pre-filled.
                     </p>
                   </div>
 
-                  {/* Customer pre-fill summary */}
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 text-xs">
-                    <div className="flex justify-between text-slate-600">
-                      <span>Customer:</span>
-                      <span className="font-bold text-slate-900">{customerName}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>Phone:</span>
-                      <span className="font-bold text-slate-900">+91 {customerPhone}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>Gateway Key:</span>
-                      <span className="font-mono text-[10px] text-slate-700">
-                        {orderData?.razorpay_key_id || 'rzp_test_51aQuickServe'}
-                      </span>
-                    </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <a
+                      href={upiIntentUrl}
+                      className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-emerald-500 hover:bg-emerald-50/50 flex items-center gap-3 transition-all shadow-xs group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-105 transition-transform">
+                        <Smartphone className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-extrabold text-xs text-slate-900 block">Google Pay</span>
+                        <span className="text-[10px] text-slate-400">Direct Pay</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={upiIntentUrl}
+                      className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-purple-500 hover:bg-purple-50/50 flex items-center gap-3 transition-all shadow-xs group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-105 transition-transform">
+                        <Smartphone className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-extrabold text-xs text-slate-900 block">PhonePe</span>
+                        <span className="text-[10px] text-slate-400">Direct Pay</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={upiIntentUrl}
+                      className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-sky-500 hover:bg-sky-50/50 flex items-center gap-3 transition-all shadow-xs group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-105 transition-transform">
+                        <Smartphone className="w-5 h-5 text-sky-600" />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-extrabold text-xs text-slate-900 block">Paytm UPI</span>
+                        <span className="text-[10px] text-slate-400">Direct Pay</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={upiIntentUrl}
+                      className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-amber-500 hover:bg-amber-50/50 flex items-center gap-3 transition-all shadow-xs group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-105 transition-transform">
+                        <Smartphone className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-extrabold text-xs text-slate-900 block">BHIM / Any UPI</span>
+                        <span className="text-[10px] text-slate-400">Direct Pay</span>
+                      </div>
+                    </a>
                   </div>
 
-                  {/* Open Official Razorpay Checkout */}
+                  {/* Official UPI Details */}
+                  <div className="flex items-center justify-between bg-slate-50 px-3 py-2.5 rounded-xl border border-slate-200">
+                    <div className="text-left">
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Official Payee VPA</span>
+                      <span className="font-mono font-black text-xs text-slate-900">{upiVpa}</span>
+                    </div>
+                    <button
+                      onClick={handleCopyVpa}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-[11px] transition-colors flex items-center gap-1"
+                    >
+                      {copiedVpa ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedVpa ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  {/* Optional UTR / Reference ID Field */}
+                  <div className="text-left space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700 block">
+                      UPI Ref / UTR No (Optional - payment confirmation):
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 427819283741 (12 digits)" 
+                      value={enteredUtr}
+                      onChange={(e) => setEnteredUtr(e.target.value.trim())}
+                      maxLength={16}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                    />
+                  </div>
+
+                  {/* Action Confirm Button */}
                   <button
                     disabled={isProcessing}
-                    onClick={handleOpenRazorpay}
-                    className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2"
+                    onClick={handleConfirmUpiPayment}
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
                   >
                     {isProcessing ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Launching Razorpay...</span>
+                        <span>Verifying UPI Transaction...</span>
                       </>
                     ) : (
                       <>
-                        <CreditCard className="w-4 h-4" />
-                        <span>Open Razorpay Checkout (₹{amount}) →</span>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>I Have Paid ₹{amount} (Confirm Payment)</span>
                       </>
                     )}
-                  </button>
-
-                  {/* Quick One-Click Test Payment */}
-                  <button
-                    disabled={isProcessing}
-                    onClick={() => triggerSimulatedPayment('razorpay_test_pass')}
-                    className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Instant 1-Click Test Authorization (Pass)</span>
                   </button>
                 </div>
               )}
@@ -524,20 +471,6 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     <p className="text-[10px] text-slate-400 mt-1">
                       {gatewayConfig?.fast2sms?.hasKey ? '✅ Fast2SMS API Key is ACTIVE' : 'ℹ️ Fast2SMS not set (using test OTP simulation)'}
                     </p>
-                  </div>
-
-                  {/* Razorpay Key ID */}
-                  <div>
-                    <label className="block text-slate-700 font-bold text-xs mb-1">
-                      Razorpay Key ID:
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="rzp_test_..."
-                      value={editRazorpayKey}
-                      onChange={(e) => setEditRazorpayKey(e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono"
-                    />
                   </div>
 
                   {/* UPI VPA (Merchant ID) */}

@@ -8,7 +8,6 @@ import {
   Check, 
   Trash2, 
   Timer, 
-  CreditCard, 
   ChevronDown, 
   UserCheck, 
   User,
@@ -626,7 +625,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
           <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2">
             <span className="text-[11px] font-black text-blue-600 tracking-wider uppercase block">03. PAY AFTER WORK</span>
             <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Inspect & Settle</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">Verify the quality of work first, then pay easily via UPI, Card, or Cash on site.</p>
+            <p className="text-xs text-slate-500 leading-relaxed">Verify the quality of work first, then pay easily via UPI or Cash on site.</p>
           </div>
 
         </div>
@@ -652,7 +651,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-md transition-all space-y-2.5 text-center sm:text-left">
             <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto sm:mx-0 shadow-2xs">
-              <CreditCard className="w-5 h-5 stroke-[2.5]" />
+              <Sparkles className="w-5 h-5 stroke-[2.5]" />
             </div>
             <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">Transparent Pricing</h4>
             <p className="text-xs text-slate-500 leading-relaxed">Standard upfront pricing with zero surge fees, hidden charges, or visit surprise costs.</p>
