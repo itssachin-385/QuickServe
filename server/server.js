@@ -50,9 +50,18 @@ app.get('/sitemap.xml', (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://quickserve-3lhk.onrender.com/</loc>\n    <lastmod>2026-10-03</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n  <url>\n    <loc>https://quickserve-3lhk.onrender.com/download-apk</loc>\n    <lastmod>2026-10-03</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n  <url>\n    <loc>https://quickserve-3lhk.onrender.com/QuickServe_v2.apk</loc>\n    <lastmod>2026-10-03</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n</urlset>`);
 });
 
-// Serve production client build if exists
-app.use(express.static(path.join(__dirname, '../client/dist')));
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve production client build if exists (no-cache for HTML so browser gets live updates)
+const staticOptions = {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+};
+app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
+app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 
 // Direct APK Download Endpoint
 app.get(['/download-apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
@@ -1502,6 +1511,9 @@ app.use((err, req, res, next) => {
 
 // 3. Catch-all fallback route to serve React SPA for browser page navigation
 app.use((req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   const distIndex = path.join(__dirname, '../client/dist/index.html');
   const publicIndex = path.join(__dirname, 'public/index.html');
   if (fs.existsSync(distIndex)) {
