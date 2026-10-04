@@ -864,15 +864,19 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       </section>
 
       {/* ========================================================================= */}
-      {/* 9. MINIMAL CLEAN FOOTER */}
-      {/* ========================================================================= */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-8 border-t border-slate-200/80 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="font-black text-slate-900 text-sm">QuickServe</span>
-          <span>•</span>
-          <span>Hyperlocal Home Services</span>
-          <span>•</span>
-          <span className="text-emerald-700 font-semibold">Greater Noida & NCR</span>
+        <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <span className="font-black text-slate-900 text-sm">QuickServe</span>
+            <span>•</span>
+            <span>Hyperlocal Home Services</span>
+            <span>•</span>
+            <span className="text-emerald-700 font-semibold">Greater Noida & NCR</span>
+          </div>
+          <span className="hidden sm:inline text-slate-300">•</span>
+          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-bold">
+            🛡️ MSME Reg: UDYAM-DL-08-0138659
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
