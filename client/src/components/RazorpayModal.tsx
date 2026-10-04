@@ -15,11 +15,9 @@ import {
   AlertCircle, 
   Wallet,
   Sparkles,
-  Lock,
-  Shield,
-  Info
+  Lock
 } from 'lucide-react';
-import { createPaymentOrder, verifyPayment, fetchGatewayConfig, updateGatewayConfig, checkFast2SmsBalance, sendFast2SmsTest } from '../api';
+import { createPaymentOrder, verifyPayment, fetchGatewayConfig, updateGatewayConfig } from '../api';
 
 interface RazorpayModalProps {
   amount: number;
@@ -52,50 +50,10 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
 
   // Settings form state
   const [editFast2SmsKey, setEditFast2SmsKey] = useState('');
-  const [editBalanceShield, setEditBalanceShield] = useState(true);
   const [editRazorpayKey, setEditRazorpayKey] = useState('');
   const [editUpiVpa, setEditUpiVpa] = useState('');
   const [editMerchantPhone, setEditMerchantPhone] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
-
-  // Fast2SMS balance & test SMS tools
-  const [walletBalance, setWalletBalance] = useState<{ wallet?: string; sms_count?: number } | null>(null);
-  const [isCheckingBalance, setIsCheckingBalance] = useState(false);
-  const [testSmsPhone, setTestSmsPhone] = useState('9570151834');
-  const [forceRealTestSms, setForceRealTestSms] = useState(false);
-  const [testSmsResult, setTestSmsResult] = useState<any>(null);
-  const [isSendingTestSms, setIsSendingTestSms] = useState(false);
-
-  const fetchWallet = async () => {
-    try {
-      setIsCheckingBalance(true);
-      const res = await checkFast2SmsBalance();
-      if (res && res.return) {
-        setWalletBalance(res);
-      }
-    } catch (e) {
-      console.warn('Could not fetch wallet balance:', e);
-    } finally {
-      setIsCheckingBalance(false);
-    }
-  };
-
-  const handleSendTestSms = async () => {
-    if (!testSmsPhone) return;
-    try {
-      setIsSendingTestSms(true);
-      setTestSmsResult(null);
-      const res = await sendFast2SmsTest(testSmsPhone, forceRealTestSms);
-      setTestSmsResult(res);
-      if (res.success && forceRealTestSms) {
-        fetchWallet();
-      }
-    } catch (err: any) {
-      setTestSmsResult({ success: false, message: err.message });
-    } finally {
-      setIsSendingTestSms(false);
-    }
-  };
 
   // Initialize payment order from server
   useEffect(() => {
@@ -116,7 +74,6 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
         setOrderData(ordRes);
         if (cfgRes) {
           setGatewayConfig(cfgRes);
-          setEditBalanceShield(cfgRes.fast2sms?.balanceShield ?? true);
           setEditRazorpayKey(cfgRes.razorpay?.keyId || '');
           setEditUpiVpa(cfgRes.upi?.vpa || 'sachinsb68741@nyes');
           setEditMerchantPhone(cfgRes.upi?.merchantPhone || '9570151834');
@@ -130,12 +87,6 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
 
     initOrder();
   }, [amount, bookingId]);
-
-  useEffect(() => {
-    if (activeTab === 'settings' && !walletBalance) {
-      fetchWallet();
-    }
-  }, [activeTab]);
 
   const upiVpa = orderData?.upi_vpa || 'sachinsb68741@nyes';
   const merchantPhone = orderData?.merchant_phone || '9570151834';
@@ -258,7 +209,6 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     try {
       await updateGatewayConfig({
         fast2smsApiKey: editFast2SmsKey ? editFast2SmsKey : undefined,
-        balanceShield: editBalanceShield,
         razorpayKeyId: editRazorpayKey ? editRazorpayKey : undefined,
         upiVpa: editUpiVpa ? editUpiVpa : undefined,
         merchantPhone: editMerchantPhone ? editMerchantPhone : undefined
@@ -550,7 +500,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                 <form onSubmit={handleSaveSettings} className="space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                     <span className="font-bold text-slate-900 text-xs uppercase tracking-wider">
-                      Gateway & Fast2SMS Balance Shield
+                      Gateway Credentials & VPA
                     </span>
                     {settingsSaved && (
                       <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
@@ -559,117 +509,10 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     )}
                   </div>
 
-                  {/* ZERO-COST FAST2SMS BALANCE SHIELD */}
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
-                          <Shield className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-emerald-950">Fast2SMS Balance Shield</h4>
-                          <span className="text-[10px] text-emerald-700 font-medium">Zero-Cost Developer Testing</span>
-                        </div>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={editBalanceShield}
-                          onChange={(e) => setEditBalanceShield(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-                      </label>
-                    </div>
-
-                    <p className="text-[11px] text-emerald-800 leading-relaxed">
-                      {editBalanceShield ? (
-                        <span>🛡️ <strong>Balance Shield ACTIVE:</strong> Bar-bar test booking ya login karne par Fast2SMS se ₹1 bhi deduct nahi hoga! Aapka ₹95.00 wallet balance 100% safe hai.</span>
-                      ) : (
-                        <span className="text-amber-800">⚠️ <strong>Live Mode:</strong> Real carrier SMS will be sent via Fast2SMS (charges ₹5.00 per SMS via Quick Route).</span>
-                      )}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-1.5 border-t border-emerald-200/60 text-[10px] text-emerald-900">
-                      <span>Founder Whitelist: <strong>+91 9570151834</strong></span>
-                      <span className="bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-full font-bold">Always ₹0 Shielded</span>
-                    </div>
-                  </div>
-
-                  {/* Fast2SMS Live Wallet Balance Card */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <Wallet className="w-4 h-4 text-slate-700" />
-                      <div>
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fast2SMS Wallet Balance</div>
-                        <div className="text-sm font-black text-slate-900">
-                          {walletBalance ? `₹${parseFloat(walletBalance.wallet || '0').toFixed(2)}` : '₹95.00'}
-                          <span className="text-[10px] font-normal text-slate-500 ml-1.5">
-                            ({walletBalance?.sms_count || 380} standard credits)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={fetchWallet}
-                      disabled={isCheckingBalance}
-                      className="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-[10px] shadow-sm flex items-center gap-1"
-                    >
-                      <RefreshCw className={`w-3 h-3 ${isCheckingBalance ? 'animate-spin text-emerald-600' : ''}`} />
-                      <span>{isCheckingBalance ? 'Checking...' : 'Check Balance'}</span>
-                    </button>
-                  </div>
-
-                  {/* Safe SMS Test Console */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
-                      <span>SMS Test Console</span>
-                      <span className="text-[9px] text-emerald-700 font-bold">Protected</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="tel"
-                        placeholder="Enter 10-digit number"
-                        value={testSmsPhone}
-                        onChange={(e) => setTestSmsPhone(e.target.value.replace(/\D/g, ''))}
-                        className="flex-1 p-2 bg-white border border-slate-300 rounded-xl text-xs font-mono"
-                      />
-                      <button
-                        type="button"
-                        disabled={isSendingTestSms || !testSmsPhone}
-                        onClick={handleSendTestSms}
-                        className="px-3 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold rounded-xl text-xs shadow-sm flex items-center gap-1"
-                      >
-                        <Send className="w-3 h-3" />
-                        <span>{isSendingTestSms ? 'Testing...' : 'Send Test'}</span>
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] text-slate-600">
-                      <label className="flex items-center gap-1.5 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={forceRealTestSms}
-                          onChange={(e) => setForceRealTestSms(e.target.checked)}
-                          className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                        <span>Force Real Carrier SMS (charges ₹5)</span>
-                      </label>
-                      <span className="text-[9px] text-slate-400">
-                        {forceRealTestSms ? 'Will deduct ₹5' : 'Shielded (₹0)'}
-                      </span>
-                    </div>
-                    {testSmsResult && (
-                      <div className={`p-2 rounded-xl text-[10px] font-medium ${testSmsResult.success ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}`}>
-                        {testSmsResult.message || (testSmsResult.success ? 'SMS test passed!' : 'SMS test failed')}
-                      </div>
-                    )}
-                  </div>
-
                   {/* Fast2SMS API Key */}
                   <div>
                     <label className="block text-slate-700 font-bold text-xs mb-1">
-                      Fast2SMS API Key:
+                      Fast2SMS API Key (for Real Phone SMS):
                     </label>
                     <input
                       type="password"

@@ -569,11 +569,11 @@ export async function checkFast2SmsBalance(): Promise<any> {
   return await res.json();
 }
 
-export async function sendFast2SmsTest(phone: string, forceReal?: boolean): Promise<any> {
+export async function sendFast2SmsTest(phone: string): Promise<any> {
   const res = await fetch(`${API_BASE}/gateways/fast2sms/send-test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, forceReal: Boolean(forceReal) })
+    body: JSON.stringify({ phone })
   });
   return await res.json();
 }
