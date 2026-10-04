@@ -311,39 +311,25 @@ export function App() {
 
         {/* MODULE 2: CUSTOMER MOBILE APP */}
         {activeModule === 'customer_app' && (
-          !currentUser && !hasSkippedOnboarding ? (
-            <div className={isMobileDeviceFrame ? "py-8 px-4 flex justify-center bg-slate-200/70 min-h-[calc(100vh-4rem)]" : "w-full min-h-screen bg-[#f8fafc] flex justify-center"}>
-              <div className={isMobileDeviceFrame ? "w-full max-w-[390px] rounded-[48px] overflow-hidden bg-white shadow-2xl border-4 border-slate-700" : "w-full max-w-md shadow-sm"}>
-                <OnboardingLoginScreen
-                  onSuccess={handleAuthSuccess}
-                  onSkip={() => {
-                    setHasSkippedOnboarding(true);
-                    sessionStorage.setItem('quickserve_skipped_onboarding', 'true');
-                  }}
-                />
-              </div>
+          <div className={isMobileDeviceFrame ? "py-8 px-4 flex justify-center bg-slate-200/70 min-h-[calc(100vh-4rem)]" : "flex justify-center bg-slate-100 min-h-screen md:min-h-[calc(100vh-4rem)] md:py-8 md:px-4"}>
+            <div className={isMobileDeviceFrame ? "w-full max-w-[390px] rounded-[48px] p-3 bg-slate-900 shadow-2xl border-4 border-slate-700" : "w-full max-w-md"}>
+              <CustomerApp
+                categories={categories}
+                professionals={professionals}
+                activeBookings={bookings}
+                onRefreshBookings={loadData}
+                lang={lang}
+                currentUser={currentUser}
+                onOpenAuth={() => setIsAuthModalOpen(true)}
+                onLogout={handleLogout}
+                activeCityZone={activeCityZone}
+                onOpenLocationModal={() => setIsLocationModalOpen(true)}
+                onNavigateToWebsite={() => setActiveModule('website')}
+                onUpdateUser={(updated) => setCurrentUser(updated)}
+                onSwitchToPartnerApp={() => setActiveModule('pro_app')}
+              />
             </div>
-          ) : (
-            <div className={isMobileDeviceFrame ? "py-8 px-4 flex justify-center bg-slate-200/70 min-h-[calc(100vh-4rem)]" : "flex justify-center bg-slate-100 min-h-screen md:min-h-[calc(100vh-4rem)] md:py-8 md:px-4"}>
-              <div className={isMobileDeviceFrame ? "w-full max-w-[390px] rounded-[48px] p-3 bg-slate-900 shadow-2xl border-4 border-slate-700" : "w-full max-w-md"}>
-                <CustomerApp
-                  categories={categories}
-                  professionals={professionals}
-                  activeBookings={bookings}
-                  onRefreshBookings={loadData}
-                  lang={lang}
-                  currentUser={currentUser}
-                  onOpenAuth={() => setIsAuthModalOpen(true)}
-                  onLogout={handleLogout}
-                  activeCityZone={activeCityZone}
-                  onOpenLocationModal={() => setIsLocationModalOpen(true)}
-                  onNavigateToWebsite={() => setActiveModule('website')}
-                  onUpdateUser={(updated) => setCurrentUser(updated)}
-                  onSwitchToPartnerApp={() => setActiveModule('pro_app')}
-                />
-              </div>
-            </div>
-          )
+          </div>
         )}
 
         {/* MODULE 3: PROFESSIONAL / PARTNER APP */}

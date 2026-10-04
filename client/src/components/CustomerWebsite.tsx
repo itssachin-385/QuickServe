@@ -241,7 +241,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
         customer_name: currentUser.name,
         customer_phone: currentUser.phone,
         customer_address: chosenAddress,
-        customer_locality: activeCityZone.split(',')[0] || 'Indiranagar',
+        customer_locality: activeCityZone.split(',')[0] || 'Greater Noida',
         customer_notes: `Mode: ${bookingMode} • ${stackedChores.length} Chores`,
         booking_mode: bookingMode,
         scheduled_at: bookingMode === 'scheduled' ? scheduledSlot : null,

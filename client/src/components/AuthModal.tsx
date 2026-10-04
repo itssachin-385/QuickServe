@@ -87,21 +87,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
       const res = await verifyOtp(cleanPhone, otp.trim());
       if (res.user) {
-        // Check if user already has a real customized name
-        const hasCustomName = res.user.name && !res.user.name.startsWith('User +91') && !res.user.name.startsWith('User ');
-        
-        if (hasCustomName && res.user.email && !res.user.email.includes('@quickserve.in')) {
-          // Fully set up existing customer: log in immediately
-          localStorage.setItem('quickserve_user', JSON.stringify(res.user));
-          onSuccess(res.user);
-          onClose();
-        } else {
-          // New customer or incomplete profile: navigate to Profile Setup step!
-          setVerifiedUser(res.user);
-          setUserName(hasCustomName ? res.user.name : '');
-          setUserEmail(res.user.email && !res.user.email.includes('@quickserve.in') ? res.user.email : '');
-          setStep('profile');
-        }
+        localStorage.setItem('quickserve_user', JSON.stringify(res.user));
+        onSuccess(res.user);
+        onClose();
       }
     } catch (err: any) {
       setError(err.message || 'Incorrect OTP. Please enter the correct 4-digit code.');

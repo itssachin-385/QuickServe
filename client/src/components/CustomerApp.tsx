@@ -139,10 +139,10 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
         if (p.fullCompleteAddress) return p.fullCompleteAddress;
       }
     } catch (e) {}
-    return localStorage.getItem('quickserve_user_address') || (activeCityZone ? `Sector 18, ${activeCityZone}` : 'Sector 18, Noida');
+    return localStorage.getItem('quickserve_user_address') || (activeCityZone ? activeCityZone : 'Ansal Golf Links 1, Greater Noida');
   });
   const [customerLocality, setCustomerLocality] = useState(() => {
-    return localStorage.getItem('quickserve_active_zone') || activeCityZone || 'Sector 18, Noida';
+    return localStorage.getItem('quickserve_active_zone') || activeCityZone || 'Ansal Golf Links 1, Greater Noida';
   });
   const [customerNotes, setCustomerNotes] = useState('');
   const [bookingCustomerPhone, setBookingCustomerPhone] = useState(() => {
@@ -502,11 +502,6 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
           amount: result.booking.total_amount,
           paymentMethod: result.booking.payment_method,
         });
-
-        // Launch WhatsApp Dispatch Notification
-        setTimeout(() => {
-          openWhatsAppToSupport(result.booking);
-        }, 400);
       }
     } catch (err: any) {
       console.error('Booking creation error:', err);
@@ -963,115 +958,6 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
               </div>
             </div>
 
-            {/* SECTION 2: CHORES FILTER PILLS & SPECIFIC TASKS */}
-            <div className="pt-1">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <h4 className="font-bold text-slate-900 text-xs">
-                    {lang === 'en' ? 'Quick Household Chores' : 'विशिष्ट घरेलू काम'}
-                  </h4>
-                  <p className="text-[10px] text-slate-500">Pick single chores or stack multiple in 1 visit</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-                {[
-                  { id: 'all', label: 'All Chores' },
-                  { id: 'cleaning', label: '🧹 Cleaning & Floors' },
-                  { id: 'kitchen', label: '🍽️ Kitchen & Dining' },
-                  { id: 'repairs', label: '🔧 Fix & Appliances' }
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setSelectedFilterGroup(f.id as any)}
-                    className={`px-3 py-1.5 rounded-full font-semibold whitespace-nowrap text-xs transition-all ${
-                      selectedFilterGroup === f.id
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 3D ISOMETRIC DIORAMA CARDS GRID (WITH CHORE STACKING & DURATION BADGES) */}
-            <div className="grid grid-cols-2 gap-3">
-              {professionalHomeServices
-                .filter(item => selectedFilterGroup === 'all' || item.filterGroup === selectedFilterGroup)
-                .map((item) => {
-                  const isSelected = stackedChores.some(c => c.id === item.id);
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => handleProceedFromScopeModal(item)}
-                      className={`group bg-white rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between relative ${
-                        isSelected
-                          ? 'border-2 border-emerald-500 bg-emerald-50/20 shadow-sm ring-1 ring-emerald-500'
-                          : 'border border-slate-200/80 hover:border-emerald-300 hover:shadow-md'
-                      }`}
-                    >
-                      {/* Duration Badge */}
-                      <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded-md bg-white/90 backdrop-blur-sm border border-slate-200/60 text-[9px] font-bold text-slate-700 shadow-xs">
-                        ⏱️ {item.duration_mins}m
-                      </span>
-
-                      {/* Active Selection Checkmark */}
-                      {isSelected && (
-                        <span className="absolute top-2 right-2 z-10 w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shadow">
-                          ✓
-                        </span>
-                      )}
-
-                      {/* 3D Diorama Image Container */}
-                      <div className="aspect-square w-full rounded-xl bg-slate-50/90 flex items-center justify-center p-2 mb-2 overflow-hidden border border-slate-100/70 group-hover:bg-slate-50 transition-colors relative">
-                        <img 
-                          src={item.image} 
-                          alt={item.title} 
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-sm"
-                          loading="lazy"
-                        />
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveScopeService(item);
-                          }}
-                          className="absolute bottom-1.5 left-1.5 px-1 py-0.5 rounded bg-white/95 text-[8px] font-black text-emerald-800 border border-emerald-200/80 shadow-2xs hover:bg-emerald-50"
-                        >
-                          Do's & Don'ts ℹ️
-                        </button>
-                      </div>
-
-                      {/* Card Bottom: Title & Add/Stack Button */}
-                      <div className="flex items-end justify-between gap-1 pt-0.5">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-600 transition-colors truncate">
-                            {lang === 'en' ? item.title : item.title_hi}
-                          </h4>
-                          <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                            ₹{item.startingPrice} • {item.duration_mins} mins
-                          </span>
-                        </div>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleChoreInStack(item);
-                          }}
-                          className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-0.5 ${
-                            isSelected
-                              ? 'bg-emerald-600 text-white shadow-sm'
-                              : 'bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700'
-                          }`}
-                        >
-                          {isSelected ? 'Added ✓' : '+ Add'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-
             {/* 3-POINT QUICKSERVE MINIMAL TRUST STRIP */}
             <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3.5 space-y-2.5 mt-2">
               <div className="flex items-center gap-2.5">
@@ -1357,7 +1243,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     <span>Ghar Ka Pata (Doorstep Address):</span>
                   </span>
                   <span className="text-[10px] text-slate-500 font-medium">
-                    {activeCityZone || 'Sector 18, Noida'}
+                    {activeCityZone || 'Ansal Golf Links 1, Greater Noida'}
                   </span>
                 </label>
                 <input

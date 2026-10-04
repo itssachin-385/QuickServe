@@ -297,7 +297,7 @@ async function sendFast2SmsOtp(phone10, otp) {
 
 // 1. Send OTP (Zomato / Swiggy instant SMS flow via Fast2SMS)
 app.post('/api/auth/send-otp', async (req, res) => {
-  let { phone } = req.body;
+  let { phone, otp: clientOtp } = req.body;
   if (!phone) return res.status(400).json({ error: 'Phone number is required' });
   
   const cleanPhone = phone.replace(/\D/g, '').slice(-10);
@@ -305,9 +305,9 @@ app.post('/api/auth/send-otp', async (req, res) => {
     return res.status(400).json({ error: 'Please enter a valid 10-digit Indian mobile number' });
   }
 
-  // Generate real 4-digit random OTP (or keep 4821 for known demo phone)
+  // Use client-generated OTP if available to guarantee 100% sync
   const isDemo = cleanPhone === '9845011223';
-  const otp = isDemo ? '4821' : Math.floor(1000 + Math.random() * 9000).toString();
+  const otp = clientOtp || (isDemo ? '4821' : Math.floor(1000 + Math.random() * 9000).toString());
 
   pendingOtps[cleanPhone] = {
     otp,
@@ -361,7 +361,7 @@ app.post('/api/auth/verify-otp', (req, res) => {
     });
   }
 
-  res.status(400).json({ error: 'Incorrect OTP. Use 4821 (Demo OTP).' });
+  res.status(400).json({ error: 'Incorrect OTP. Please enter the 4-digit verification code.' });
 });
 
 // 3. Get Current User / Session Check
@@ -1155,11 +1155,11 @@ app.post('/api/bookings/:id/verify-start-otp', (req, res) => {
       customer_name: 'Customer',
       customer_phone: '',
       service_title: 'Home Service',
-      professional_name: 'Sunil Kumar',
-      professional_phone: '+91 98765 43210',
+      professional_name: 'Rahul Kumar (QuickServe SuperPartner)',
+      professional_phone: '+91 95701 51834',
       status: 'confirmed',
-      total_amount: 199,
-      base_charge: 199,
+      total_amount: 149,
+      base_charge: 149,
       payment_method: 'pay_after_work',
       service_start_otp: otp || '4826',
       service_completion_otp: '7921'
@@ -1189,11 +1189,11 @@ app.post('/api/bookings/:id/verify-complete-otp', (req, res) => {
       customer_name: 'Customer',
       customer_phone: '',
       service_title: 'Home Service',
-      professional_name: 'Sunil Kumar',
-      professional_phone: '+91 98765 43210',
+      professional_name: 'Rahul Kumar (QuickServe SuperPartner)',
+      professional_phone: '+91 95701 51834',
       status: 'started',
-      total_amount: 199,
-      base_charge: 199,
+      total_amount: 149,
+      base_charge: 149,
       payment_method: 'pay_after_work',
       service_start_otp: '4826',
       service_completion_otp: otp || '7921'

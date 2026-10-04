@@ -189,7 +189,7 @@ export const ProfessionalRegister: React.FC<ProfessionalRegisterProps> = ({
                     <input
                       type="tel"
                       required
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 95701 51834"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs"
