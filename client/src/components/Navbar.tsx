@@ -7,7 +7,6 @@ import {
   LogOut,
   Wallet,
   Clock,
-  Sparkles,
   ShoppingBag
 } from 'lucide-react';
 import { CustomerUser } from '../types';
@@ -154,71 +153,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Simple Clean Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
-            <button
-              onClick={() => {
-                if (activeModule !== 'website') onSelectModule('website');
-                setTimeout(() => {
-                  document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-                }, 50);
-              }}
-              className={`hover:text-emerald-600 transition-colors cursor-pointer ${
-                activeModule === 'website' ? 'text-emerald-600 font-bold' : ''
-              }`}
-            >
-              Services
-            </button>
-
-            <button
-              onClick={() => {
-                if (activeModule !== 'website') onSelectModule('website');
-                setTimeout(() => {
-                  document.getElementById('coverage')?.scrollIntoView({ behavior: 'smooth' });
-                }, 50);
-              }}
-              className="hover:text-emerald-600 transition-colors cursor-pointer"
-            >
-              Coverage Areas
-            </button>
-
-            <button
-              onClick={() => {
-                if (activeModule !== 'website') onSelectModule('website');
-                setTimeout(() => {
-                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-                }, 50);
-              }}
-              className="hover:text-emerald-600 transition-colors cursor-pointer"
-            >
-              How It Works
-            </button>
-
-            <button
-              onClick={() => onSelectModule('customer_app')}
-              className={`hover:text-emerald-600 transition-colors flex items-center gap-1.5 cursor-pointer ${
-                activeModule === 'customer_app' ? 'text-emerald-600 font-bold' : ''
-              }`}
-            >
-              <Clock className="w-4 h-4 text-emerald-600" />
-              <span>Track Dispatch</span>
-            </button>
-          </nav>
-
-          {/* Right Action: Clean User Login / Profile Dropdown & CTA */}
+          {/* Right Action: Clean User Login / Profile Dropdown & Partner Button */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (activeModule !== 'website') onSelectModule('website');
-                setTimeout(() => {
-                  document.getElementById('quick-book')?.scrollIntoView({ behavior: 'smooth' });
-                }, 50);
-              }}
-              className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition-all shadow-sm shadow-amber-400/30 group"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-slate-900 group-hover:rotate-12 transition-transform" />
-              <span>Book a Service</span>
-            </button>
 
             {currentUser ? (
               <div className="relative">

@@ -377,26 +377,11 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-4xl mx-auto text-center space-y-4">
-          
-          {/* Verified Dispatch Trust Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-emerald-200/80 shadow-2xs text-xs font-bold text-emerald-800 animate-in fade-in duration-300">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#04b565]"></span>
-            </span>
-            <span>⚡ 15-Minute Doorstep Help • Greater Noida & NCR Hub</span>
-          </div>
-
           {/* Main Headline */}
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
             Ghar Ka Har Kaam, <br className="hidden sm:inline" />
             <span className="text-[#04b565]">15 Minute</span> Me Aasaan.
           </h1>
-
-          {/* Subtitle */}
-          <p className="text-xs sm:text-base text-slate-600 max-w-xl mx-auto font-medium leading-relaxed">
-            Book police-verified house maids, certified electricians, skilled plumbers & care attendants with flat upfront pricing and pay-after-service assurance.
-          </p>
 
           {/* Premium Search Bar */}
           <div className="max-w-xl mx-auto relative pt-2">
@@ -503,25 +488,6 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
             </div>
 
           </div>
-
-          {/* 3-Point Quick Guarantee Strip */}
-          <div className="pt-2 flex items-center justify-center flex-wrap gap-4 sm:gap-8 text-xs text-slate-500 font-semibold">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#04b565]" />
-              <span>100% Police Verified</span>
-            </span>
-            <span className="hidden sm:inline text-slate-300">•</span>
-            <span className="flex items-center gap-1.5">
-              <Timer className="w-4 h-4 text-amber-500" />
-              <span>10-15 Min Fast Dispatch</span>
-            </span>
-            <span className="hidden sm:inline text-slate-300">•</span>
-            <span className="flex items-center gap-1.5">
-              <CreditCard className="w-4 h-4 text-blue-500" />
-              <span>Pay After Service (UPI/Cash)</span>
-            </span>
-          </div>
-
         </div>
       </section>
 
@@ -553,11 +519,6 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
               </button>
             ))}
           </div>
-
-          <span className="text-xs text-slate-500 font-semibold hidden sm:flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>{filteredServices.length} services available • Click card for Do's & Don'ts</span>
-          </span>
         </div>
 
         {/* Polished Chores Cards */}
