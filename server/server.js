@@ -162,11 +162,22 @@ if (!customers || customers.length === 0) {
 let pendingOtps = {}; // phone -> { otp, expiresAt }
 
 // ==========================================
-// GATEWAY CONFIGURATION (Fast2SMS & Razorpay / UPI)
+// GATEWAY CONFIGURATION & FAST2SMS BALANCE SHIELD
 // ==========================================
+// Whitelisted numbers for zero-cost developer testing (Bypasses Fast2SMS to protect wallet balance)
+const WHITELISTED_DEV_NUMBERS = [
+  '9570151834', // Founder (Sachin Kumar)
+  '9845011223', // Demo user
+  '9999999999',
+  '8888888888',
+  '7777777777',
+  '1111111111'
+];
+
 let gatewayConfig = {
   fast2smsApiKey: process.env.FAST2SMS_API_KEY || '',
-  fast2smsRoute: process.env.FAST2SMS_ROUTE || 'otp', // 'otp' or 'q'
+  fast2smsRoute: process.env.FAST2SMS_ROUTE || 'q', // 'otp' or 'q'
+  balanceShield: process.env.BALANCE_SHIELD !== 'false', // Default: TRUE (Active to protect user balance during testing)
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_51aQuickServe',
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || 'qs_test_secret_123',
   upiVpa: process.env.UPI_VPA || 'sachinsb68741@nyes',
@@ -174,9 +185,19 @@ let gatewayConfig = {
   upiMerchantName: process.env.UPI_MERCHANT_NAME || 'Sachin Kumar'
 };
 
+function isPhoneShielded(phone10, forceReal = false) {
+  if (forceReal) return false;
+  const cleanPhone = (phone10 || '').replace(/\D/g, '').slice(-10);
+  // 1. Founder & developer test numbers are ALWAYS protected (Zero ₹ deducted)
+  if (WHITELISTED_DEV_NUMBERS.includes(cleanPhone)) return true;
+  // 2. Global developer balance shield active
+  if (gatewayConfig.balanceShield) return true;
+  return false;
+}
+
 let smsLogs = []; // recent SMS audit trail
 
-async function sendFast2SmsOtp(phone10, otp) {
+async function sendFast2SmsOtp(phone10, otp, forceReal = false) {
   const cleanPhone = phone10.replace(/\D/g, '').slice(-10);
   const logEntry = {
     id: `sms-${Date.now()}`,
@@ -195,8 +216,26 @@ async function sendFast2SmsOtp(phone10, otp) {
     return {
       success: true,
       provider: 'simulation',
-      message: `Fast2SMS simulated OTP: ${otp}. (Enter your Fast2SMS API Key in the box above to send real carrier SMS to +91 ${cleanPhone})`,
+      message: `Fast2SMS simulated OTP: ${otp}. (Enter your Fast2SMS API Key in Gateway Settings to send carrier SMS)`,
       demo_otp: otp
+    };
+  }
+
+  // ========================================================
+  // 🛡️ ZERO-COST BALANCE SHIELD: PROTECTS YOUR ₹95 WALLET
+  // ========================================================
+  if (isPhoneShielded(cleanPhone, forceReal)) {
+    logEntry.status = 'balance_shield_protected';
+    logEntry.note = `🛡️ Balance Shield Active (+91 ${cleanPhone}): Fast2SMS API bypassed — ₹5.00 saved! OTP: ${otp}`;
+    smsLogs.unshift(logEntry);
+    if (smsLogs.length > 50) smsLogs.pop();
+    console.log(`[BALANCE SHIELD] Fast2SMS API call bypassed for +91 ${cleanPhone}. ₹5.00 saved! Current balance safe at ₹95. Demo OTP: ${otp}`);
+    return {
+      success: true,
+      provider: 'balance_shield',
+      message: `🛡️ Fast2SMS Balance Shield Active: Verification OTP is ${otp}. (Zero Cost Test Mode: ₹5.00 saved!)`,
+      demo_otp: otp,
+      saved: true
     };
   }
 
@@ -322,6 +361,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
     phone: cleanPhone,
     provider: smsResult.provider,
     demo_otp: otp,
+    saved: smsResult.saved || false,
     has_real_key: Boolean(gatewayConfig.fast2smsApiKey)
   });
 });
@@ -407,7 +447,9 @@ app.get('/api/gateways/config', (req, res) => {
     fast2sms: {
       hasKey: Boolean(gatewayConfig.fast2smsApiKey),
       maskedKey: gatewayConfig.fast2smsApiKey ? `${gatewayConfig.fast2smsApiKey.slice(0, 4)}...${gatewayConfig.fast2smsApiKey.slice(-4)}` : '',
-      route: gatewayConfig.fast2smsRoute
+      route: gatewayConfig.fast2smsRoute,
+      balanceShield: gatewayConfig.balanceShield,
+      whitelistedNumbers: WHITELISTED_DEV_NUMBERS
     },
     razorpay: {
       keyId: gatewayConfig.razorpayKeyId,
@@ -423,9 +465,10 @@ app.get('/api/gateways/config', (req, res) => {
 });
 
 app.post('/api/gateways/config', (req, res) => {
-  const { fast2smsApiKey, fast2smsRoute, razorpayKeyId, razorpayKeySecret, upiVpa, merchantPhone, upiMerchantName } = req.body;
+  const { fast2smsApiKey, fast2smsRoute, balanceShield, razorpayKeyId, razorpayKeySecret, upiVpa, merchantPhone, upiMerchantName } = req.body;
   if (fast2smsApiKey !== undefined) gatewayConfig.fast2smsApiKey = fast2smsApiKey.trim();
   if (fast2smsRoute !== undefined) gatewayConfig.fast2smsRoute = fast2smsRoute;
+  if (balanceShield !== undefined) gatewayConfig.balanceShield = Boolean(balanceShield);
   if (razorpayKeyId !== undefined) gatewayConfig.razorpayKeyId = razorpayKeyId.trim();
   if (razorpayKeySecret !== undefined) gatewayConfig.razorpayKeySecret = razorpayKeySecret.trim();
   if (upiVpa !== undefined) gatewayConfig.upiVpa = upiVpa.trim();
@@ -442,6 +485,7 @@ app.post('/api/gateways/config', (req, res) => {
       `UPI_MERCHANT_NAME=${gatewayConfig.upiMerchantName}`,
       `FAST2SMS_API_KEY=${gatewayConfig.fast2smsApiKey}`,
       `FAST2SMS_ROUTE=${gatewayConfig.fast2smsRoute}`,
+      `BALANCE_SHIELD=${gatewayConfig.balanceShield}`,
       `RAZORPAY_KEY_ID=${gatewayConfig.razorpayKeyId}`,
       `RAZORPAY_KEY_SECRET=${gatewayConfig.razorpayKeySecret}`
     ].join('\n');
@@ -455,6 +499,7 @@ app.post('/api/gateways/config', (req, res) => {
     message: 'Gateway configuration updated successfully',
     config: {
       hasFast2smsKey: Boolean(gatewayConfig.fast2smsApiKey),
+      balanceShield: gatewayConfig.balanceShield,
       razorpayKeyId: gatewayConfig.razorpayKeyId,
       upiVpa: gatewayConfig.upiVpa,
       merchantPhone: gatewayConfig.merchantPhone,
@@ -482,11 +527,11 @@ app.post('/api/gateways/fast2sms/check-balance', async (req, res) => {
 });
 
 app.post('/api/gateways/fast2sms/send-test', async (req, res) => {
-  const { phone } = req.body;
+  const { phone, forceReal } = req.body;
   if (!phone) return res.status(400).json({ error: 'Phone number is required' });
   const cleanPhone = phone.replace(/\D/g, '').slice(-10);
   const testOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  const result = await sendFast2SmsOtp(cleanPhone, testOtp);
+  const result = await sendFast2SmsOtp(cleanPhone, testOtp, Boolean(forceReal));
   res.json(result);
 });
 
@@ -530,26 +575,30 @@ app.post('/api/payments/verify', async (req, res) => {
     booking.payment_reference = payment_id || `pay_${Date.now()}`;
   }
 
-  // Send Fast2SMS Payment Confirmation SMS if Key is present
+  // Send Fast2SMS Payment Confirmation SMS if Key is present and not shielded
   if (booking && gatewayConfig.fast2smsApiKey && booking.customer_phone) {
     const cleanPhone = booking.customer_phone.replace(/\D/g, '').slice(-10);
-    try {
-      await fetch('https://www.fast2sms.com/dev/bulkV2', {
-        method: 'POST',
-        headers: {
-          'authorization': gatewayConfig.fast2smsApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          route: 'q',
-          message: `QuickServe: Payment of Rs.${amount || booking.total_amount} received for Ref ${booking.booking_reference}. Partner ${booking.professional_name} is arriving in ~15 mins!`,
-          language: 'english',
-          flash: 0,
-          numbers: cleanPhone
-        })
-      });
-    } catch (e) {
-      console.warn('Fast2SMS confirmation notice error:', e.message);
+    if (isPhoneShielded(cleanPhone)) {
+      console.log(`[BALANCE SHIELD] Skipped payment confirmation SMS for +91 ${cleanPhone}. ₹5.00 saved!`);
+    } else {
+      try {
+        await fetch('https://www.fast2sms.com/dev/bulkV2', {
+          method: 'POST',
+          headers: {
+            'authorization': gatewayConfig.fast2smsApiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            route: 'q',
+            message: `QuickServe: Payment of Rs.${amount || booking.total_amount} received for Ref ${booking.booking_reference}. Partner ${booking.professional_name} is arriving in ~15 mins!`,
+            language: 'english',
+            flash: 0,
+            numbers: cleanPhone
+          })
+        });
+      } catch (e) {
+        console.warn('Fast2SMS confirmation notice error:', e.message);
+      }
     }
   }
 

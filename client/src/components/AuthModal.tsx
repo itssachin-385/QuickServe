@@ -63,8 +63,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setStep('otp');
       setStatusMessage(res.message || `OTP sent to +91 ${cleanPhone}`);
 
-      // If backend provides demo_otp (simulation fallback), autofill for smooth testing
-      if (res.demo_otp && !res.has_real_key) {
+      // If backend provides demo_otp (simulation fallback or balance shield), autofill for smooth testing
+      if (res.demo_otp && (!res.has_real_key || res.provider === 'balance_shield' || res.provider === 'simulation' || (res as any).saved)) {
         setOtp(res.demo_otp);
       }
     } catch (err: any) {
