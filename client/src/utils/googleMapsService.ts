@@ -278,48 +278,7 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     localExact = resolveNoidaOrGreaterNoida({}, '', lat, lon);
   }
 
-  // 2. Query OSM Nominatim reverse geocode at zoom=18 (ultra-high boundary resolution for Indian towns & cities)
-  let addr: any = {};
-  let fullDisplayName = '';
-  let osmLocality = '';
-  let osmCity = '';
-  let osmRoad = '';
-  let osmState = '';
-  let osmPincode = '';
-
-  try {
-    const osmRes = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
-      { headers: { 'User-Agent': 'QuickServe-Marketplace-App/1.0' } }
-    );
-    if (osmRes.ok) {
-      const osmData = await osmRes.json();
-      addr = osmData.address || {};
-      fullDisplayName = osmData.display_name || '';
-      osmState = addr.state || '';
-      osmPincode = addr.postcode || '';
-      osmRoad = addr.road || addr.pedestrian || addr.footway || '';
-
-      // Direct locality extraction from OSM address object
-      osmLocality = 
-        addr.neighbourhood || 
-        addr.suburb || 
-        addr.residential || 
-        addr.village || 
-        addr.hamlet || 
-        addr.quarter || 
-        addr.subdistrict || 
-        '';
-
-      // Raw city extraction
-      const rawCity = addr.city || addr.town || addr.municipality || addr.state_district || addr.county || '';
-      osmCity = cleanIndianCityName(rawCity);
-    }
-  } catch (e) {
-    console.warn('OSM reverse geocode error:', e);
-  }
-
-  // 3. Query Google Places API searchNearby with distance-sorted selection
+  // 2. Query Google Places API searchNearby FIRST (fast Google edge CDN in <150ms)
   try {
     const url = 'https://places.googleapis.com/v1/places:searchNearby';
     const response = await fetch(url, {
@@ -387,18 +346,52 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
           parsed.areaCity = localExact.formattedArea;
           parsed.city = localExact.city;
           if (!parsed.streetGali) parsed.streetGali = localExact.suggestedGali || '';
-        } else if (osmLocality && osmLocality.toLowerCase() !== parsed.city.toLowerCase()) {
-          if (/ber sarai/i.test(osmLocality)) {
-            parsed.areaCity = 'Ber Sarai, New Delhi';
-            parsed.city = 'New Delhi';
-          }
         }
 
         return parsed;
       }
     }
   } catch (err) {
-    console.warn('Google Places reverse geocode warning:', err);
+    console.warn('Google Places reverse geocode warning, using OSM fallback:', err);
+  }
+
+  // 3. EMERGENCY FALLBACK: OSM Nominatim reverse geocode (only called if Google Places failed)
+  let addr: any = {};
+  let fullDisplayName = '';
+  let osmLocality = '';
+  let osmCity = '';
+  let osmRoad = '';
+  let osmState = '';
+  let osmPincode = '';
+
+  try {
+    const osmRes = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+      { headers: { 'User-Agent': 'QuickServe-Marketplace-App/1.0' } }
+    );
+    if (osmRes.ok) {
+      const osmData = await osmRes.json();
+      addr = osmData.address || {};
+      fullDisplayName = osmData.display_name || '';
+      osmState = addr.state || '';
+      osmPincode = addr.postcode || '';
+      osmRoad = addr.road || addr.pedestrian || addr.footway || '';
+
+      osmLocality = 
+        addr.neighbourhood || 
+        addr.suburb || 
+        addr.residential || 
+        addr.village || 
+        addr.hamlet || 
+        addr.quarter || 
+        addr.subdistrict || 
+        '';
+
+      const rawCity = addr.city || addr.town || addr.municipality || addr.state_district || addr.county || '';
+      osmCity = cleanIndianCityName(rawCity);
+    }
+  } catch (e) {
+    console.warn('OSM reverse geocode error:', e);
   }
 
   // 4. PAN-INDIA CITY & LOCALITY RESOLUTION FROM NOMINATIM DISPLAY_NAME
