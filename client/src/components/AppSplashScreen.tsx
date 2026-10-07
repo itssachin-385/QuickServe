@@ -7,7 +7,7 @@ interface AppSplashScreenProps {
 }
 
 const QUOTES = [
-  '“Ghar Ka Har Kaam, 15 Minute Me Aasaan”',
+  '“Every Home Chore, Done in 15 Minutes”',
   '“India’s Fastest Domestic Help at Your Doorstep”',
   '“Aadhaar-Verified House Helpers in Under 15 Minutes”',
   '“Plumber, Electrician, Cook & Cleaning — Just One Tap Away”'

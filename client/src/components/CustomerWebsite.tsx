@@ -378,8 +378,8 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
         <div className="max-w-4xl mx-auto text-center space-y-4">
           {/* Main Headline */}
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
-            Ghar Ka Har Kaam, <br className="hidden sm:inline" />
-            <span className="text-[#04b565]">15 Minute</span> Me Aasaan.
+            Every Home Chore, <br className="hidden sm:inline" />
+            Done in <span className="text-[#04b565]">15 Minutes</span>.
           </h1>
 
           {/* Premium Search Bar */}
@@ -829,7 +829,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-emerald-600" />
-                      <span>1. Select Date (तारीख चुनें):</span>
+                      <span>1. Select Date:</span>
                     </label>
                     <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200">
                       {availableDates[selectedDateIndex]?.dayName}
@@ -869,7 +869,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                   <div className="flex items-center justify-between pt-1">
                     <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-emerald-600" />
-                      <span>2. Select Time (समय चुनें):</span>
+                      <span>2. Select Time:</span>
                     </label>
                     <span className="text-[10px] text-slate-500 font-medium">1-Hour Arrival Slot</span>
                   </div>

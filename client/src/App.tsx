@@ -227,7 +227,7 @@ export function App() {
             lastBackPress = now;
             const toast = document.createElement('div');
             toast.id = 'quickserve-exit-toast';
-            toast.innerText = lang === 'en' ? 'Press back again to exit QuickServe' : 'बाहर निकलने के लिए एक बार और बैक दबाएं';
+            toast.innerText = 'Press back again to exit QuickServe';
             toast.style.cssText = 'position:fixed;bottom:85px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);color:#fff;padding:8px 18px;border-radius:24px;font-size:12px;font-weight:600;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.25);pointer-events:none;transition:opacity 0.25s;';
             document.body.appendChild(toast);
             setTimeout(() => {

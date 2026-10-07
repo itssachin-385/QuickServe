@@ -203,11 +203,11 @@ export const ProfessionalRegister: React.FC<ProfessionalRegisterProps> = ({
                       onChange={(e) => setPreferredLanguage(e.target.value)}
                       className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                     >
-                      <option value="hi">हिन्दी (Hindi)</option>
                       <option value="en">English</option>
-                      <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                      <option value="ta">தமிழ் (Tamil)</option>
-                      <option value="te">తెలుగు (Telugu)</option>
+                      <option value="hi">Hindi</option>
+                      <option value="kn">Kannada</option>
+                      <option value="ta">Tamil</option>
+                      <option value="te">Telugu</option>
                     </select>
                   </div>
                 </div>

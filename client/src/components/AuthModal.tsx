@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { 
   X, 
+  Smartphone, 
+  CheckCircle2, 
+  AlertCircle, 
   ShieldCheck, 
   ArrowRight, 
-  CheckCircle2, 
+  User, 
+  Mail, 
+  MapPin, 
   RotateCcw,
-  User,
-  AlertCircle,
-  Smartphone,
-  Mail,
-  MapPin,
-  Check,
+  Sparkles,
   MessageSquare
 } from 'lucide-react';
-import { CustomerUser } from '../types';
 import { sendOtp, verifyOtp, updateUserProfile } from '../api';
+import { CustomerUser } from '../types';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -26,26 +26,24 @@ interface AuthModalProps {
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  onSuccess,
-  lang = 'en'
+  onSuccess
 }) => {
   const [step, setStep] = useState<'phone' | 'otp' | 'profile'>('phone');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [userGender, setUserGender] = useState<'male' | 'female' | 'other' | ''>('');
-  const [userCity, setUserCity] = useState('Greater Noida');
-  const [whatsappConsent, setWhatsappConsent] = useState(true);
-  const [verifiedUser, setVerifiedUser] = useState<CustomerUser | null>(null);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  // New User Profile form fields
+  const [verifiedUser, setVerifiedUser] = useState<CustomerUser | null>(null);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userGender, setUserGender] = useState<'male' | 'female' | 'other'>('male');
+  const [userCity, setUserCity] = useState('Greater Noida');
+  const [whatsappConsent, setWhatsappConsent] = useState(true);
 
-  const isHindi = lang === 'hi';
+  if (!isOpen) return null;
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -53,7 +51,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setStatusMessage(null);
     const cleanPhone = phone.replace(/\D/g, '').slice(-10);
     if (cleanPhone.length !== 10) {
-      setError(isHindi ? 'कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें' : 'Please enter a valid 10-digit Indian mobile number');
+      setError('Please enter a valid 10-digit Indian mobile number');
       return;
     }
 
@@ -78,7 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (e) e.preventDefault();
     setError(null);
     if (!otp.trim()) {
-      setError(isHindi ? 'कृपया 4 अंकों का OTP कोड दर्ज करें' : 'Please enter the 4-digit OTP');
+      setError('Please enter the 4-digit OTP');
       return;
     }
 
@@ -103,7 +101,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (!verifiedUser) return;
 
     if (!userName.trim()) {
-      setError(isHindi ? 'कृपया अपना नाम दर्ज करें' : 'Please enter your full name');
+      setError('Please enter your full name');
       return;
     }
 
@@ -162,17 +160,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           <h3 className="text-xl sm:text-2xl font-black text-white">
             {step === 'phone' 
-              ? (isHindi ? 'लॉगिन या साइन अप' : 'Login or Sign Up')
+              ? 'Login or Sign Up'
               : step === 'otp'
-              ? (isHindi ? 'मोबाइल OTP सत्यापित करें' : 'Verify Mobile OTP')
-              : (isHindi ? 'अपनी प्रोफ़ाइल पूरी करें' : 'Complete Your Profile')}
+              ? 'Verify Mobile OTP'
+              : 'Complete Your Profile'}
           </h3>
           <p className="text-xs text-slate-300 mt-1">
             {step === 'phone' 
-              ? (isHindi ? 'सत्यापित घरेलू सेवाएं बुक करने के लिए अपना नंबर दर्ज करें।' : 'Enter your mobile number to access verified household help.')
+              ? 'Enter your mobile number to access verified household help.'
               : step === 'otp'
-              ? (isHindi ? `+91 ${phone} पर भेजा गया 4-अंकों का कोड दर्ज करें` : `Enter the 4-digit code sent to +91 ${phone}`)
-              : (isHindi ? 'बुकिंग इनवॉइस और सेवा अपडेट्स के लिए विवरण भरें।' : 'Enter your name and details for booking updates & invoices.')}
+              ? `Enter the 4-digit code sent to +91 ${phone}`
+              : 'Enter your name and details for booking updates & invoices.'}
           </p>
         </div>
 
@@ -197,7 +195,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                  {isHindi ? 'मोबाइल नंबर' : 'Mobile Number'}
+                  Mobile Number
                 </label>
                 <div className="flex items-center rounded-2xl border-2 border-slate-200 focus-within:border-emerald-500 transition-colors overflow-hidden bg-slate-50 focus-within:bg-white">
                   <span className="px-3.5 py-3.5 text-sm font-bold text-slate-700 border-r border-slate-200 flex items-center gap-1.5 bg-slate-100">
@@ -221,7 +219,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={loading || phone.length !== 10}
                 className="w-full py-4 bg-[#04b565] hover:bg-[#039e57] disabled:opacity-50 text-white font-black rounded-2xl text-sm transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
               >
-                <span>{loading ? (isHindi ? 'OTP भेजा जा रहा है...' : 'Sending OTP SMS...') : (isHindi ? 'आगे बढ़ें →' : 'Continue with OTP →')}</span>
+                <span>{loading ? 'Sending OTP SMS...' : 'Continue with OTP →'}</span>
               </button>
 
               <div className="flex items-center gap-2 justify-center text-[10px] text-slate-400 pt-1">
@@ -237,7 +235,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    {isHindi ? '4 अंकों का OTP कोड' : 'Enter 4-Digit Code'}
+                    Enter 4-Digit Code
                   </label>
                   <button
                     type="button"
@@ -248,7 +246,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     }}
                     className="text-xs text-emerald-700 hover:text-emerald-800 font-bold"
                   >
-                    {isHindi ? 'नंबर बदलें' : 'Change Phone'}
+                    Change Phone
                   </button>
                 </div>
 
@@ -272,7 +270,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={loading || otp.length < 4}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black rounded-2xl text-sm transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2"
               >
-                <span>{loading ? (isHindi ? 'सत्यापित हो रहा है...' : 'Verifying...') : (isHindi ? 'OTP सत्यापित करें →' : 'Verify Code →')}</span>
+                <span>{loading ? 'Verifying...' : 'Verify Code →'}</span>
               </button>
 
               <button
@@ -281,7 +279,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 className="w-full text-center text-xs text-slate-500 hover:text-slate-800 font-medium flex items-center justify-center gap-1.5 pt-1"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>{isHindi ? 'OTP नहीं मिला? दोबारा भेजें' : 'Didn\'t receive code? Resend SMS OTP'}</span>
+                <span>Didn't receive code? Resend SMS OTP</span>
               </button>
             </form>
           )}
@@ -298,7 +296,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     +91 {phone}
                   </span>
                   <span className="text-[10px] text-emerald-700 font-semibold">
-                    ✓ {isHindi ? 'मोबाइल नंबर सत्यापित हो गया' : 'Mobile Number Verified'}
+                    ✓ Mobile Number Verified
                   </span>
                 </div>
               </div>
@@ -306,7 +304,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {/* Salutation / Title (Optional) */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  {isHindi ? 'संबोधन (वैकल्पिक)' : 'Title / Salutation (Optional)'}
+                  Title / Salutation (Optional)
                 </label>
                 <div className="flex items-center gap-2">
                   {[
@@ -333,7 +331,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {/* Full Name (Required) */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  {isHindi ? 'आपका पूरा नाम *' : 'Full Name *'}
+                  Full Name *
                 </label>
                 <div className="flex items-center rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus-within:bg-white focus-within:border-[#04b565] transition-colors">
                   <User className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
@@ -353,10 +351,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-700">
-                    {isHindi ? 'ईमेल आईडी' : 'Email Address'}
+                    Email Address
                   </label>
                   <span className="text-[10px] text-slate-400 font-medium">
-                    {isHindi ? 'वैकल्पिक (Optional)' : 'Optional'}
+                    Optional
                   </span>
                 </div>
                 <div className="flex items-center rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus-within:bg-white focus-within:border-[#04b565] transition-colors">
@@ -370,14 +368,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   />
                 </div>
                 <p className="text-[10px] text-slate-400 mt-1">
-                  {isHindi ? 'डिजिटल टैक्स इनवॉइस और रसीद इस ईमेल पर भेजी जाएगी।' : 'Digital tax invoices and service receipts will be sent here.'}
+                  Digital tax invoices and service receipts will be sent here.
                 </p>
               </div>
 
               {/* City / Locality Selection */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  {isHindi ? 'शहर / इलाका' : 'City / Locality'}
+                  City / Locality
                 </label>
                 <div className="flex items-center rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus-within:bg-white focus-within:border-[#04b565] transition-colors">
                   <MapPin className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
@@ -406,10 +404,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <label htmlFor="whatsappAlerts" className="text-xs text-slate-800 cursor-pointer">
                   <span className="font-bold flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{isHindi ? 'व्हाट्सएप पर अपडेट्स पाएं' : 'Get service updates on WhatsApp'}</span>
+                    <span>Get service updates on WhatsApp</span>
                   </span>
                   <span className="text-[10px] text-slate-500 block mt-0.5">
-                    {isHindi ? 'टेक्निशियन का आगमन और OTP सीधे व्हाट्सएप पर प्राप्त करें।' : 'Technician arrival alerts and booking OTP sent to your WhatsApp.'}
+                    Technician arrival alerts and booking OTP sent to your WhatsApp.
                   </span>
                 </label>
               </div>
@@ -421,7 +419,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   disabled={loading || !userName.trim()}
                   className="w-full py-3.5 bg-[#04b565] hover:bg-[#039e57] disabled:opacity-50 text-white font-black rounded-2xl text-xs sm:text-sm transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
                 >
-                  <span>{loading ? (isHindi ? 'सेव हो रहा है...' : 'Saving...') : (isHindi ? 'प्रोफ़ाइल सेव करें और जारी रखें →' : 'Complete Profile & Continue →')}</span>
+                  <span>{loading ? 'Saving...' : 'Complete Profile & Continue →'}</span>
                 </button>
 
                 <button
@@ -429,7 +427,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   onClick={handleSkipProfile}
                   className="w-full text-center text-xs text-slate-400 hover:text-slate-700 py-1"
                 >
-                  {isHindi ? 'अभी छोड़ें (बाद में भरें)' : 'Skip for now'}
+                  Skip for now
                 </button>
               </div>
             </form>

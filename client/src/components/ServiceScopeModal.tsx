@@ -29,18 +29,16 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
   onClose,
   onToggleAdd,
   onProceed,
-  isAdded,
-  lang = 'en'
+  isAdded
 }) => {
   const [activeTab, setActiveTab] = useState<'both' | 'included' | 'excluded'>('both');
 
   if (!isOpen || !service) return null;
 
-  const isHindi = lang === 'hi';
-  const title = isHindi ? service.title_hi : service.title;
-  const includedList = isHindi && service.includedTasks_hi?.length ? service.includedTasks_hi : service.includedTasks;
-  const excludedList = isHindi && service.excludedTasks_hi?.length ? service.excludedTasks_hi : service.excludedTasks;
-  const note = isHindi && service.materialsNote_hi ? service.materialsNote_hi : service.materialsNote;
+  const title = service.title;
+  const includedList = service.includedTasks;
+  const excludedList = service.excludedTasks;
+  const note = service.materialsNote;
 
   return (
     <div 
@@ -100,7 +98,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                   : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
               }`}
             >
-              {isHindi ? 'पूरा स्कोप' : 'All Scope'}
+              All Scope
             </button>
             <button
               onClick={() => setActiveTab('included')}
@@ -111,7 +109,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
               }`}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{isHindi ? 'क्या करवा सकते हैं (Do\'s)' : 'Included (Do\'s)'}</span>
+              <span>Included (Do's)</span>
             </button>
             <button
               onClick={() => setActiveTab('excluded')}
@@ -122,7 +120,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
               }`}
             >
               <XCircle className="w-3.5 h-3.5" />
-              <span>{isHindi ? 'क्या शामिल नहीं (Don\'ts)' : 'Excluded (Don\'ts)'}</span>
+              <span>Excluded (Don'ts)</span>
             </button>
           </div>
         </div>
@@ -139,10 +137,10 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xs sm:text-sm font-black text-emerald-950">
-                    {isHindi ? 'आप यह सब करवा सकते हैं (What\'s Included / Do\'s)' : 'What is Included (Do\'s)'}
+                    What is Included (Do's)
                   </h3>
                   <p className="text-[10px] text-emerald-700 font-medium">
-                    {isHindi ? 'प्रोफेशनल द्वारा दी जाने वाली सेवाएं' : 'Standard tasks covered in this visit'}
+                    Standard tasks covered in this visit
                   </p>
                 </div>
               </div>
@@ -167,10 +165,10 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xs sm:text-sm font-black text-rose-950">
-                    {isHindi ? 'यह शामिल नहीं है (What\'s NOT Included / Don\'ts)' : 'What is NOT Included (Don\'ts)'}
+                    What is NOT Included (Don'ts)
                   </h3>
                   <p className="text-[10px] text-rose-700 font-medium">
-                    {isHindi ? 'इन कार्यों के लिए अलग व्यवस्था या चार्ज लगेगा' : 'Excluded tasks or requires separate specialist booking'}
+                    Excluded tasks or requires separate specialist booking
                   </p>
                 </div>
               </div>
@@ -192,7 +190,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
               <Info className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
               <div>
                 <span className="text-[11px] font-black text-amber-900 block">
-                  {isHindi ? 'सामान और तैयारी संबंधी जानकारी:' : 'Materials & Hardware Guidelines:'}
+                  Materials & Hardware Guidelines:
                 </span>
                 <p className="text-[11px] text-amber-800 font-medium leading-relaxed mt-0.5">
                   {note}
@@ -220,7 +218,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
           <div className="flex items-center justify-between sm:justify-start gap-3">
             <div>
               <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">
-                {isHindi ? 'शुरुआती कीमत' : 'Starting Rate'}
+                Starting Rate
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xl font-black text-slate-900">
@@ -235,7 +233,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
             {isAdded && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
-                <span>{isHindi ? 'कार्ट में शामिल' : 'Added to Cart'}</span>
+                <span>Added to Cart</span>
               </span>
             )}
           </div>
@@ -249,7 +247,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                   title="Remove from Cart"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>{isHindi ? 'हटाएं' : 'Remove'}</span>
+                  <span>Remove</span>
                 </button>
 
                 <button
@@ -259,7 +257,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                   }}
                   className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:to-teal-700 text-white active:scale-98"
                 >
-                  <span>{isHindi ? 'आगे बढ़ें (Proceed to Book)' : `Proceed to Checkout (₹${service.startingPrice})`}</span>
+                  <span>Proceed to Checkout (₹{service.startingPrice})</span>
                   <span className="text-sm font-extrabold">→</span>
                 </button>
               </>
@@ -270,7 +268,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                   className="px-4 py-2.5 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>{isHindi ? '+ कार्ट में जोड़ें' : '+ Add to Cart'}</span>
+                  <span>+ Add to Cart</span>
                 </button>
 
                 <button
@@ -281,7 +279,7 @@ export const ServiceScopeModal: React.FC<ServiceScopeModalProps> = ({
                   }}
                   className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:to-teal-700 text-white active:scale-98"
                 >
-                  <span>{isHindi ? 'अभी बुक करें (Proceed)' : 'Book Now & Proceed'}</span>
+                  <span>Book Now & Proceed</span>
                   <span className="text-sm font-extrabold">→</span>
                 </button>
               </>

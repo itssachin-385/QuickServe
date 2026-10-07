@@ -415,7 +415,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
   ) => {
     const cleanPhone = (bookingCustomerPhone || currentUser?.phone || '').replace(/\D/g, '').slice(-10);
     if (cleanPhone.length !== 10) {
-      alert('Kripya apna 10-digit mobile number enter karein taaki OTP aur booking update mil sake.');
+      alert('Please enter your 10-digit mobile number to receive the OTP and booking updates.');
       return;
     }
     localStorage.setItem('quickserve_customer_phone', cleanPhone);
@@ -718,7 +718,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder={lang === 'en' ? 'Search "Bathroom", "Fridge", "Maid", "Utensils"...' : 'सर्च करें "बाथरूम सफाई", "फ्रिज", "झाड़ू-पोछा"...'}
+                placeholder='Search "Bathroom", "Fridge", "Maid", "Utensils"...'
                 className="w-full pl-10 pr-9 py-2.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-xs text-slate-800 placeholder-slate-400 rounded-xl border border-slate-200/80 focus:outline-none focus:border-emerald-500 transition-colors"
               />
               {searchQuery && (
@@ -807,10 +807,10 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                   ⚡ QuickServe 15-Minute Delivery
                 </div>
                 <h2 className="text-base font-bold leading-tight">
-                  {lang === 'en' ? 'House help in 15 minutes' : '15 मिनट में घरेलू मदद'}
+                  House help in 15 minutes
                 </h2>
                 <p className="text-[11px] text-emerald-50 mt-1 opacity-90">
-                  {lang === 'en' ? 'Book by the hour (1 hr ₹199) or select specific chores below' : 'प्रति घंटा बुकिंग या मनपसंद काम चुनें, पारदर्शी फ्लैट रेट्स'}
+                  Book by the hour (1 hr ₹199) or select specific chores below
                 </p>
 
                 <div className="mt-3 flex items-center gap-2">
@@ -838,10 +838,10 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">
-                    {lang === 'en' ? 'Primary Services' : 'मुख्य सेवाएं'}
+                    Primary Services
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    {lang === 'en' ? 'Verified local experts at fixed flat prices' : 'फिक्स फ्लैट रेट्स, 15-20 मिनट में हाजिर'}
+                    Verified local experts at fixed flat prices
                   </p>
                 </div>
                 <span className="text-[10px] text-emerald-800 font-extrabold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
@@ -855,7 +855,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     id: 'cat-plumber',
                     slug: 'plumber',
                     title: 'Plumber',
-                    title_hi: 'प्लम्बर (नलसाज)',
+                    title_hi: 'Plumber',
                     price: 149,
                     icon: '🔧',
                     eta: '15 min',
@@ -865,7 +865,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     id: 'cat-electrician',
                     slug: 'electrician',
                     title: 'Electrician',
-                    title_hi: 'इलेक्ट्रीशियन',
+                    title_hi: 'Electrician',
                     price: 149,
                     icon: '⚡',
                     eta: '15 min',
@@ -875,7 +875,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     id: 'cat-maid',
                     slug: 'maid-helper',
                     title: 'Maid / Helper',
-                    title_hi: 'घरेलू सहायिका',
+                    title_hi: 'Maid / Helper',
                     price: 199,
                     icon: '🧹',
                     eta: '15 min',
@@ -885,7 +885,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     id: 'cat-ac-repair',
                     slug: 'ac-repair',
                     title: 'AC Service & Repair',
-                    title_hi: 'एसी सर्विस व रिपेयर',
+                    title_hi: 'AC Service & Repair',
                     price: 299,
                     icon: '❄️',
                     eta: '20 min',
@@ -895,7 +895,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     id: 'cat-cook',
                     slug: 'cook',
                     title: 'Home Cook',
-                    title_hi: 'रसोइया (कुक)',
+                    title_hi: 'Home Cook',
                     price: 249,
                     icon: '🍳',
                     eta: '20 min',
@@ -905,7 +905,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                     id: 'cat-caretaker',
                     slug: 'caretaker',
                     title: 'Caretaker / Attendant',
-                    title_hi: 'देखभालकर्ता',
+                    title_hi: 'Caretaker / Attendant',
                     price: 349,
                     icon: '🤝',
                     eta: '30 min',
@@ -937,7 +937,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                         </span>
                       </div>
                       <h4 className="font-bold text-slate-900 text-xs group-hover:text-emerald-700 transition-colors leading-tight">
-                        {lang === 'en' ? svc.title : svc.title_hi}
+                        {svc.title}
                       </h4>
                       <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
                         {svc.subtext}
@@ -1198,7 +1198,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                 </div>
 
                 <div className="pt-2 border-t border-emerald-200 flex items-center justify-between text-xs font-black text-slate-900">
-                  <span>Total Amount (कुल राशि):</span>
+                  <span>Total Amount:</span>
                   <span className="text-emerald-700 text-base">₹{totalAmountToPay}</span>
                 </div>
               </div>
@@ -1208,7 +1208,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                 <label className="text-xs font-bold text-slate-900 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <span>📱</span>
-                    <span>Apna Mobile Number Dalein (फोन नंबर):</span>
+                    <span>Mobile Number:</span>
                   </span>
                   <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full">
                     Required for OTP
@@ -1231,7 +1231,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                   )}
                 </div>
                 <p className="text-[10px] text-slate-500">
-                  Technician ka phone, live tracking link aur 4-digit OTP is number par aayega.
+                  Partner phone, live tracking link, and 4-digit OTP will be sent to this number.
                 </p>
               </div>
 
@@ -1240,7 +1240,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                 <label className="text-xs font-bold text-slate-900 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
                     <span>🏠</span>
-                    <span>Ghar Ka Pata (Doorstep Address):</span>
+                    <span>Doorstep Address:</span>
                   </span>
                   <span className="text-[10px] text-slate-500 font-medium">
                     {activeCityZone || 'Ansal Golf Links 1, Greater Noida'}
@@ -1250,7 +1250,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                   type="text"
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
-                  placeholder="Flat / House No., Tower, Society / Gali"
+                  placeholder="Flat / House No., Tower, Society / Street"
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -1258,7 +1258,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
               {/* 4. ARRIVAL TIME TOGGLE (INSTANT VS SCHEDULE) */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-900 block">
-                  Kab Chahiye? (Arrival Time):
+                  Service Time:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -1337,7 +1337,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
               {/* 5. PAYMENT MODE (DEFAULT: PAY AFTER WORK) */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-900 block">
-                  Payment Mode (भुगतान का तरीका):
+                  Payment Mode:
                 </label>
 
                 {/* Option: Pay After Work (Default) */}
@@ -1356,13 +1356,13 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-slate-900 text-xs">Pay After Work (काम के बाद पेमेंट)</span>
+                          <span className="font-bold text-slate-900 text-xs">Pay After Work</span>
                           <span className="text-[9px] font-black bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded-full">
                             ZERO ADVANCE
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-600 mt-0.5">
-                          Kaam poora hone par partner ko Cash ya UPI (GPay/PhonePe) se dein.
+                          Pay the partner via Cash or UPI (GPay/PhonePe) once the service is completed.
                         </p>
                       </div>
                     </div>
@@ -1414,7 +1414,7 @@ export const CustomerApp: React.FC<CustomerAppProps> = ({
                   className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 active:scale-[0.98] text-white font-black rounded-2xl text-sm shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
                 >
                   {isProcessingBooking ? (
-                    <span className="animate-pulse">Booking Confirm Ho Rahi Hai...</span>
+                    <span className="animate-pulse">Confirming Booking...</span>
                   ) : (
                     <>
                       <span>Book Now • Pay ₹{totalAmountToPay} After Service</span>
