@@ -92,6 +92,11 @@ export function App() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Web marketplace search and cart sync states
+  const [webSearchQuery, setWebSearchQuery] = useState('');
+  const [webCartCount, setWebCartCount] = useState(0);
+  const [openWebCartFn, setOpenWebCartFn] = useState<(() => void) | undefined>(undefined);
+
   // Initial Data Load
   const loadData = async () => {
     try {
@@ -282,6 +287,10 @@ export function App() {
         onChangeCityZone={setActiveCityZone}
         onOpenGateways={() => setIsGatewayModalOpen(true)}
         onOpenLocationModal={() => setIsLocationModalOpen(true)}
+        searchQuery={webSearchQuery}
+        onSearchChange={setWebSearchQuery}
+        cartCount={webCartCount}
+        onOpenCart={openWebCartFn}
       />
 
       {/* Main View Area */}
@@ -305,8 +314,13 @@ export function App() {
             activeCityZone={activeCityZone}
             onOpenLocationModal={() => setIsLocationModalOpen(true)}
             onLogout={handleLogout}
+            searchQuery={webSearchQuery}
+            onSearchChange={setWebSearchQuery}
+            onRegisterCartSync={(count, openFn) => {
+              setWebCartCount(count);
+              setOpenWebCartFn(() => openFn);
+            }}
           />
-
         )}
 
         {/* MODULE 2: CUSTOMER MOBILE APP */}
