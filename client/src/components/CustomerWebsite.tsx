@@ -58,60 +58,63 @@ interface CustomerWebsiteProps {
   onRegisterCartSync?: (count: number, openCartFn: () => void) => void;
 }
 
-// Flipkart-style Category Icon Bar Items
+// Flipkart-style Category Icon Bar Items with vibrant theme palettes
 const FLIPKART_CATEGORIES = [
-  { id: 'all', label: 'For You', icon: '⭐', sublabel: 'Trending' },
-  { id: 'cleaning', label: 'Cleaning & Maids', icon: '🧹', sublabel: 'From ₹199' },
-  { id: 'plumbing', label: 'Plumbing', icon: '🔧', sublabel: 'From ₹149' },
-  { id: 'electrician', label: 'Electrician', icon: '⚡', sublabel: 'From ₹149' },
-  { id: 'appliances', label: 'Appliances', icon: '❄️', sublabel: 'From ₹249' },
-  { id: 'kitchen', label: 'Kitchen & Cook', icon: '🍳', sublabel: 'From ₹199' },
-  { id: 'sofa', label: 'Sofa & Carpet', icon: '🛋️', sublabel: 'From ₹349' },
-  { id: 'deepclean', label: 'Deep Cleaning', icon: '✨', sublabel: 'From ₹499' },
-  { id: 'moving', label: 'Moving Help', icon: '📦', sublabel: 'From ₹399' },
-  { id: 'verified', label: 'Verified Staff', icon: '🛡️', sublabel: '100% Aadhaar' }
+  { id: 'all', label: 'For You', icon: '⭐', sublabel: 'Trending', colorClass: 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' },
+  { id: 'cleaning', label: 'Cleaning & Maids', icon: '🧹', sublabel: 'From ₹199', colorClass: 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300' },
+  { id: 'plumbing', label: 'Plumbing', icon: '🔧', sublabel: 'From ₹149', colorClass: 'bg-sky-100 text-sky-700 ring-1 ring-sky-300' },
+  { id: 'electrician', label: 'Electrician', icon: '⚡', sublabel: 'From ₹149', colorClass: 'bg-yellow-100 text-amber-800 ring-1 ring-yellow-400' },
+  { id: 'appliances', label: 'Appliances', icon: '❄️', sublabel: 'From ₹249', colorClass: 'bg-cyan-100 text-cyan-700 ring-1 ring-cyan-300' },
+  { id: 'kitchen', label: 'Kitchen & Cook', icon: '🍳', sublabel: 'From ₹199', colorClass: 'bg-orange-100 text-orange-700 ring-1 ring-orange-300' },
+  { id: 'sofa', label: 'Sofa & Carpet', icon: '🛋️', sublabel: 'From ₹349', colorClass: 'bg-purple-100 text-purple-700 ring-1 ring-purple-300' },
+  { id: 'deepclean', label: 'Deep Cleaning', icon: '✨', sublabel: 'From ₹499', colorClass: 'bg-pink-100 text-pink-700 ring-1 ring-pink-300' },
+  { id: 'moving', label: 'Moving Help', icon: '📦', sublabel: 'From ₹399', colorClass: 'bg-stone-100 text-stone-700 ring-1 ring-stone-300' },
+  { id: 'verified', label: 'Verified Staff', icon: '🛡️', sublabel: '100% Aadhaar', colorClass: 'bg-teal-100 text-teal-700 ring-1 ring-teal-300' }
 ];
 
-// Flipkart-style Hero Promotional Carousel Banners
+// Flipkart-style Ultra-Vibrant Hero Promotional Banners
 const HERO_BANNERS = [
   {
     id: 'b1',
-    tag: 'THE 15-MINUTE GUARANTEE • FESTIVAL SPECIAL',
-    title: 'Top Deals on Domestic Chores',
+    tag: '⚡ THE BIG BILLION CHORE SALE • STARTS TODAY',
+    title: 'Top Deals on 15-Min House Help',
     subtitle: 'Flat ₹99 Off on 3+ Chores • 100% Aadhaar Verified Staff • Pay After Work',
-    gradient: 'from-blue-700 via-indigo-800 to-slate-900',
-    badgeBg: 'bg-yellow-400 text-slate-950',
-    offerPill: 'Starts @ ₹149',
-    paymentBadges: ['BHIM UPI', 'Google Pay', 'PhonePe', 'Paytm'],
-    ctaText: 'Explore Chores Now →',
-    image: '/images/quickserve_society_poster.jpg',
+    gradient: 'from-[#2e0854] via-[#6b21a8] to-[#c026d3]',
+    badgeBg: 'bg-[#ffe500] hover:bg-yellow-300 text-slate-950 font-black',
+    offerPill: 'Starts @ ₹149*',
+    discountHighlight: 'FLAT ₹99 OFF',
+    paymentBadges: ['BHIM UPI', 'Google Pay', 'PhonePe', 'Paytm', 'Cash'],
+    ctaText: 'Explore Chores Now ›',
+    image: '/images/sweeping_mopping_3d.jpg',
     categoryTarget: 'all'
   },
   {
     id: 'b2',
-    tag: '100% POLICE & BIOMETRIC VERIFIED',
-    title: 'Trusted & Background-Checked Helpers',
-    subtitle: 'Trained domestic helpers, maids & cooks. Safe for families, children & elderly.',
-    gradient: 'from-emerald-700 via-teal-800 to-slate-950',
-    badgeBg: 'bg-emerald-300 text-slate-950',
-    offerPill: 'Biometric Verified',
+    tag: '⭐ 100% POLICE & BIOMETRIC VERIFIED',
+    title: 'Verified Technician Carnival',
+    subtitle: 'Electrician & Plumber at Doorstep in 15 Minutes Guaranteed • 30-Day Warranty',
+    gradient: 'from-[#021f59] via-[#1d4ed8] to-[#0284c7]',
+    badgeBg: 'bg-[#04b565] hover:bg-emerald-400 text-white font-black',
+    offerPill: 'Zero Advance Payment',
+    discountHighlight: 'UP TO 50% OFF',
     paymentBadges: ['Aadhaar Checked', 'Police Clearance', 'Live GPS Tracking'],
-    ctaText: 'View Verified Helpers →',
-    image: '/images/sweeping_mopping_3d.jpg',
-    categoryTarget: 'cleaning'
+    ctaText: 'Book Instant Helper ›',
+    image: '/images/washing_machine_3d.jpg',
+    categoryTarget: 'repairs'
   },
   {
     id: 'b3',
-    tag: 'EMERGENCY REPAIR & MAINTENANCE • 15 MINS',
-    title: 'Plumber & Electrician in 15 Minutes',
-    subtitle: 'Tap leaks, MCB tripping, fan repair & switchboard fix • 30-Day service warranty.',
-    gradient: 'from-amber-600 via-orange-700 to-rose-950',
-    badgeBg: 'bg-amber-300 text-slate-950',
-    offerPill: 'Flat Rate ₹149',
+    tag: '❄️ FESTIVE DEEP CLEANING FEST',
+    title: 'Bathroom & Kitchen Deep Clean',
+    subtitle: 'Trained professionals with specialized chemicals & heavy equipment.',
+    gradient: 'from-[#064e3b] via-[#059669] to-[#0d9488]',
+    badgeBg: 'bg-[#f97316] hover:bg-orange-500 text-white font-black',
+    offerPill: 'Fixed Rates From ₹199',
+    discountHighlight: 'BEST PRICE GUARANTEE',
     paymentBadges: ['Zero Advance', '30-Day Warranty', 'Verified Techs'],
-    ctaText: 'Book Instant Repair →',
-    image: '/images/washing_machine_3d.jpg',
-    categoryTarget: 'repairs'
+    ctaText: 'Book Deep Clean ›',
+    image: '/images/bathroom_clean_3d.jpg',
+    categoryTarget: 'cleaning'
   }
 ];
 
@@ -158,6 +161,22 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
     }, 4500);
     return () => clearInterval(timer);
   }, [isSlidePaused]);
+
+  // Flash Deals Countdown Timer (Flipkart Style)
+  const [flashSeconds, setFlashSeconds] = useState(9924);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFlashSeconds(prev => (prev > 0 ? prev - 1 : 9924));
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const formatFlashTimer = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return `${String(h).padStart(2, '0')}h : ${String(m).padStart(2, '0')}m : ${String(s).padStart(2, '0')}s`;
+  };
 
   // Web Cart & Chore Stacking State - STARTS COMPLETELY EMPTY
   const [stackedChores, setStackedChores] = useState<StackedChore[]>([]);
@@ -498,8 +517,11 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       {/* ========================================================================= */}
       {/* 3. FLIPKART-STYLE CATEGORY ICON STRIP */}
       {/* ========================================================================= */}
-      <section className="bg-white border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5">
+      {/* ========================================================================= */}
+      {/* 3. FLIPKART-STYLE CATEGORY ICON STRIP (SUPER COLORFUL) */}
+      {/* ========================================================================= */}
+      <section className="bg-white border-b border-slate-200 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-6 overflow-x-auto no-scrollbar scroll-smooth">
             {FLIPKART_CATEGORIES.map(cat => {
               const isActive = activeCategoryTab === cat.id;
@@ -515,19 +537,19 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                       document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="flex flex-col items-center gap-1 flex-shrink-0 group cursor-pointer relative pb-1 pt-0.5 transition-all select-none"
+                  className="flex flex-col items-center gap-1.5 flex-shrink-0 group cursor-pointer relative pb-1 pt-0.5 transition-all select-none"
                 >
-                  {/* Icon Card */}
-                  <div className={`w-11 h-11 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center text-xl sm:text-2xl transition-all shadow-2xs ${
+                  {/* Colorful Icon Badge */}
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-xl sm:text-2xl transition-all shadow-xs ${
                     isActive 
-                      ? 'bg-blue-50 text-blue-600 scale-105 ring-2 ring-blue-500/20' 
-                      : 'bg-slate-50 group-hover:bg-slate-100 group-hover:scale-105 text-slate-700'
+                      ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white scale-110 ring-2 ring-blue-400 shadow-md shadow-blue-500/30' 
+                      : `${cat.colorClass} group-hover:scale-105 group-hover:shadow-sm`
                   }`}>
                     <span>{cat.icon}</span>
                   </div>
 
                   {/* Label */}
-                  <div className="text-center min-w-[55px] sm:min-w-[65px]">
+                  <div className="text-center min-w-[60px] sm:min-w-[70px]">
                     <span className={`text-[10px] sm:text-[11px] block transition-colors leading-tight ${
                       isActive 
                         ? 'font-black text-blue-600' 
@@ -539,7 +561,7 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
 
                   {/* Flipkart Blue Active Indicator Underline */}
                   {isActive && (
-                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-600 rounded-full animate-in fade-in" />
+                    <span className="absolute bottom-0 left-1 right-1 h-1 bg-[#2874f0] rounded-full animate-in fade-in" />
                   )}
                 </button>
               );
@@ -549,40 +571,145 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. FLIPKART-STYLE HERO PROMOTIONAL BANNER CAROUSEL */}
+      {/* 4. FLIPKART-STYLE HERO PROMOTIONAL BANNERS (SUPER VIBRANT) */}
       {/* ========================================================================= */}
       <section 
         className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-6"
         onMouseEnter={() => setIsSlidePaused(true)}
         onMouseLeave={() => setIsSlidePaused(false)}
       >
-        <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200">
-          {/* Active Banner Slide */}
-          <div className={`relative bg-gradient-to-r ${HERO_BANNERS[currentSlide].gradient} text-white p-6 sm:p-10 min-h-[220px] sm:min-h-[280px] flex items-center justify-between overflow-hidden transition-all duration-500`}>
-            
-            {/* Background Ambient Glow */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        {/* DESKTOP VIEW: 3 COLORFUL BANNERS SIDE-BY-SIDE (FLIPKART BIG BILLION DAYS STYLE) */}
+        <div className="hidden lg:grid grid-cols-12 gap-4">
+          
+          {/* Banner 1 (Cosmic Violet / Neon Pink) - 5 Columns */}
+          <div className="col-span-5 relative rounded-3xl overflow-hidden shadow-lg border border-purple-200/50 bg-gradient-to-r from-[#2e0854] via-[#6b21a8] to-[#c026d3] text-white p-6 flex flex-col justify-between group hover:shadow-2xl transition-all">
+            <div className="relative z-10 space-y-2.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ffe500] text-slate-950 font-black text-[10px] tracking-wide uppercase shadow-xs">
+                ⚡ BIG SAVINGS DAYS • STARTS TODAY
+              </span>
+              <h3 className="text-2xl font-black text-white leading-tight">
+                Top Deals on 15-Min House Help
+              </h3>
+              <p className="text-xs text-white/90 leading-relaxed line-clamp-2">
+                Floor sweeping, mopping & utensil washing • Flat ₹99 Off on 3+ Chores.
+              </p>
+            </div>
 
-            {/* Left Content */}
-            <div className="relative z-10 max-w-xl space-y-3">
-              {/* Highlight Tag */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white font-black text-[10px] tracking-wide uppercase">
+            <div className="relative z-10 pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategoryTab('cleaning');
+                  document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-4 py-2 rounded-xl bg-[#ffe500] hover:bg-yellow-300 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                Book Chores Now ›
+              </button>
+              <span className="px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white font-extrabold text-[11px]">
+                Flat ₹99 Off
+              </span>
+            </div>
+
+            {/* Background 3D Diorama Visual */}
+            <div className="absolute right-2 bottom-2 w-32 h-32 rounded-2xl overflow-hidden opacity-30 pointer-events-none">
+              <img src="/images/sweeping_mopping_3d.jpg" alt="Cleaning" className="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          {/* Banner 2 (Midnight Cobalt Blue & Gold) - 4 Columns */}
+          <div className="col-span-4 relative rounded-3xl overflow-hidden shadow-lg border border-blue-200/50 bg-gradient-to-r from-[#021f59] via-[#1d4ed8] to-[#0284c7] text-white p-6 flex flex-col justify-between group hover:shadow-2xl transition-all">
+            <div className="relative z-10 space-y-2.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] tracking-wide uppercase shadow-xs">
+                ⭐ 100% VERIFIED TECHS
+              </span>
+              <h3 className="text-2xl font-black text-white leading-tight">
+                Plumber & Electrician in 15 Mins
+              </h3>
+              <p className="text-xs text-white/90 leading-relaxed line-clamp-2">
+                Zero Advance Payment • Pay after work completed • 30-Day Guarantee.
+              </p>
+            </div>
+
+            <div className="relative z-10 pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategoryTab('repairs');
+                  document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-4 py-2 rounded-xl bg-[#04b565] hover:bg-emerald-400 text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                Book Instant Fix ›
+              </button>
+              <span className="px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white font-extrabold text-[11px]">
+                From ₹149*
+              </span>
+            </div>
+
+            {/* Background 3D Diorama Visual */}
+            <div className="absolute right-2 bottom-2 w-28 h-28 rounded-2xl overflow-hidden opacity-30 pointer-events-none">
+              <img src="/images/washing_machine_3d.jpg" alt="Appliances" className="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          {/* Banner 3 (Cyber Emerald & Orange) - 3 Columns */}
+          <div className="col-span-3 relative rounded-3xl overflow-hidden shadow-lg border border-emerald-200/50 bg-gradient-to-r from-[#064e3b] via-[#059669] to-[#0d9488] text-white p-6 flex flex-col justify-between group hover:shadow-2xl transition-all">
+            <div className="relative z-10 space-y-2.5">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-300 text-slate-950 font-black text-[10px] tracking-wide uppercase shadow-xs">
+                ❄️ DEEP CLEAN FEST
+              </span>
+              <h3 className="text-xl font-black text-white leading-tight">
+                Bathroom & Kitchen Scrubbing
+              </h3>
+              <p className="text-xs text-white/90 leading-relaxed line-clamp-2">
+                Specialized chemicals & heavy equipment for spotless shine.
+              </p>
+            </div>
+
+            <div className="relative z-10 pt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategoryTab('deepclean');
+                  document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-3.5 py-2 rounded-xl bg-[#f97316] hover:bg-orange-500 text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                Explore ₹199* ›
+              </button>
+              <span className="px-2 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white font-extrabold text-[10px]">
+                Min 40% Off
+              </span>
+            </div>
+
+            {/* Background 3D Diorama Visual */}
+            <div className="absolute right-2 bottom-2 w-24 h-24 rounded-2xl overflow-hidden opacity-30 pointer-events-none">
+              <img src="/images/bathroom_clean_3d.jpg" alt="Deep Cleaning" className="w-full h-full object-cover" />
+            </div>
+          </div>
+
+        </div>
+
+        {/* MOBILE / TABLET VIEW: FULL-WIDTH ROTATING CAROUSEL */}
+        <div className="lg:hidden relative rounded-3xl overflow-hidden shadow-xl border border-slate-200">
+          <div className={`relative bg-gradient-to-r ${HERO_BANNERS[currentSlide].gradient} text-white p-6 sm:p-8 min-h-[220px] flex items-center justify-between overflow-hidden transition-all duration-500`}>
+            
+            <div className="relative z-10 max-w-xl space-y-2.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-black text-[10px] tracking-wide uppercase">
                 <Sparkles className="w-3 h-3 text-yellow-300" />
                 <span>{HERO_BANNERS[currentSlide].tag}</span>
               </div>
 
-              {/* Title */}
-              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
                 {HERO_BANNERS[currentSlide].title}
               </h2>
 
-              {/* Subtitle */}
               <p className="text-xs sm:text-sm text-white/90 font-medium leading-relaxed">
                 {HERO_BANNERS[currentSlide].subtitle}
               </p>
 
-              {/* Badges / CTA Button */}
-              <div className="pt-2 flex flex-wrap items-center gap-3">
+              <div className="pt-2 flex flex-wrap items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -590,36 +717,22 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                     setActiveCategoryTab(target);
                     document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className={`px-5 py-2.5 rounded-xl font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer ${HERO_BANNERS[currentSlide].badgeBg}`}
+                  className={`px-4 py-2 rounded-xl font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer ${HERO_BANNERS[currentSlide].badgeBg}`}
                 >
                   {HERO_BANNERS[currentSlide].ctaText}
                 </button>
 
-                {/* Offer pill */}
                 <span className="px-3 py-1.5 rounded-xl bg-white/20 backdrop-blur-md text-white font-extrabold text-xs">
                   {HERO_BANNERS[currentSlide].offerPill}
                 </span>
-
-                {/* Payment Badges (Flipkart Style) */}
-                {HERO_BANNERS[currentSlide].paymentBadges && (
-                  <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-white/80 bg-black/25 px-2.5 py-1 rounded-lg">
-                    <span>Pay with:</span>
-                    {HERO_BANNERS[currentSlide].paymentBadges.map((badge, idx) => (
-                      <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded text-[9px] font-mono">
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Right Hero Image Card (Flipkart Poster Visual) */}
-            <div className="hidden md:flex relative z-10 flex-shrink-0 w-64 h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-slate-900/40 backdrop-blur-sm p-2 items-center justify-center">
+            <div className="hidden sm:flex relative z-10 flex-shrink-0 w-36 h-36 rounded-2xl overflow-hidden border border-white/20 shadow-xl bg-slate-900/40 p-1.5 items-center justify-center">
               <img
                 src={HERO_BANNERS[currentSlide].image}
                 alt={HERO_BANNERS[currentSlide].title}
-                className="w-full h-full object-cover rounded-xl shadow-md"
+                className="w-full h-full object-cover rounded-xl"
               />
             </div>
           </div>
@@ -628,33 +741,31 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
           <button
             type="button"
             onClick={() => setCurrentSlide(prev => (prev === 0 ? HERO_BANNERS.length - 1 : prev - 1))}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all z-20 cursor-pointer"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all z-20 cursor-pointer"
             aria-label="Previous Slide"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
 
           {/* Right Arrow Button */}
           <button
             type="button"
             onClick={() => setCurrentSlide(prev => (prev + 1) % HERO_BANNERS.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all z-20 cursor-pointer"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-md flex items-center justify-center transition-all z-20 cursor-pointer"
             aria-label="Next Slide"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* Bottom Pagination Indicator Dots (Flipkart Style) */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
+          {/* Bottom Pagination Dots */}
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
             {HERO_BANNERS.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => setCurrentSlide(idx)}
                 className={`transition-all rounded-full cursor-pointer ${
-                  currentSlide === idx 
-                    ? 'w-6 h-2 bg-white shadow-xs' 
-                    : 'w-2 h-2 bg-white/50 hover:bg-white/80'
+                  currentSlide === idx ? 'w-5 h-2 bg-white shadow-xs' : 'w-2 h-2 bg-white/50 hover:bg-white/80'
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
@@ -664,53 +775,67 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. FLIPKART-STYLE DEALS & CHORES GRID */}
+      {/* 5. FLIPKART-STYLE COLORFUL DEALS & CHORES GRID */}
       {/* ========================================================================= */}
       <section id="services" className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-6">
         
-        {/* Section Heading (Flipkart Style) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-200 pb-3">
-          <div>
+        {/* Flipkart-Style Vibrant Deals Header Bar */}
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50/50 to-purple-50 p-4 rounded-2xl border border-blue-200/80 mb-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Top Deals on Domestic Chores
+              <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>🔥 Top Deals on Domestic Chores</span>
               </h3>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Flat 15-Minute Doorstep Arrival • Aadhaar Verified • Pay After Work via UPI/Cash
+            <p className="text-xs text-slate-600 font-medium">
+              Doorstep help in 10-15 minutes • Aadhaar Verified Staff • Pay After Work
             </p>
           </div>
 
-          {/* Active Category Indicator */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500">Showing:</span>
-            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-extrabold text-xs border border-blue-200">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Live Flash Timer Badge */}
+            <div className="flex items-center gap-1.5 bg-rose-600 text-white px-3 py-1.5 rounded-xl font-mono text-xs font-black shadow-xs">
+              <Clock className="w-3.5 h-3.5 text-yellow-300" />
+              <span>Ends in: {formatFlashTimer(flashSeconds)}</span>
+            </div>
+
+            {/* Extra Discount Pill */}
+            <span className="px-3 py-1.5 rounded-xl bg-[#04b565] text-white font-extrabold text-xs shadow-xs">
+              🏷️ Flat ₹99 Off on 3+ Chores
+            </span>
+
+            {/* Active Category Tag */}
+            <span className="px-3 py-1.5 rounded-xl bg-white text-blue-700 font-extrabold text-xs border border-blue-200 shadow-2xs">
               {FLIPKART_CATEGORIES.find(c => c.id === activeCategoryTab)?.label || 'All Services'} ({filteredServices.length})
             </span>
           </div>
         </div>
 
-        {/* Flipkart-Style Deal & Chore Product Cards Grid */}
+        {/* Flipkart-Style Product Deal Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4.5">
           {filteredServices.map(item => {
             const isSelected = stackedChores.some(c => c.id === item.id);
             // Dynamic Flipkart-style discount pill based on price
-            const discountPill = item.startingPrice >= 299 ? 'Min. 30% Off' : item.startingPrice >= 199 ? 'Flat ₹99 Off' : 'From ₹149*';
+            const discountPill = item.startingPrice >= 299 ? 'Min. 40% Off' : item.startingPrice >= 199 ? 'Flat ₹99 Off' : 'From ₹149*';
 
             return (
               <div
                 key={item.id}
                 onClick={() => setActiveScopeService(item)}
-                className={`bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-300 flex flex-col justify-between cursor-pointer group shadow-2xs hover:shadow-lg hover:shadow-blue-900/5 hover:-translate-y-1 relative overflow-hidden ${
+                className={`bg-white rounded-2xl p-3 sm:p-3.5 border transition-all duration-300 flex flex-col justify-between cursor-pointer group shadow-2xs hover:shadow-xl hover:shadow-blue-900/10 hover:-translate-y-1.5 relative overflow-hidden ${
                   isSelected
-                    ? 'border-[#04b565] ring-2 ring-emerald-500/20 shadow-sm'
-                    : 'border-slate-200/90 hover:border-blue-400'
+                    ? 'border-[#04b565] ring-2 ring-emerald-500/30 shadow-md'
+                    : 'border-slate-200/90 hover:border-blue-500'
                 }`}
               >
-                {/* Top Corner 'AD' or 'POPULAR' Badge (Flipkart Style) */}
+                {/* Top Corner 'AD' or 'POPULAR' Badge */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                  <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-2xs ${
+                    item.isPopular 
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-slate-900 text-yellow-400'
+                  }`}>
                     {item.isPopular ? 'Top Deal' : 'AD'}
                   </span>
                   <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-0.5">
@@ -719,12 +844,12 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                   </span>
                 </div>
 
-                {/* 3D Diorama Image Container */}
-                <div className="aspect-square w-full rounded-xl bg-slate-50 group-hover:bg-blue-50/30 flex items-center justify-center p-2 mb-2 relative overflow-hidden transition-colors">
+                {/* 3D Diorama Image Container with Soft Pastel Gradient */}
+                <div className="aspect-square w-full rounded-xl bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/30 group-hover:from-blue-100/60 group-hover:to-indigo-100/40 flex items-center justify-center p-2 mb-2 relative overflow-hidden transition-all">
                   <img 
                     src={item.image} 
                     alt={item.title} 
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-contain group-hover:scale-108 transition-transform duration-300"
                     loading="lazy"
                   />
                   {isSelected && (
@@ -733,14 +858,14 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                     </span>
                   )}
                   {/* Scope / Details button */}
-                  <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[9px] font-bold text-slate-700 border border-slate-200 shadow-2xs group-hover:bg-blue-600 group-hover:text-white group-hover:border-transparent transition-all">
+                  <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[9px] font-bold text-slate-700 border border-slate-200 shadow-2xs group-hover:bg-[#2874f0] group-hover:text-white group-hover:border-transparent transition-all">
                     Do's & Don'ts ℹ️
                   </span>
                 </div>
 
                 {/* Service Details */}
                 <div className="space-y-1 mb-2">
-                  <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-[#2874f0] transition-colors">
                     {lang === 'en' ? item.title : item.title_hi}
                   </h3>
                   <p className="text-[11px] text-slate-500 line-clamp-1">
@@ -750,26 +875,26 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                   {/* Price Row */}
                   <div className="flex items-baseline gap-1.5 pt-0.5">
                     <span className="font-black text-slate-900 text-base">₹{item.startingPrice}</span>
-                    <span className="text-[11px] text-slate-400 line-through">₹{item.startingPrice + 99}</span>
+                    <span className="text-[11px] text-rose-500 line-through font-semibold">₹{item.startingPrice + 99}</span>
                   </div>
                 </div>
 
-                {/* Flipkart Blue Discount Pill at bottom of card */}
-                <div className="bg-blue-600 text-white font-extrabold text-[10px] text-center py-1 px-2 rounded-lg mb-2 shadow-2xs tracking-tight">
+                {/* Flipkart Royal Blue Discount Pill */}
+                <div className="bg-[#2874f0] text-white font-extrabold text-[10px] text-center py-1 px-2 rounded-lg mb-2 shadow-xs tracking-tight">
                   {discountPill}
                 </div>
 
-                {/* Tactile + Add / Remove Button */}
+                {/* High-Energy Action Button (Flipkart Bold Yellow vs Vibrant Emerald) */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleChoreInStack(item);
                   }}
-                  className={`w-full py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer ${
+                  className={`w-full py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer shadow-xs ${
                     isSelected
-                      ? 'bg-emerald-50 text-[#04b565] border border-emerald-300 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300'
-                      : 'bg-slate-100 hover:bg-[#04b565] hover:text-white text-slate-800 shadow-2xs'
+                      ? 'bg-[#04b565] hover:bg-rose-500 text-white'
+                      : 'bg-[#ffe500] hover:bg-[#ffd400] text-slate-950'
                   }`}
                 >
                   {isSelected ? (
@@ -780,13 +905,56 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
                   ) : (
                     <>
                       <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>Add Chore</span>
+                      <span>+ Add Chore</span>
                     </>
                   )}
                 </button>
               </div>
             );
           })}
+        </div>
+
+        {/* 4 COLORFUL VALUE PROPOSITION TRUST CARDS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 mt-8 pt-6 border-t border-slate-200">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/80 shadow-2xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
+              ⚡
+            </div>
+            <div>
+              <span className="font-extrabold text-xs text-slate-900 block leading-tight">15-Min Rapid Arrival</span>
+              <span className="text-[10px] text-slate-500">Hyperlocal micro-hubs nearby</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 shadow-2xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#04b565] text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
+              🛡️
+            </div>
+            <div>
+              <span className="font-extrabold text-xs text-slate-900 block leading-tight">100% Aadhaar Verified</span>
+              <span className="text-[10px] text-slate-500">Strict biometric & police check</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/80 shadow-2xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#2874f0] text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
+              💳
+            </div>
+            <div>
+              <span className="font-extrabold text-xs text-slate-900 block leading-tight">Pay After Service</span>
+              <span className="text-[10px] text-slate-500">Zero advance • UPI or Cash</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/80 shadow-2xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
+              ⭐
+            </div>
+            <div>
+              <span className="font-extrabold text-xs text-slate-900 block leading-tight">4.9/5 Society Rated</span>
+              <span className="text-[10px] text-slate-500">12,000+ happy bookings</span>
+            </div>
+          </div>
         </div>
 
       </section>
