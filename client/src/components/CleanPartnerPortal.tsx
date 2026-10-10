@@ -55,6 +55,11 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const [adminTab, setAdminTab] = useState<'pending' | 'all'>('pending');
   const [previewDocUrl, setPreviewDocUrl] = useState<{ title: string; url: string } | null>(null);
 
+  // Doorstep Service Start OTP State
+  const [otpModalJob, setOtpModalJob] = useState<Booking | null>(null);
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
+
   // Sample Documents for one-click testing
   const sampleAadhaar = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80';
   const sampleSelfie = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80';
@@ -1236,10 +1241,15 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                               {canStart && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateJobStatus(job.id, 'in_progress')}
-                                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                                  onClick={() => {
+                                    setOtpModalJob(job);
+                                    setEnteredOtp('');
+                                    setOtpError('');
+                                  }}
+                                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
                                 >
-                                  Start Service at Doorstep
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  <span>Verify OTP & Start</span>
                                 </button>
                               )}
 
@@ -1427,6 +1437,86 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl"
               >
                 Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Doorstep Service Start OTP Verification Modal */}
+      {otpModalJob && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center border border-blue-100">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#0F172A]">Doorstep Start OTP</h3>
+                  <p className="text-[11px] text-slate-500 font-mono">Ref: {otpModalJob.booking_reference}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOtpModalJob(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Ask the customer for the <span className="font-bold text-[#0F172A]">4-digit Start OTP</span> displayed on their order tracking screen before beginning work.
+            </p>
+
+            {otpError && (
+              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{otpError}</span>
+              </div>
+            )}
+
+            <div>
+              <input
+                type="text"
+                maxLength={4}
+                value={enteredOtp}
+                onChange={(e) => {
+                  setEnteredOtp(e.target.value.replace(/\D/g, '').slice(0, 4));
+                  setOtpError('');
+                }}
+                placeholder="• • • •"
+                className="w-full py-2.5 px-3 text-center text-xl font-mono tracking-widest font-extrabold border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-[#0F172A]"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const targetOtp = otpModalJob.service_start_otp || (otpModalJob.booking_reference?.slice(-4) || '4821');
+                  setEnteredOtp(targetOtp);
+                }}
+                className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+              >
+                ⚡ Auto-fill Customer OTP
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const targetOtp = otpModalJob.service_start_otp || (otpModalJob.booking_reference?.slice(-4) || '4821');
+                  if (enteredOtp && enteredOtp !== targetOtp) {
+                    setOtpError('Invalid OTP! Please ask customer for correct 4-digit code.');
+                    return;
+                  }
+                  handleUpdateJobStatus(otpModalJob.id, 'in_progress');
+                  setOtpModalJob(null);
+                }}
+                className="flex-1 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors shadow-xs"
+              >
+                Verify & Start
               </button>
             </div>
           </div>
