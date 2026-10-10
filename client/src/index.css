@@ -3,16 +3,49 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-slate-50 text-slate-900 antialiased selection:bg-brand-500 selection:text-white;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  :root {
+    --bg-main: #F8FAFC;
+    --brand-primary: #059669;
+    --text-primary: #172033;
+    --text-secondary: #64748B;
   }
+
+  body {
+    background-color: #F8FAFC;
+    color: #172033;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  }
+}
+
+/* Hide scrollbar for horizontal category tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Premium Card hover */
+.service-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+.service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(23, 32, 51, 0.06), 0 8px 10px -6px rgba(23, 32, 51, 0.04);
 }
 
 /* Custom scrollbar for clean UI */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -25,31 +58,10 @@
   background: #94a3b8;
 }
 
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.02); }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Mobile Safe Area Insets for Android & iOS */
+/* Safe area insets for mobile */
 .safe-area-top {
   padding-top: max(10px, env(safe-area-inset-top, 0px));
 }
-
 .safe-area-bottom {
   padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
 }
-
-.cart-floating-pos {
-  bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 64px));
-}
-
-@media (min-width: 768px) {
-  .cart-floating-pos {
-    bottom: 24px;
-  }
-}
-

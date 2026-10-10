@@ -99,38 +99,38 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
   ];
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200/60">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">My Orders</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Track your ongoing and past home service bookings</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#172033] font-heading">My Orders</h1>
+          <p className="text-xs sm:text-sm text-[#64748B] mt-0.5">Track your ongoing and past home service bookings</p>
         </div>
         <button
           type="button"
           onClick={onRefresh}
-          className="p-2 text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          className="p-2 sm:px-3 sm:py-2 text-[#172033] hover:text-[#059669] bg-white border border-slate-200/80 rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
+          <span className="hidden sm:inline">Refresh</span>
         </button>
       </div>
 
       {/* Orders List */}
       {myBookings.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
-          <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400 mb-3">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-10 sm:p-12 text-center shadow-2xs">
+          <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-400 mb-3 border border-slate-100">
             <FileText className="w-7 h-7" />
           </div>
-          <h3 className="text-base font-bold text-slate-900">No bookings found</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-[#172033]">No bookings found</h3>
+          <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
             You haven&apos;t placed any home service orders yet. Select a service to get started.
           </p>
           <button
             type="button"
             onClick={onNavigateHome}
-            className="mt-5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+            className="mt-5 px-5 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
           >
             Explore Services
           </button>

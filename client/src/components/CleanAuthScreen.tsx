@@ -139,18 +139,18 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center items-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_4px_25px_rgba(23,32,51,0.06)] border border-slate-200/80 p-6 md:p-8">
         
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500 text-white shadow-md shadow-emerald-500/20 mb-3">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#059669] text-white shadow-md shadow-emerald-500/20 mb-3">
             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">QuickServe</h1>
-          <p className="text-sm text-slate-500 mt-1">Reliable on-demand home services at your doorstep</p>
+          <h1 className="text-2xl font-bold text-[#172033] tracking-tight font-heading">QuickServe</h1>
+          <p className="text-xs sm:text-sm text-[#64748B] mt-1">Reliable on-demand home services at your doorstep</p>
         </div>
 
         {errorMessage && (
