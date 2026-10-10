@@ -157,9 +157,9 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={isDetectingGps}
-                className="w-full p-3.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl flex items-center gap-3 text-left transition-colors group"
+                className="w-full p-3.5 bg-blue-50/70 hover:bg-blue-100/80 border border-blue-200 rounded-xl flex items-center gap-3 text-left transition-colors group cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-xs">
                   {isDetectingGps ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
                   ) : (
@@ -167,11 +167,11 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-emerald-900">
+                  <p className="text-sm font-bold text-[#0F172A]">
                     {isDetectingGps ? 'Detecting current location...' : 'Use Current Location'}
                   </p>
-                  <p className="text-xs text-emerald-700 mt-0.5">
-                    Using GPS (Requires permission)
+                  <p className="text-xs text-[#2563EB] mt-0.5 font-medium">
+                    Using GPS (Requires browser permission)
                   </p>
                 </div>
               </button>
@@ -184,7 +184,7 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
 
               {/* Manual Search */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider mb-2">
                   Or enter location manually
                 </label>
                 <div className="relative">
@@ -196,17 +196,17 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                     value={manualQuery}
                     onChange={(e) => setManualQuery(e.target.value)}
                     placeholder="Search sector, society, area or PIN code..."
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[#0F172A] placeholder-slate-400 transition-all"
                   />
                 </div>
                 {manualQuery.trim() && filteredAreas.length === 0 && (
                   <button
                     type="button"
                     onClick={() => handleSelectArea(manualQuery.trim())}
-                    className="w-full mt-2 p-2.5 text-xs text-left text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 flex items-center justify-between"
+                    className="w-full mt-2 p-2.5 text-xs text-left text-[#2563EB] bg-blue-50 rounded-lg hover:bg-blue-100 flex items-center justify-between cursor-pointer"
                   >
                     <span>Use &quot;<strong>{manualQuery.trim()}</strong>&quot; as custom locality</span>
-                    <span className="font-semibold text-emerald-600">Select &rarr;</span>
+                    <span className="font-semibold text-[#2563EB]">Select &rarr;</span>
                   </button>
                 )}
               </div>
@@ -333,20 +333,20 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <div className="p-4 border-t border-[#E2E8F0] bg-slate-50 flex items-center justify-between">
           {step === 'doorstep' ? (
             <>
               <button
                 type="button"
                 onClick={() => setStep('select')}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                className="px-4 py-2.5 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] cursor-pointer"
               >
                 &larr; Back
               </button>
               <button
                 type="button"
                 onClick={handleConfirmAndSave}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition-colors"
+                className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-md flex items-center gap-1.5 transition-all cursor-pointer active:scale-[0.98]"
               >
                 <Check className="w-4 h-4" />
                 <span>Confirm Address</span>
@@ -354,11 +354,11 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
             </>
           ) : (
             <div className="w-full flex items-center justify-between">
-              <span className="text-xs text-slate-500">Current: {selectedArea.slice(0, 24)}...</span>
+              <span className="text-xs text-[#64748B]">Current: {selectedArea.slice(0, 24)}...</span>
               <button
                 type="button"
                 onClick={() => setStep('doorstep')}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl"
+                className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
               >
                 Next &rarr;
               </button>

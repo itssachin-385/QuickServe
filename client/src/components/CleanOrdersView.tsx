@@ -102,15 +102,15 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200/60">
+      <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#E2E8F0]">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#172033] font-heading">My Orders</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] font-heading">My Orders</h1>
           <p className="text-xs sm:text-sm text-[#64748B] mt-0.5">Track your ongoing and past home service bookings</p>
         </div>
         <button
           type="button"
           onClick={onRefresh}
-          className="p-2 sm:px-3 sm:py-2 text-[#172033] hover:text-[#059669] bg-white border border-slate-200/80 rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+          className="p-2 sm:px-3 sm:py-2 text-[#0F172A] hover:text-[#2563EB] bg-white border border-[#E2E8F0] rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Refresh</span>
@@ -119,18 +119,18 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
       {/* Orders List */}
       {myBookings.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-10 sm:p-12 text-center shadow-2xs">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-10 sm:p-12 text-center shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)]">
           <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-400 mb-3 border border-slate-100">
             <FileText className="w-7 h-7" />
           </div>
-          <h3 className="text-base font-bold text-[#172033]">No bookings found</h3>
+          <h3 className="text-base font-bold text-[#0F172A]">No bookings found</h3>
           <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
             You haven&apos;t placed any home service orders yet. Select a service to get started.
           </p>
           <button
             type="button"
             onClick={onNavigateHome}
-            className="mt-5 px-5 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+            className="mt-5 px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
           >
             Explore Services
           </button>

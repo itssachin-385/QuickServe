@@ -34,13 +34,13 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       
       {/* Profile Header Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)] mb-5">
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] mb-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#059669] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-emerald-500/15">
+          <div className="w-14 h-14 rounded-2xl bg-[#0F172A] text-[#2563EB] flex items-center justify-center font-extrabold text-xl shadow-md border border-slate-800">
             {currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-[#172033] truncate font-heading">{currentUser.name || 'QuickServe Customer'}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-[#0F172A] truncate font-heading">{currentUser.name || 'QuickServe Customer'}</h2>
             <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5 text-slate-400" />
               <span>{currentUser.phone}</span>
@@ -50,20 +50,20 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
       </div>
 
       {/* Saved Address Section */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] mb-5">
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] mb-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-bold text-[#172033] uppercase tracking-wider">Default Service Address</h3>
+          <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Default Service Address</h3>
           <button
             type="button"
             onClick={onOpenLocationModal}
-            className="text-xs font-semibold text-[#059669] hover:underline"
+            className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer"
           >
             Change Address
           </button>
         </div>
-        <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-start gap-2.5">
-          <MapPin className="w-4 h-4 text-[#059669] shrink-0 mt-0.5" />
-          <p className="text-xs text-[#172033] leading-relaxed">
+        <div className="p-3.5 bg-slate-50 border border-[#E2E8F0] rounded-xl flex items-start gap-2.5">
+          <MapPin className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
+          <p className="text-xs text-[#0F172A] leading-relaxed">
             {doorstepAddress}
           </p>
         </div>

@@ -140,16 +140,16 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_4px_25px_rgba(23,32,51,0.06)] border border-slate-200/80 p-6 md:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_4px_25px_rgba(15,23,42,0.06)] border border-[#E2E8F0] p-6 md:p-8">
         
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#059669] text-white shadow-md shadow-emerald-500/20 mb-3">
-            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#0F172A] text-white shadow-md border border-slate-800 mb-3">
+            <span className="font-black text-xl"><span className="text-white">Q</span><span className="text-[#2563EB]">S</span></span>
           </div>
-          <h1 className="text-2xl font-bold text-[#172033] tracking-tight font-heading">QuickServe</h1>
+          <h1 className="text-2xl font-extrabold text-[#0F172A] tracking-tight font-heading">
+            Quick<span className="text-[#2563EB]">Serve</span>
+          </h1>
           <p className="text-xs sm:text-sm text-[#64748B] mt-1">Reliable on-demand home services at your doorstep</p>
         </div>
 
@@ -164,7 +164,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
         {step === 'phone' && (
           <form onSubmit={handlePhoneSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider mb-1.5">
                 Full Name
               </label>
               <div className="relative">
@@ -177,17 +177,17 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rahul Sharma"
-                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-[#E2E8F0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[#0F172A] placeholder-slate-400 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider mb-1.5">
                 Mobile Number
               </label>
               <div className="relative flex">
-                <span className="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-700 text-sm font-medium">
+                <span className="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-[#E2E8F0] bg-slate-50 text-slate-700 text-sm font-medium">
                   +91
                 </span>
                 <input
@@ -197,16 +197,16 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   placeholder="9876543210"
-                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-r-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-900 placeholder-slate-400 tracking-wider font-medium"
+                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#E2E8F0] rounded-r-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[#0F172A] placeholder-slate-400 tracking-wider font-medium transition-all"
                 />
               </div>
-              <p className="text-xs text-slate-400 mt-1.5">We will send a 4-digit one-time verification code.</p>
+              <p className="text-xs text-[#64748B] mt-1.5">We will send a 4-digit one-time verification code.</p>
             </div>
 
             <button
               type="submit"
               disabled={isLoading || phone.length !== 10 || !name.trim()}
-              className="w-full mt-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+              className="w-full mt-2 py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               {isLoading ? (
                 <>
@@ -280,7 +280,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
               type="button"
               onClick={() => handleOtpVerify()}
               disabled={isLoading || otp.some(d => !d)}
-              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               {isLoading ? (
                 <>
@@ -297,13 +297,13 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
             <div className="text-center pt-1">
               {resendSeconds > 0 ? (
-                <p className="text-xs text-slate-400">Resend code in <span className="font-semibold text-slate-600">{resendSeconds}s</span></p>
+                <p className="text-xs text-[#64748B]">Resend code in <span className="font-semibold text-[#0F172A]">{resendSeconds}s</span></p>
               ) : (
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={isLoading}
-                  className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                  className="text-xs font-semibold text-[#2563EB] hover:underline transition-colors cursor-pointer"
                 >
                   Resend verification code
                 </button>
