@@ -1,5 +1,48 @@
 [
   {
+    "id": "pro-1791621822487",
+    "name": "Sunil Verma",
+    "phone": "+91 9876543219",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    "service_id": "cat-electrician",
+    "service_name": "Electrician",
+    "primary_zone_id": "zone-gnoida-ansal",
+    "zone_name": "Pari Chowk, Greater Noida, Greater Noida",
+    "locality": "Pari Chowk, Greater Noida",
+    "experience_years": 4,
+    "skills": [
+      "General repair"
+    ],
+    "bio": "Certified local professional registered on QuickServe.",
+    "verification_state": "verified",
+    "aadhaar_number": "882194821034",
+    "aadhaar_doc": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600",
+    "selfie_doc": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    "verifications": {
+      "aadhaar": true,
+      "police_clearance": true,
+      "skill_trade_test": true,
+      "emergency_contact_verified": false
+    },
+    "emergency_contact": "+91 95701 51834",
+    "non_medical_declaration": false,
+    "is_available": true,
+    "is_field_onboarded": false,
+    "rating": 5,
+    "completed_jobs_count": 0,
+    "available_balance": 0,
+    "today_earnings": 0,
+    "weekly_earnings": 0,
+    "monthly_earnings": 0,
+    "pending_payout": 0,
+    "starting_from": 249,
+    "upi_id": "9876543219@upi",
+    "current_lat": 28.472572003938087,
+    "current_lng": 77.50048473282656,
+    "joined_date": "2026-10-10",
+    "admin_notes": "Documents verified by Admin"
+  },
+  {
     "id": "pro-rahul",
     "name": "Rahul Kumar",
     "phone": "+91 95701 51834",
@@ -36,7 +79,7 @@
     "starting_from": 149,
     "upi_id": "sachinsb68741@nyes",
     "current_lat": 28.4744,
-    "current_lng": 77.5040,
+    "current_lng": 77.504,
     "joined_date": "2025-03-12"
   },
   {
@@ -74,7 +117,7 @@
     "pending_payout": 4200,
     "starting_from": 149,
     "upi_id": "sachinsb68741@nyes",
-    "current_lat": 28.4750,
+    "current_lat": 28.475,
     "current_lng": 77.5055,
     "joined_date": "2025-04-18"
   },
@@ -114,7 +157,7 @@
     "starting_from": 199,
     "upi_id": "sachinsb68741@nyes",
     "current_lat": 28.4735,
-    "current_lng": 77.5030,
+    "current_lng": 77.503,
     "joined_date": "2025-02-10"
   },
   {
@@ -191,8 +234,8 @@
     "pending_payout": 3900,
     "starting_from": 249,
     "upi_id": "sachinsb68741@nyes",
-    "current_lat": 28.4760,
-    "current_lng": 77.5060,
+    "current_lat": 28.476,
+    "current_lng": 77.506,
     "joined_date": "2025-06-14"
   },
   {
@@ -221,7 +264,7 @@
     },
     "is_available": true,
     "is_field_onboarded": true,
-    "rating": 5.0,
+    "rating": 5,
     "completed_jobs_count": 640,
     "available_balance": 4600,
     "today_earnings": 1700,
@@ -230,8 +273,8 @@
     "pending_payout": 4600,
     "starting_from": 349,
     "upi_id": "sachinsb68741@nyes",
-    "current_lat": 28.4740,
-    "current_lng": 77.5020,
+    "current_lat": 28.474,
+    "current_lng": 77.502,
     "joined_date": "2025-01-20"
   }
 ]

@@ -109,6 +109,10 @@ export interface Professional {
   current_lng?: number;
   joined_date: string;
   non_medical_declaration?: boolean;
+  aadhaar_number?: string;
+  aadhaar_doc?: string;
+  selfie_doc?: string;
+  locality?: string;
 }
 
 export type BookingStatus =

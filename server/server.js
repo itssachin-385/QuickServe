@@ -763,7 +763,8 @@ app.get('/api/professionals/:id', (req, res) => {
 app.post('/api/professionals/register', (req, res) => {
   const { 
     name, phone, service_id, primary_zone_id, experience_years, 
-    skills, bio, non_medical_declaration, emergency_contact, aadhaar_number
+    skills, bio, non_medical_declaration, emergency_contact, aadhaar_number,
+    locality, aadhaar_doc, selfie_doc
   } = req.body;
 
   if (!name || !phone || !service_id) {
@@ -777,22 +778,26 @@ app.post('/api/professionals/register', (req, res) => {
     id: `pro-${Date.now()}`,
     name,
     phone,
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    avatar: selfie_doc || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     service_id,
     service_name: category ? category.name : 'Home Service',
     primary_zone_id: zone.id,
-    zone_name: `${zone.locality}, ${zone.city}`,
+    zone_name: locality ? `${locality}, Greater Noida` : `${zone.locality}, ${zone.city}`,
+    locality: locality || zone.locality,
     experience_years: Number(experience_years) || 1,
     skills: skills ? (Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim())) : ['General repair'],
     bio: bio || 'Certified local professional registered on QuickServe.',
     verification_state: 'pending', // 🟡 Pending initial review
+    aadhaar_number: aadhaar_number || '',
+    aadhaar_doc: aadhaar_doc || '',
+    selfie_doc: selfie_doc || '',
     verifications: {
       aadhaar: Boolean(aadhaar_number),
       police_clearance: false,
       skill_trade_test: false,
       emergency_contact_verified: Boolean(emergency_contact)
     },
-    emergency_contact: emergency_contact || '',
+    emergency_contact: emergency_contact || '+91 95701 51834',
     non_medical_declaration: Boolean(non_medical_declaration),
     is_available: false,
     is_field_onboarded: false,
@@ -811,6 +816,8 @@ app.post('/api/professionals/register', (req, res) => {
   };
 
   professionals.unshift(newPro);
+  try { db.saveProfessionals(professionals); } catch (e) {}
+
   res.status(201).json({
     success: true,
     message: 'Application received! Verification in progress.',
@@ -901,7 +908,14 @@ app.post('/api/admin/verifications/:id/action', (req, res) => {
     pro.admin_action_reason = notes || 'Application did not meet quality requirements.';
   }
 
+  try { db.saveProfessionals(professionals); } catch (e) {}
+
   res.json({ success: true, professional: pro });
+});
+
+// Admin All Partners Roster
+app.get('/api/admin/partners', (req, res) => {
+  res.json(professionals);
 });
 
 // ==========================================
