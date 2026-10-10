@@ -616,5 +616,191 @@ export const professionalHomeServices: HomeServiceCard[] = [
     ],
     materialsNote: 'Plumber brings pipe wrench, Teflon tape & sealants. New hardware parts extra.',
     materialsNote_hi: 'प्लम्बर रिंच, टेफ्लॉन टेप व पाना लाते हैं। नया नल या पाइप का खर्च अलग रहेगा।'
+  },
+  {
+    id: 's-ac-service',
+    title: 'AC Power Jet Servicing',
+    title_hi: 'एसी पावर जेट सर्विसिंग',
+    categorySlug: 'ac-repair',
+    categoryId: 'cat-ac-repair',
+    subServiceName: 'Deep filter & coil jet cleaning',
+    image: '/images/ac_repair_3d.jpg',
+    startingPrice: 499,
+    duration_mins: 45,
+    tagline: 'Deep high-pressure water jet cleaning',
+    filterGroup: 'repairs',
+    isPopular: true,
+    includedTasks: [
+      'Indoor unit coil & blower high-pressure jet wash',
+      'Air filter cleaning and antimicrobial spray',
+      'Outdoor unit condenser coil jet wash',
+      'Drain tray & pipe cleaning to prevent water dripping',
+      'Cooling temperature and airflow performance test'
+    ],
+    excludedTasks: [
+      'Refrigerant gas leak repair or total gas refill',
+      'PCB circuit board replacement',
+      'Copper piping replacement'
+    ],
+    includedTasks_hi: [
+      'अंदर की यूनिट और ब्लोअर की हाई-प्रेशर जेट धुलाई',
+      'फिल्टर सफाई और एंटीबैक्टीरियल स्प्रे',
+      'बाहरी कंडेनसर यूनिट की जेट धुलाई',
+      'ड्रेन पाइप की सफाई ताकि पानी न टपके'
+    ],
+    excludedTasks_hi: [
+      'गैस लीकेज रिपेयर या पूरी गैस रीफिल',
+      'पीसीबी सर्किट बोर्ड रिप्लेसमेंट'
+    ]
+  },
+  {
+    id: 's-appliance-repair',
+    title: 'Washing Machine & Fridge Repair',
+    title_hi: 'वाशिंग मशीन और फ्रिज रिपेयर',
+    categorySlug: 'ac-repair',
+    categoryId: 'cat-ac-repair',
+    subServiceName: 'Doorstep appliance diagnostic & fix',
+    image: '/images/ac_repair_3d.jpg',
+    startingPrice: 399,
+    duration_mins: 45,
+    tagline: 'Diagnosis & repair by certified technician',
+    filterGroup: 'repairs',
+    includedTasks: [
+      'Complete diagnostic of motor, drum, thermostat & PCB',
+      'Drum spinning or water drainage problem fix',
+      'Cooling loss check for single/double door refrigerators',
+      'Minor wiring and sensor adjustment'
+    ],
+    excludedTasks: [
+      'New spare parts cost (charged at transparent MRP)',
+      'Compressor motor replacement'
+    ],
+    includedTasks_hi: [
+      'मोटर, ड्रम और थर्मोस्टेट की पूरी जांच',
+      'पानी न निकलने या ड्रम न घूमने की समस्या ठीक करना',
+      'फ्रिज में कूलिंग की जांच'
+    ],
+    excludedTasks_hi: [
+      'नये स्पेयर पार्ट्स का मूल्य अतिरिक्त रहेगा'
+    ]
+  },
+  {
+    id: 's-cook-meal',
+    title: 'Daily Meal Cook',
+    title_hi: 'दैनिक भोजन कुक',
+    categorySlug: 'cook',
+    categoryId: 'cat-cook',
+    subServiceName: 'Fresh home cooked meal',
+    image: '/images/cook_3d.jpg',
+    startingPrice: 349,
+    duration_mins: 60,
+    tagline: 'Fresh breakfast, lunch, or dinner at home',
+    filterGroup: 'kitchen',
+    isPopular: true,
+    includedTasks: [
+      'Preparing 1 sabzi, 1 dal, fresh rotis/phulkas, and rice',
+      'Custom spice levels as per family preferences',
+      'Healthy home-style food preparation',
+      'Kitchen platform wiped clean after cooking'
+    ],
+    excludedTasks: [
+      'Groceries and vegetables (customer to provide ingredients)',
+      'Deep dishwashing of multiple utensils outside cooking pots'
+    ],
+    includedTasks_hi: [
+      '1 सब्जी, दाल, ताज़ी रोटियां और चावल बनाना',
+      'परिवार की पसंद के अनुसार मसाले',
+      'किचन स्लैब की सफाई'
+    ],
+    excludedTasks_hi: [
+      'राशन व सब्जियां ग्राहक को देनी होंगी'
+    ]
+  },
+  {
+    id: 's-cook-party',
+    title: 'Party & Gathering Cook',
+    title_hi: 'पार्टी भोजन कुक (5-8 लोग)',
+    categorySlug: 'cook',
+    categoryId: 'cat-cook',
+    subServiceName: 'Special dishes for 5-8 guests',
+    image: '/images/cook_3d.jpg',
+    startingPrice: 899,
+    duration_mins: 120,
+    tagline: 'Multi-course meal for guests & families',
+    filterGroup: 'kitchen',
+    includedTasks: [
+      '2 Special curries/gravies + Dal + Pulao/Biryani + Breads',
+      'Snacks / Starter preparation assistance',
+      'Hygienic and presentable meal preparation'
+    ],
+    excludedTasks: [
+      'Grocery raw materials (to be provided by host)',
+      'Table serving / catering staff'
+    ],
+    includedTasks_hi: [
+      'पार्टी के लिए 2 विशेष सब्जियां, दाल, पुलाव व रोटी'
+    ],
+    excludedTasks_hi: [
+      'सामग्री मेजबान द्वारा दी जाएगी'
+    ]
+  },
+  {
+    id: 's-moving-truck',
+    title: 'Mini Truck / Tempo on Demand',
+    title_hi: 'मिनी ट्रक / टेम्पो ऑन डिमांड',
+    categorySlug: 'packers',
+    categoryId: 'cat-packers',
+    subServiceName: 'Local goods transport',
+    image: '/images/packers_3d.jpg',
+    startingPrice: 799,
+    duration_mins: 60,
+    tagline: 'Reliable vehicle for local cargo shifting',
+    filterGroup: 'repairs',
+    isPopular: true,
+    includedTasks: [
+      'Direct doorstep arrival of Tata Ace / Champion mini truck',
+      'Transit within city zone for furniture, boxes, luggage',
+      'Secure cargo tying with ropes & tarpaulin'
+    ],
+    excludedTasks: [
+      'Toll and state border tax (if applicable outside zone)',
+      'Inter-state transport'
+    ],
+    includedTasks_hi: [
+      'घर के सामान के लिए मिनी ट्रक ऑन डिमांड',
+      'रस्सी और तिरपाल से सुरक्षित सामान'
+    ],
+    excludedTasks_hi: [
+      'टोल टैक्स अलग से रहेगा'
+    ]
+  },
+  {
+    id: 's-moving-helpers',
+    title: 'Moving & Shifting Helpers',
+    title_hi: 'सामान शिफ्टिंग हेल्पर',
+    categorySlug: 'packers',
+    categoryId: 'cat-packers',
+    subServiceName: 'Heavy lifting & packing labor',
+    image: '/images/packers_3d.jpg',
+    startingPrice: 499,
+    duration_mins: 60,
+    tagline: 'Strong trained helpers for loading & stairs',
+    filterGroup: 'repairs',
+    includedTasks: [
+      'Carrying heavy furniture, sofa, beds, fridge across stairs/lift',
+      'Loading and unloading into vehicle carefully',
+      'Placing heavy items in designated rooms'
+    ],
+    excludedTasks: [
+      'Carpentry dismantling of modular wardrobes without tools',
+      'Packing boxes and bubble wrap (provided separately)'
+    ],
+    includedTasks_hi: [
+      'भारी फर्नीचर, फ्रिज, सोफा सीढ़ियों से चढ़ाना/उतारना',
+      'गाड़ी में सामान लोड और अनलोड करना'
+    ],
+    excludedTasks_hi: [
+      'बॉक्स और पैकिंग सामग्री अतिरिक्त'
+    ]
   }
 ];

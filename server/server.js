@@ -1059,16 +1059,16 @@ app.post('/api/bookings', (req, res) => {
     service_id: category ? category.id : 'cat-maid',
     service_title: category ? category.name : 'Household Chores',
     sub_service_selected: choreItems.map(c => c.title).join(' + '),
-    status: 'confirmed',
+    status: req.body.status || 'requested',
     booking_type: chosenMode === 'scheduled' ? 'scheduled' : 'instant',
     booking_mode: chosenMode,
     recurring_cadence: recurring_cadence || null,
     scheduled_at: scheduled_at || null,
-    professional_id: pro.id,
-    professional_name: pro.name,
-    professional_phone: pro.phone,
-    professional_rating: pro.rating,
-    professional_avatar: pro.avatar,
+    professional_id: req.body.professional_id || (req.body.status === 'partner_assigned' ? pro.id : null),
+    professional_name: req.body.professional_name || (req.body.status === 'partner_assigned' ? pro.name : null),
+    professional_phone: req.body.professional_phone || (req.body.status === 'partner_assigned' ? pro.phone : null),
+    professional_rating: pro ? pro.rating : 4.9,
+    professional_avatar: pro ? pro.avatar : '',
     eta_minutes: chosenMode === 'instant' ? 14 : undefined,
     service_start_otp: startOtp,
     service_completion_otp: completionOtp,
@@ -1078,11 +1078,15 @@ app.post('/api/bookings', (req, res) => {
     company_commission_rate: companyCommissionRate,
     company_total_cut: companyCommission + platformFee,
     taxes: 0,
-    total_amount: totalAmount,
+    total_amount: Number(req.body.total_amount) || totalAmount,
     professional_earning: professionalEarning,
     payment_status: payment_status || (payment_method === 'pay_after_work' ? 'pending' : 'paid'),
     payment_method: payment_method || 'pay_after_work',
     customer_notes: customer_notes || '',
+    customer_problem: req.body.customer_problem || customer_notes || '',
+    customer_photo: req.body.customer_photo || '',
+    scheduled_date: req.body.scheduled_date || '',
+    scheduled_time_slot: req.body.scheduled_time_slot || '',
     created_at: new Date().toISOString(),
     // QuickServe Mechanics
     stacked_chores: choreItems,
@@ -1115,8 +1119,8 @@ app.post('/api/bookings/:id/status', (req, res) => {
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
   const validStatuses = [
-    'requested', 'searching', 'professional_assigned', 'confirmed', 
-    'on_the_way', 'started', 'completed', 'cancelled', 'disputed', 'refunded'
+    'requested', 'searching', 'confirmed', 'partner_assigned', 'professional_assigned', 
+    'on_the_way', 'in_progress', 'started', 'completed', 'cancelled', 'disputed', 'refunded'
   ];
 
   if (!validStatuses.includes(status)) {
@@ -1124,8 +1128,12 @@ app.post('/api/bookings/:id/status', (req, res) => {
   }
 
   booking.status = status;
+  if (req.body.professional_id) booking.professional_id = req.body.professional_id;
+  if (req.body.professional_name) booking.professional_name = req.body.professional_name;
+  if (req.body.professional_phone) booking.professional_phone = req.body.professional_phone;
+  if (req.body.payment_status) booking.payment_status = req.body.payment_status;
   if (cancellation_reason) booking.cancellation_reason = cancellation_reason;
-  if (status === 'started' && !booking.service_started_at) {
+  if ((status === 'started' || status === 'in_progress') && !booking.service_started_at) {
     booking.service_started_at = new Date().toISOString();
   }
   if (status === 'completed') {
@@ -1134,8 +1142,8 @@ app.post('/api/bookings/:id/status', (req, res) => {
     const pro = professionals.find(p => p.id === booking.professional_id);
     if (pro) {
       pro.completed_jobs_count += 1;
-      pro.today_earnings += booking.base_charge;
-      pro.available_balance += booking.base_charge;
+      pro.today_earnings = (pro.today_earnings || 0) + booking.base_charge;
+      pro.available_balance = (pro.available_balance || 0) + booking.base_charge;
       db.updateProfessional(pro.id, pro);
     }
   }

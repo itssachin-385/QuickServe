@@ -114,10 +114,12 @@ export interface Professional {
 export type BookingStatus =
   | 'requested'
   | 'searching'
-  | 'professional_assigned'
   | 'confirmed'
+  | 'partner_assigned'
+  | 'professional_assigned'
   | 'on_the_way'
   | 'arrived'
+  | 'in_progress'
   | 'started'
   | 'completed'
   | 'cancelled'
@@ -192,6 +194,10 @@ export interface Booking {
   payment_status: 'pending' | 'paid' | 'refunded';
   payment_method: 'upi' | 'card' | 'cash' | 'pay_after_work' | 'wallet' | string;
   customer_notes?: string;
+  customer_problem?: string;
+  customer_photo?: string;
+  scheduled_date?: string;
+  scheduled_time_slot?: string;
   created_at: string;
   completed_at?: string;
   cancellation_reason?: string;
