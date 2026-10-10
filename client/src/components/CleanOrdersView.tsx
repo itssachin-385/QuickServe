@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Booking } from '../types';
 import { updateBookingStatus } from '../api';
+import { playDoorbellChime, playSuccessPing } from '../utils/sound';
 import { 
   Calendar, Clock, MapPin, Phone, User, 
   CheckCircle2, XCircle, AlertCircle, Ban, 
-  ChevronRight, RefreshCw, FileText, Image as ImageIcon, ShieldCheck 
+  ChevronRight, RefreshCw, FileText, Image as ImageIcon, 
+  ShieldCheck, Star, MessageCircle, Download, Printer, 
+  X, Sparkles, Volume2, Check
 } from 'lucide-react';
 
 interface CleanOrdersViewProps {
@@ -76,6 +79,16 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
   const [isCancelling, setIsCancelling] = useState(false);
   const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null);
 
+  // Feature 1: Rating & Review Modal State
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
+  const [ratingStars, setRatingStars] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [selectedReviewTags, setSelectedReviewTags] = useState<string[]>(['On Time', 'Clean Work']);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  // Feature 3: Official Invoice / Bill Modal State
+  const [selectedBookingForInvoice, setSelectedBookingForInvoice] = useState<Booking | null>(null);
+
   const handleCancelBooking = async () => {
     if (!selectedBookingForCancel) return;
     setIsCancelling(true);
@@ -90,6 +103,37 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
     }
   };
 
+  const handleSubmitReview = async () => {
+    if (!selectedBookingForReview) return;
+    setIsSubmittingReview(true);
+    try {
+      const fullComment = [
+        reviewComment.trim(),
+        selectedReviewTags.length > 0 ? `(${selectedReviewTags.join(', ')})` : ''
+      ].filter(Boolean).join(' ');
+
+      const res = await fetch(`/api/bookings/${selectedBookingForReview.id}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: ratingStars,
+          comment: fullComment
+        })
+      });
+
+      if (res.ok) {
+        playSuccessPing();
+        setSelectedBookingForReview(null);
+        setReviewComment('');
+        onRefresh();
+      }
+    } catch (e) {
+      console.error('Review submission failed:', e);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   const stepsList: CleanStatusKey[] = [
     'Booking Requested',
     'Confirmed',
@@ -98,8 +142,10 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
     'Completed'
   ];
 
+  const quickReviewTags = ['On Time', 'Polite', 'Clean Work', 'Reasonable Price', 'Expert Fix', 'Will Book Again'];
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 font-sans">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#E2E8F0]">
@@ -107,14 +153,27 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
           <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] font-heading">My Orders</h1>
           <p className="text-xs sm:text-sm text-[#64748B] mt-0.5">Track your ongoing and past home service bookings</p>
         </div>
-        <button
-          type="button"
-          onClick={onRefresh}
-          className="p-2 sm:px-3 sm:py-2 text-[#0F172A] hover:text-[#2563EB] bg-white border border-[#E2E8F0] rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Refresh</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Sound Test Button */}
+          <button
+            type="button"
+            onClick={() => playDoorbellChime()}
+            className="p-2 sm:px-3 sm:py-2 text-slate-700 hover:text-blue-600 bg-white border border-[#E2E8F0] rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+            title="Test Doorstep Chime Sound"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-blue-600" />
+            <span className="hidden sm:inline">Doorbell Sound</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="p-2 sm:px-3 sm:py-2 text-[#0F172A] hover:text-[#2563EB] bg-white border border-[#E2E8F0] rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Orders List */}
@@ -142,8 +201,10 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
             const isCompleted = cleanStatus === 'Completed';
             const isCancelled = cleanStatus === 'Cancelled';
             const canCancel = !isCompleted && !isCancelled;
-
             const currentStepIdx = stepsList.indexOf(cleanStatus);
+
+            // Clean clean phone numbers for WhatsApp
+            const partnerPhoneRaw = (b.professional_phone || '').replace(/\D/g, '').slice(-10);
 
             return (
               <div
@@ -218,9 +279,9 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Partner Details Card if assigned */}
+                  {/* Partner Details Card if assigned + Feature 2: 1-Click WhatsApp Connect */}
                   {b.professional_name && !isCancelled && (
-                    <div className="p-3 bg-slate-50 border border-[#E2E8F0] rounded-xl flex items-center justify-between">
+                    <div className="p-3 bg-slate-50 border border-[#E2E8F0] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-xs">
                           {b.professional_name.slice(0, 2).toUpperCase()}
@@ -235,16 +296,34 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                           <p className="text-[11px] text-[#64748B]">Assigned Service Professional • {b.professional_rating || 4.9} ★</p>
                         </div>
                       </div>
-                      {b.professional_phone && (
-                        <a
-                          href={`tel:${b.professional_phone}`}
-                          className="px-3 py-1.5 bg-[#2563EB] text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
-                          title="Call Partner"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Call Partner</span>
-                        </a>
-                      )}
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        {/* 1-Click Direct WhatsApp Connect */}
+                        {partnerPhoneRaw && (
+                          <a
+                            href={`https://wa.me/91${partnerPhoneRaw}?text=${encodeURIComponent(`Hi ${b.professional_name}, I am reaching out regarding my QuickServe order #${b.booking_reference} for ${b.service_title}.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                            title="Chat with partner on WhatsApp"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
+
+                        {/* Call Partner Button */}
+                        {b.professional_phone && (
+                          <a
+                            href={`tel:${b.professional_phone}`}
+                            className="px-3 py-1.5 bg-[#2563EB] text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                            title="Call Partner"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Call</span>
+                          </a>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -292,6 +371,60 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                     </div>
                   )}
 
+                  {/* Review Banner for Completed Booking (Feature 1) */}
+                  {isCompleted && (
+                    <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      {b.review_rating ? (
+                        <div className="flex items-center gap-2 text-xs">
+                          <div className="flex items-center text-amber-500">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-3.5 h-3.5 ${star <= (b.review_rating || 5) ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`}
+                              />
+                            ))}
+                          </div>
+                          <span className="font-bold text-slate-900">{b.review_rating}.0 ★</span>
+                          {b.review_comment && (
+                            <span className="text-slate-600 italic line-clamp-1">"{b.review_comment}"</span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span className="font-semibold text-slate-800">How was your service experience?</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        {/* Download Bill Button (Feature 3) */}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedBookingForInvoice(b)}
+                          className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Download Bill</span>
+                        </button>
+
+                        {!b.review_rating && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedBookingForReview(b);
+                              setRatingStars(5);
+                              setReviewComment('');
+                            }}
+                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1 transition-colors shadow-2xs"
+                          >
+                            <Star className="w-3.5 h-3.5 fill-current" />
+                            <span>Rate Service</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Cancellation Reason if cancelled */}
                   {isCancelled && b.cancellation_reason && (
                     <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
@@ -320,6 +453,249 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Feature 1: Rating & Review Modal */}
+      {selectedBookingForReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Rate Service Quality</h3>
+                <p className="text-xs text-slate-500">{selectedBookingForReview.service_title} • Partner: {selectedBookingForReview.professional_name || 'Professional'}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedBookingForReview(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Interactive Stars */}
+            <div className="flex items-center justify-center gap-2 py-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRatingStars(star)}
+                  className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                >
+                  <Star
+                    className={`w-8 h-8 ${
+                      star <= ratingStars ? 'fill-amber-400 text-amber-500' : 'text-slate-300'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-xs font-bold text-amber-700">
+              {ratingStars === 5 ? 'Excellent 🌟🌟🌟🌟🌟' : ratingStars === 4 ? 'Very Good 👍' : ratingStars === 3 ? 'Good 🙂' : 'Needs Improvement'}
+            </p>
+
+            {/* Quick Review Feedback Tags */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">What went well?</label>
+              <div className="flex flex-wrap gap-1.5">
+                {quickReviewTags.map((tag) => {
+                  const isSelected = selectedReviewTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedReviewTags(selectedReviewTags.filter(t => t !== tag));
+                        } else {
+                          setSelectedReviewTags([...selectedReviewTags, tag]);
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {tag} {isSelected ? '✓' : '+'}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Comment Textarea */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Feedback Comment (Optional)</label>
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Share your experience with the service professional..."
+                className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="pt-2 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedBookingForReview(null)}
+                className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitReview}
+                disabled={isSubmittingReview}
+                className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5"
+              >
+                {isSubmittingReview ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <span>Submit Rating</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feature 3: Official Printable Service Invoice / Bill Modal */}
+      {selectedBookingForInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-xs print:p-0 print:bg-white">
+          <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] print:max-h-none print:shadow-none print:border-none">
+            
+            {/* Invoice Header Bar */}
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 print:hidden">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-bold text-slate-900">Official Service Bill / Receipt</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print / Save PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBookingForInvoice(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Invoice Paper Content */}
+            <div className="p-6 sm:p-8 space-y-6 overflow-y-auto print:overflow-visible">
+              
+              {/* Brand Letterhead */}
+              <div className="flex items-start justify-between border-b pb-4 border-slate-200">
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight font-heading">
+                    Quick<span className="text-blue-600">Serve</span>
+                  </h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">QuickServe Technologies Private Limited</p>
+                  <p className="text-[11px] text-slate-500">Greater Noida & NCR Service Cluster Hub</p>
+                  <p className="text-[11px] text-slate-500 font-mono">GSTIN / Reg: 09AAACQ1234F1Z8</p>
+                </div>
+                <div className="text-right">
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full border border-emerald-200">
+                    PAID RECEIPT ✓
+                  </span>
+                  <p className="text-xs font-mono font-bold text-slate-800 mt-2">
+                    INV-{selectedBookingForInvoice.booking_reference}
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Date: {new Date(selectedBookingForInvoice.created_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Customer & Professional Details */}
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-500">Billed To (Customer):</p>
+                  <p className="font-bold text-slate-900 mt-1">{selectedBookingForInvoice.customer_name}</p>
+                  <p className="text-slate-600">{selectedBookingForInvoice.customer_phone}</p>
+                  <p className="text-slate-500 mt-0.5">{selectedBookingForInvoice.customer_address || selectedBookingForInvoice.locality}</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-500">Fulfilled By (Partner):</p>
+                  <p className="font-bold text-slate-900 mt-1">{selectedBookingForInvoice.professional_name || 'QuickServe Certified Pro'}</p>
+                  <p className="text-slate-600">Phone: {selectedBookingForInvoice.professional_phone || 'Verified'}</p>
+                  <p className="text-emerald-700 font-medium text-[11px]">✓ 100% Aadhaar & Police Verified</p>
+                </div>
+              </div>
+
+              {/* Itemized Table */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-100 text-slate-700 font-bold text-[11px]">
+                    <tr>
+                      <th className="p-3">Service Description</th>
+                      <th className="p-3 text-center">Type</th>
+                      <th className="p-3 text-right">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    <tr>
+                      <td className="p-3">
+                        <span className="font-bold text-slate-900">{selectedBookingForInvoice.service_title}</span>
+                        <p className="text-[11px] text-slate-500">{selectedBookingForInvoice.sub_service_selected}</p>
+                      </td>
+                      <td className="p-3 text-center text-slate-600">Doorstep Work</td>
+                      <td className="p-3 text-right font-semibold text-slate-900">
+                        ₹{selectedBookingForInvoice.base_charge || (selectedBookingForInvoice.total_amount - 29)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3">
+                        <span className="font-medium text-slate-800">QuickServe Safety & Platform Fee</span>
+                        <p className="text-[11px] text-slate-500">Doorstep protection & background insurance</p>
+                      </td>
+                      <td className="p-3 text-center text-slate-600">Platform</td>
+                      <td className="p-3 text-right font-semibold text-slate-900">
+                        ₹{selectedBookingForInvoice.platform_fee || 29}
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+                    <tr>
+                      <td colSpan={2} className="p-3 text-right text-slate-700">Total Billed Amount:</td>
+                      <td className="p-3 text-right text-base text-blue-600">₹{selectedBookingForInvoice.total_amount}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Payment Summary */}
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+                <div>
+                  <span className="font-bold text-emerald-950">Payment Method: </span>
+                  <span className="capitalize text-emerald-800 font-semibold">{selectedBookingForInvoice.payment_method.replace('_', ' ')}</span>
+                </div>
+                <div className="text-right">
+                  <span className="font-bold text-emerald-900">Status: FULLY SETTLED ✓</span>
+                </div>
+              </div>
+
+              {/* Footer Terms */}
+              <div className="text-[10px] text-slate-400 text-center space-y-1 pt-2 border-t border-slate-100">
+                <p>Thank you for choosing QuickServe. This is an electronically generated service receipt requiring no physical signature.</p>
+                <p>Support Helpline: +91 95701 51834 • Email: support@quickserve.in • Greater Noida & NCR</p>
+              </div>
+
+            </div>
+
+          </div>
         </div>
       )}
 

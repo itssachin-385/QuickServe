@@ -9,8 +9,10 @@ import {
   Search, MapPin, Sparkles, Wrench, Zap, 
   Wind, Utensils, Truck, Home, ShoppingBag, 
   User, ChevronRight, Clock, ShieldCheck, CheckCircle2, 
-  X, Briefcase, Check, ArrowRight 
+  X, Briefcase, Check, ArrowRight, Globe 
 } from 'lucide-react';
+import { translations, Language } from '../utils/translations';
+import { playDoorbellChime } from '../utils/sound';
 
 interface CleanCustomerAppProps {
   currentUser: CustomerUser;
@@ -124,8 +126,37 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
     return list;
   }, [searchQuery, selectedCategoryKey]);
 
+  // Dual-Language Support (English & Hindi)
+  const [lang, setLang] = useState<Language>(() => {
+    return (localStorage.getItem('quickserve_lang') as Language) || 'en';
+  });
+
+  const toggleLanguage = () => {
+    const next: Language = lang === 'en' ? 'hi' : 'en';
+    setLang(next);
+    localStorage.setItem('quickserve_lang', next);
+  };
+
+  const t = translations[lang];
+
+  const getCategoryName = (id: string, defaultName: string) => {
+    if (lang === 'hi') {
+      switch (id) {
+        case 'cleaning': return 'सफाई व मेड';
+        case 'plumber': return 'प्लंबर (नल व पाइप)';
+        case 'electrician': return 'इलेक्ट्रीशियन (बिजली)';
+        case 'ac_appliances': return 'एसी व उपकरण';
+        case 'cook': return 'रसोइया / कुक';
+        case 'moving': return 'शिफ्टिंग व ट्रांसपोर्ट';
+        default: return defaultName;
+      }
+    }
+    return defaultName;
+  };
+
   const handleBookingPlaced = (newBooking: Booking) => {
     onRefreshBookings();
+    playDoorbellChime();
     setSuccessToast(`Order #${newBooking.booking_reference} confirmed!`);
     setActiveTab('orders');
     setTimeout(() => setSuccessToast(null), 4000);
@@ -180,7 +211,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search 'tap repair', 'maid', 'AC service'..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-9 py-2 text-xs bg-slate-50 hover:bg-white focus:bg-white border border-[#E2E8F0] rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[#0F172A] placeholder-slate-400 transition-all"
               />
               {searchQuery && (
@@ -195,15 +226,28 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             </div>
           </div>
 
-          {/* Right Header Navigation: Orders, Profile, Partner Portal */}
+          {/* Right Header Navigation: Language Switcher, Orders, Profile, Partner Portal */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Dual Language Switcher Pill (Feature 5) */}
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-[#E2E8F0] bg-slate-50 hover:bg-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              title="Switch Language / भाषा बदलें"
+            >
+              <Globe className="w-3.5 h-3.5 text-[#2563EB]" />
+              <span className={lang === 'en' ? 'text-[#2563EB] font-extrabold' : 'text-slate-400'}>EN</span>
+              <span className="text-slate-300">|</span>
+              <span className={lang === 'hi' ? 'text-[#2563EB] font-extrabold' : 'text-slate-400'}>हिंदी</span>
+            </button>
+
             <button
               type="button"
               onClick={onSwitchToPartnerPortal}
               className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 rounded-xl border border-[#E2E8F0] transition-colors cursor-pointer"
             >
               <Briefcase className="w-3.5 h-3.5 text-[#2563EB]" />
-              <span>Partner Portal</span>
+              <span>{t.partnerPortal}</span>
             </button>
 
             <button
@@ -250,7 +294,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="What service do you need?"
+              placeholder={t.searchPlaceholder}
               className="w-full pl-9 pr-9 py-2 text-xs bg-slate-50 focus:bg-white border border-[#E2E8F0] rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[#0F172A] placeholder-slate-400"
             />
             {searchQuery && (
@@ -285,10 +329,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E2E8F0] pb-4">
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] tracking-tight font-heading">
-                  Home services, made simple
+                  {t.tagline}
                 </h1>
                 <p className="text-xs sm:text-sm text-[#64748B] mt-1">
-                  Verified domestic help, plumbers, electricians & technicians at your doorstep in 15 mins.
+                  {t.subtitle}
                 </p>
               </div>
 
@@ -309,7 +353,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             <div>
               <div className="flex items-center justify-between mb-3 gap-2">
                 <h2 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
-                  Service Categories
+                  {lang === 'hi' ? 'सेवा श्रेणियां' : 'Service Categories'}
                 </h2>
                 {selectedCategoryKey !== 'all' && (
                   <button
@@ -317,7 +361,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                     onClick={() => setSelectedCategoryKey('all')}
                     className="text-xs font-semibold text-[#2563EB] hover:underline shrink-0 cursor-pointer"
                   >
-                    View All Categories
+                    {lang === 'hi' ? 'सभी श्रेणियां देखें' : 'View All Categories'}
                   </button>
                 )}
               </div>
@@ -349,7 +393,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                       <span className={`text-xs font-bold leading-tight ${
                         isSelected ? 'text-white' : 'text-[#0F172A]'
                       }`}>
-                        {cat.name}
+                        {getCategoryName(cat.id, cat.name)}
                       </span>
                     </button>
                   );
@@ -450,7 +494,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                           {/* Card Footer: Starts At & High-contrast Book Now CTA */}
                           <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
                             <div>
-                              <span className="text-[10px] text-[#94A3B8] block font-bold uppercase tracking-wider">Starts at</span>
+                              <span className="text-[10px] text-[#94A3B8] block font-bold uppercase tracking-wider">{t.startsAt}</span>
                               <span className="text-base sm:text-lg font-extrabold text-[#0F172A] tracking-tight">
                                 ₹{service.startingPrice}
                               </span>
@@ -461,7 +505,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                               onClick={() => setBookingService(service)}
                               className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.98] text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                             >
-                              <span>Book Now</span>
+                              <span>{t.bookNow}</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -481,13 +525,13 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-[#0F172A]">QuickServe Customer Guarantee</p>
-                  <p className="text-[11px] text-[#64748B]">100% Free cancellation anytime before arrival. Transparent flat rate card.</p>
+                  <p className="font-bold text-[#0F172A]">{t.quickServeGuarantee}</p>
+                  <p className="text-[11px] text-[#64748B]">{t.freeCancellation}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 text-[11px] font-semibold text-[#0F172A]">
-                <span className="flex items-center gap-1">✓ No advance required</span>
-                <span className="flex items-center gap-1">✓ Pay after work via UPI/Cash</span>
+                <span className="flex items-center gap-1">✓ {t.noAdvance}</span>
+                <span className="flex items-center gap-1">✓ {t.payAfterWork}</span>
               </div>
             </div>
 
@@ -527,7 +571,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           }`}
         >
           <Home className="w-5 h-5" />
-          <span className="text-[10px]">Home</span>
+          <span className="text-[10px]">{lang === 'hi' ? 'होम' : 'Home'}</span>
         </button>
 
         <button
@@ -543,7 +587,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               {activeOrdersCount}
             </span>
           )}
-          <span className="text-[10px]">Orders</span>
+          <span className="text-[10px]">{t.myOrders}</span>
         </button>
 
         <button
@@ -554,7 +598,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           }`}
         >
           <User className="w-5 h-5" />
-          <span className="text-[10px]">Profile</span>
+          <span className="text-[10px]">{t.profile}</span>
         </button>
       </nav>
 

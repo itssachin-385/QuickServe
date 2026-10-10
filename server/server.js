@@ -1160,6 +1160,32 @@ app.post('/api/bookings/:id/status', (req, res) => {
   res.json({ success: true, booking });
 });
 
+// Customer Service Review & Rating
+app.post('/api/bookings/:id/review', (req, res) => {
+  const { rating, comment } = req.body;
+  const booking = bookings.find(b => b.id === req.params.id || b.booking_reference === req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+  const numRating = Math.max(1, Math.min(5, Number(rating) || 5));
+  booking.review_rating = numRating;
+  booking.review_comment = comment || '';
+
+  // Update professional rating
+  if (booking.professional_id) {
+    const pro = professionals.find(p => p.id === booking.professional_id);
+    if (pro) {
+      const currentRating = pro.rating || 5.0;
+      const totalJobs = pro.completed_jobs_count || 1;
+      const newRating = Number(((currentRating * totalJobs + numRating) / (totalJobs + 1)).toFixed(1));
+      pro.rating = newRating;
+      try { db.updateProfessional(pro.id, pro); } catch (e) {}
+    }
+  }
+
+  try { db.updateBooking(booking.id, booking); } catch (e) {}
+  res.json({ success: true, booking });
+});
+
 // Toggle individual chore completion within active booking
 app.post('/api/bookings/:id/toggle-chore', (req, res) => {
   const { choreId } = req.body;
