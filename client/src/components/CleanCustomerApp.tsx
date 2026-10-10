@@ -53,7 +53,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Plumber',
     matchCatIds: ['cat-plumber', 'plumber'],
     icon: Wrench,
-    image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=300&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1505798577917-a65157d3320a?w=400&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#F0F9FF]',
     textColor: 'text-[#0284C7]',
     borderColor: 'border-[#BAE6FD]',
@@ -64,7 +64,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Electrician',
     matchCatIds: ['cat-electrician', 'electrician'],
     icon: Zap,
-    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#FFFBEB]',
     textColor: 'text-[#D97706]',
     borderColor: 'border-[#FDE68A]',
@@ -75,7 +75,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'AC & Appliances',
     matchCatIds: ['cat-ac-repair', 'cat-appliance', 'ac-repair'],
     icon: Wind,
-    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?w=400&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#F0FDFA]',
     textColor: 'text-[#0D9488]',
     borderColor: 'border-[#99F6E4]',
@@ -86,7 +86,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Cook',
     matchCatIds: ['cat-cook', 'cook'],
     icon: Utensils,
-    image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=300&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#FFF1F2]',
     textColor: 'text-[#E11D48]',
     borderColor: 'border-[#FECDD3]',
@@ -97,7 +97,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Moving Help',
     matchCatIds: ['cat-packers', 'cat-tempo', 'packers'],
     icon: Truck,
-    image: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=300&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=400&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#FAF5FF]',
     textColor: 'text-[#7C3AED]',
     borderColor: 'border-[#DDD6FE]',
@@ -342,7 +342,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
             {/* 4. COMPACT, BEAUTIFUL SERVICE CATEGORIES */}
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 gap-2">
                 <h2 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
                   Service Categories
                 </h2>
@@ -350,7 +350,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                   <button
                     type="button"
                     onClick={() => setSelectedCategoryKey('all')}
-                    className="text-xs font-semibold text-[#059669] hover:underline"
+                    className="text-xs font-semibold text-[#059669] hover:underline shrink-0"
                   >
                     View All Categories
                   </button>
@@ -368,30 +368,20 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategoryKey(isSelected ? 'all' : cat.id)}
-                      className={`p-2.5 sm:p-3 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer group ${
+                      className={`p-3 sm:p-3.5 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer group ${
                         isSelected
                           ? `bg-white border-[#059669] ring-2 ring-[#059669]/20 shadow-xs`
                           : `${cat.bgColor} ${cat.borderColor} hover:border-[#059669]/40 hover:-translate-y-0.5 hover:shadow-2xs`
                       }`}
                     >
-                      <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden mb-2 shadow-2xs group-hover:scale-105 transition-transform bg-slate-100">
-                        <img
-                          src={cat.image}
-                          alt={cat.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className={`absolute inset-0 flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-[#059669]/50' : 'bg-black/15 group-hover:bg-black/5'
-                        }`}>
-                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center shadow-xs ${
-                            isSelected ? 'bg-white text-[#059669]' : 'bg-white/90 text-[#172033]'
-                          }`}>
-                            <Icon className="w-3.5 h-3.5" />
-                          </div>
-                        </div>
+                      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-105 shadow-2xs ${
+                        isSelected
+                          ? 'bg-[#059669] text-white shadow-emerald-200'
+                          : `${cat.textColor} bg-white/90 border ${cat.borderColor}`
+                      }`}>
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
-                      <span className={`text-[11px] sm:text-xs font-bold leading-tight ${
+                      <span className={`text-xs font-bold leading-tight ${
                         isSelected ? 'text-[#059669]' : 'text-[#172033]'
                       }`}>
                         {cat.name}
