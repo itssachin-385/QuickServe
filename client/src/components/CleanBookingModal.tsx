@@ -140,9 +140,19 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
         
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Book {service.title}</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Estimated time: ~{service.duration_mins} mins</p>
+          <div className="flex items-center gap-3">
+            {service.image && (
+              <img
+                src={service.image}
+                alt={service.title}
+                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
+                loading="lazy"
+              />
+            )}
+            <div>
+              <h2 className="text-base font-bold text-slate-900 leading-snug">Book {service.title}</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Estimated time: ~{service.duration_mins} mins • Starts at ₹{service.startingPrice}</p>
+            </div>
           </div>
           <button
             type="button"

@@ -29,6 +29,7 @@ interface CoreCategoryConfig {
   name: string;
   matchCatIds: string[];
   icon: React.ComponentType<{ className?: string }>;
+  image: string;
   bgColor: string;
   textColor: string;
   borderColor: string;
@@ -41,6 +42,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Cleaning & Maid',
     matchCatIds: ['cat-maid', 'cat-deep-clean', 'cleaning'],
     icon: Sparkles,
+    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#ECFDF5]',
     textColor: 'text-[#059669]',
     borderColor: 'border-[#A7F3D0]',
@@ -51,6 +53,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Plumber',
     matchCatIds: ['cat-plumber', 'plumber'],
     icon: Wrench,
+    image: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=300&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#F0F9FF]',
     textColor: 'text-[#0284C7]',
     borderColor: 'border-[#BAE6FD]',
@@ -61,6 +64,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Electrician',
     matchCatIds: ['cat-electrician', 'electrician'],
     icon: Zap,
+    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#FFFBEB]',
     textColor: 'text-[#D97706]',
     borderColor: 'border-[#FDE68A]',
@@ -71,6 +75,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'AC & Appliances',
     matchCatIds: ['cat-ac-repair', 'cat-appliance', 'ac-repair'],
     icon: Wind,
+    image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#F0FDFA]',
     textColor: 'text-[#0D9488]',
     borderColor: 'border-[#99F6E4]',
@@ -81,6 +86,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Cook',
     matchCatIds: ['cat-cook', 'cook'],
     icon: Utensils,
+    image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=300&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#FFF1F2]',
     textColor: 'text-[#E11D48]',
     borderColor: 'border-[#FECDD3]',
@@ -91,6 +97,7 @@ const CORE_CATEGORIES: CoreCategoryConfig[] = [
     name: 'Moving Help',
     matchCatIds: ['cat-packers', 'cat-tempo', 'packers'],
     icon: Truck,
+    image: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=300&auto=format&fit=crop&q=80',
     bgColor: 'bg-[#FAF5FF]',
     textColor: 'text-[#7C3AED]',
     borderColor: 'border-[#DDD6FE]',
@@ -361,18 +368,30 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategoryKey(isSelected ? 'all' : cat.id)}
-                      className={`p-3 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer group ${
+                      className={`p-2.5 sm:p-3 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer group ${
                         isSelected
                           ? `bg-white border-[#059669] ring-2 ring-[#059669]/20 shadow-xs`
                           : `${cat.bgColor} ${cat.borderColor} hover:border-[#059669]/40 hover:-translate-y-0.5 hover:shadow-2xs`
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-105 ${
-                        isSelected ? 'bg-emerald-600 text-white' : `${cat.textColor} bg-white/80 shadow-2xs`
-                      }`}>
-                        <Icon className="w-5 h-5" />
+                      <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden mb-2 shadow-2xs group-hover:scale-105 transition-transform bg-slate-100">
+                        <img
+                          src={cat.image}
+                          alt={cat.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className={`absolute inset-0 flex items-center justify-center transition-colors ${
+                          isSelected ? 'bg-[#059669]/50' : 'bg-black/15 group-hover:bg-black/5'
+                        }`}>
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center shadow-xs ${
+                            isSelected ? 'bg-white text-[#059669]' : 'bg-white/90 text-[#172033]'
+                          }`}>
+                            <Icon className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
                       </div>
-                      <span className={`text-xs font-bold leading-tight ${
+                      <span className={`text-[11px] sm:text-xs font-bold leading-tight ${
                         isSelected ? 'text-[#059669]' : 'text-[#172033]'
                       }`}>
                         {cat.name}
@@ -426,58 +445,74 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                     return (
                       <div
                         key={service.id}
-                        className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] service-card flex flex-col justify-between h-full group"
+                        className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow service-card flex flex-col justify-between h-full group"
                       >
-                        {/* Card Header & Category Pill */}
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${catConfig.bgColor} ${catConfig.textColor} ${catConfig.borderColor}`}>
+                        {/* 2D Photo Thumbnail with Category Pill & Duration Badge */}
+                        <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-100">
+                          <img
+                            src={service.image}
+                            alt={service.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = catConfig.image;
+                            }}
+                          />
+                          <div className="absolute top-2.5 left-2.5">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-md bg-white/95 border ${catConfig.textColor} ${catConfig.borderColor} shadow-2xs`}>
                               {catConfig.name}
                             </span>
-                            <div className="flex items-center gap-1 text-[11px] text-[#64748B]">
-                              <Clock className="w-3 h-3 text-slate-400" />
-                              <span>~{service.duration_mins}m</span>
-                            </div>
                           </div>
-
-                          <h4 className="text-[15px] font-bold text-[#172033] leading-snug line-clamp-1 group-hover:text-[#059669] transition-colors">
-                            {service.title}
-                          </h4>
-                          
-                          <p className="text-xs text-[#64748B] mt-1 line-clamp-2 leading-relaxed">
-                            {service.tagline || service.subServiceName}
-                          </p>
-
-                          {/* Max 2 Short Highlights */}
-                          {tasksList.length > 0 && (
-                            <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1">
-                              {tasksList.slice(0, 2).map((t, idx) => (
-                                <div key={idx} className="flex items-center gap-1.5 text-[11px] text-[#172033] truncate">
-                                  <Check className="w-3 h-3 text-[#059669] shrink-0" />
-                                  <span className="truncate">{t}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Card Footer: Price & Compact Book Now Button */}
-                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                          <div>
-                            <span className="text-[10px] text-[#64748B] block font-medium uppercase tracking-wider">Starts at</span>
-                            <span className="text-base sm:text-lg font-bold text-[#059669] tracking-tight">
-                              ₹{service.startingPrice}
+                          <div className="absolute bottom-2.5 right-2.5">
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-md bg-black/65 text-white flex items-center gap-1 shadow-2xs">
+                              <Clock className="w-3 h-3 text-emerald-300" />
+                              <span>~{service.duration_mins}m</span>
                             </span>
                           </div>
+                        </div>
 
-                          <button
-                            type="button"
-                            onClick={() => setBookingService(service)}
-                            className="px-3.5 py-2 bg-[#059669] hover:bg-[#047857] text-white font-semibold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1 cursor-pointer"
-                          >
-                            <span>Book Now</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
+                        {/* Card Content */}
+                        <div className="p-4 flex flex-col justify-between flex-1">
+                          <div>
+                            <h4 className="text-[15px] font-bold text-[#172033] leading-snug line-clamp-1 group-hover:text-[#059669] transition-colors">
+                              {service.title}
+                            </h4>
+                            
+                            <p className="text-xs text-[#64748B] mt-1 line-clamp-2 leading-relaxed">
+                              {service.tagline || service.subServiceName}
+                            </p>
+
+                            {/* Max 2 Short Highlights */}
+                            {tasksList.length > 0 && (
+                              <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1">
+                                {tasksList.slice(0, 2).map((t, idx) => (
+                                  <div key={idx} className="flex items-center gap-1.5 text-[11px] text-[#172033] truncate">
+                                    <Check className="w-3 h-3 text-[#059669] shrink-0" />
+                                    <span className="truncate">{t}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Card Footer: Price & Compact Book Now Button */}
+                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] text-[#64748B] block font-medium uppercase tracking-wider">Starts at</span>
+                              <span className="text-base sm:text-lg font-bold text-[#059669] tracking-tight">
+                                ₹{service.startingPrice}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setBookingService(service)}
+                              className="px-3.5 py-2 bg-[#059669] hover:bg-[#047857] text-white font-semibold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>Book Now</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
 
                       </div>
