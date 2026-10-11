@@ -181,8 +181,8 @@ let gatewayConfig = {
   upiMerchantName: process.env.UPI_MERCHANT_NAME || 'Sachin Kumar'
 };
 
-// Founder & Test numbers: Always bypass Fast2SMS so ₹5 is never deducted during tests
-const TEST_NUMBERS = ['9570151834', '9845011223', '9999999999', '8888888888', '7777777777'];
+// Fast2SMS and Test numbers configuration
+const TEST_NUMBERS = ['9999999999', '8888888888', '7777777777'];
 
 let smsLogs = []; // recent SMS audit trail
 
@@ -210,13 +210,13 @@ async function sendFast2SmsOtp(phone10, otp) {
     };
   }
 
-  // Founder / Test numbers: Skip Fast2SMS to protect ₹95 balance completely
+  // Pure demo mock numbers
   if (TEST_NUMBERS.includes(cleanPhone)) {
     logEntry.status = 'test_mode';
-    logEntry.note = `Founder/Test (+91 ${cleanPhone}) bypassed Fast2SMS. ₹5 saved.`;
+    logEntry.note = `Demo test mobile (+91 ${cleanPhone}) bypassed Fast2SMS.`;
     smsLogs.unshift(logEntry);
     if (smsLogs.length > 50) smsLogs.pop();
-    console.log(`[TEST MODE] Founder/Test mobile (+91 ${cleanPhone}) bypassed Fast2SMS. OTP: ${otp}`);
+    console.log(`[TEST MODE] Demo mobile (+91 ${cleanPhone}) bypassed Fast2SMS. OTP: ${otp}`);
     return {
       success: true,
       provider: 'test_shield',
@@ -225,24 +225,13 @@ async function sendFast2SmsOtp(phone10, otp) {
     };
   }
 
-  // First Attempt: Try OTP route
+  // Real Carrier SMS via Fast2SMS Verified Quick Route (GET)
   try {
-    const postBodyOtp = {
-      route: 'otp',
-      variables_values: otp,
-      numbers: cleanPhone
-    };
+    const messageText = `Your QuickServe verification OTP is ${otp}. Valid for 10 minutes. Do not share with anyone.`;
+    const fast2smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(messageText)}&language=english&flash=0&numbers=${cleanPhone}`;
 
-    let response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-      method: 'POST',
-      headers: {
-        'authorization': gatewayConfig.fast2smsApiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postBodyOtp)
-    });
-
-    let resData = await response.json();
+    const response = await fetch(fast2smsUrl, { method: 'GET' });
+    const resData = await response.json();
 
     if (resData.return === true) {
       logEntry.status = 'delivered';
@@ -250,63 +239,29 @@ async function sendFast2SmsOtp(phone10, otp) {
       logEntry.response = resData;
       smsLogs.unshift(logEntry);
       if (smsLogs.length > 50) smsLogs.pop();
+      console.log(`[REAL SMS DELIVERED] Fast2SMS sent to +91 ${cleanPhone}. ReqId: ${resData.request_id}`);
       return {
         success: true,
         provider: 'fast2sms',
-        message: `Real SMS successfully delivered via Fast2SMS to +91 ${cleanPhone}`,
-        requestId: resData.request_id,
-        demo_otp: otp
-      };
-    }
-
-    // Second Attempt: If 'otp' route returns false (e.g. DLT template requirement), fallback to 'q' Quick route
-    console.warn('Fast2SMS route "otp" failed or returned false. Retrying with route "q"...', resData);
-    const postBodyQuick = {
-      route: 'q',
-      message: `Your QuickServe verification OTP is ${otp}. Valid for 10 minutes. Zero cash policy for all services.`,
-      language: 'english',
-      flash: 0,
-      numbers: cleanPhone
-    };
-
-    response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-      method: 'POST',
-      headers: {
-        'authorization': gatewayConfig.fast2smsApiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postBodyQuick)
-    });
-
-    resData = await response.json();
-    if (resData.return === true) {
-      logEntry.status = 'delivered_fallback_quick';
-      logEntry.requestId = resData.request_id;
-      logEntry.response = resData;
-      smsLogs.unshift(logEntry);
-      if (smsLogs.length > 50) smsLogs.pop();
-      return {
-        success: true,
-        provider: 'fast2sms',
-        message: `Real SMS delivered via Fast2SMS (Quick Route) to +91 ${cleanPhone}`,
+        message: `Real SMS successfully delivered to +91 ${cleanPhone}`,
         requestId: resData.request_id,
         demo_otp: otp
       };
     } else {
+      console.warn('Fast2SMS returned error response:', resData);
       logEntry.status = 'failed';
       logEntry.error = resData.message;
-      logEntry.response = resData;
       smsLogs.unshift(logEntry);
       if (smsLogs.length > 50) smsLogs.pop();
       return {
         success: false,
         provider: 'fast2sms',
         message: Array.isArray(resData.message) ? resData.message.join(', ') : (resData.message || 'Fast2SMS returned error'),
-        error: resData,
         demo_otp: otp
       };
     }
   } catch (err) {
+    console.error('Fast2SMS network error:', err);
     logEntry.status = 'network_error';
     logEntry.error = err.message;
     smsLogs.unshift(logEntry);
@@ -319,6 +274,31 @@ async function sendFast2SmsOtp(phone10, otp) {
     };
   }
 }
+
+// WhatsApp OTP Endpoint (Instant 1-Click WhatsApp delivery)
+app.post('/api/auth/send-whatsapp-otp', (req, res) => {
+  let { phone, otp: clientOtp } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+  const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+  const otp = clientOtp || pendingOtps[cleanPhone]?.otp || Math.floor(1000 + Math.random() * 9000).toString();
+
+  pendingOtps[cleanPhone] = {
+    otp,
+    expiresAt: Date.now() + 10 * 60 * 1000
+  };
+
+  const whatsappText = `*QuickServe Verification Code*\n\nYour 4-digit login OTP is: *${otp}*\n\nValid for 10 minutes. Please enter this code in your QuickServe app to continue.`;
+  const whatsappUrl = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(whatsappText)}`;
+
+  res.json({
+    success: true,
+    phone: cleanPhone,
+    otp,
+    whatsapp_url: whatsappUrl,
+    message: `WhatsApp OTP generated for +91 ${cleanPhone}`
+  });
+});
+
 
 // 1. Send OTP (Zomato / Swiggy instant SMS flow via Fast2SMS)
 app.post('/api/auth/send-otp', async (req, res) => {

@@ -9,10 +9,11 @@ import {
   Search, MapPin, Sparkles, Wrench, Zap, 
   Wind, Utensils, Truck, Home, ShoppingBag, 
   User, ChevronRight, Clock, ShieldCheck, CheckCircle2, 
-  X, Briefcase, Check, ArrowRight, Globe 
+  X, Briefcase, Check, ArrowRight, Globe, Navigation 
 } from 'lucide-react';
 import { translations, Language } from '../utils/translations';
 import { playDoorbellChime } from '../utils/sound';
+import { LiveTrackingModal } from './LiveTrackingModal';
 
 interface CleanCustomerAppProps {
   currentUser: CustomerUser;
@@ -89,8 +90,9 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [bookingService, setBookingService] = useState<HomeServiceCard | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<Booking | null>(null);
 
-  // Active customer orders count
+  // Active customer orders count & current active booking
   const myCleanPhone = (currentUser.phone || '').replace(/\D/g, '').slice(-10);
   const activeOrdersCount = useMemo(() => {
     return bookings.filter(b => {
@@ -99,6 +101,15 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
       return isMine && b.status !== 'completed' && b.status !== 'cancelled';
     }).length;
   }, [bookings, myCleanPhone]);
+
+  const activeOrder = useMemo(() => {
+    return bookings.find(b => {
+      const bPhone = (b.customer_phone || '').replace(/\D/g, '').slice(-10);
+      const isMine = !myCleanPhone || bPhone === myCleanPhone || bPhone.includes(myCleanPhone);
+      return isMine && b.status !== 'completed' && b.status !== 'cancelled';
+    });
+  }, [bookings, myCleanPhone]);
+
 
   // Filtered services
   const filteredServices = useMemo(() => {
@@ -348,6 +359,36 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                 </span>
               </div>
             </div>
+
+            {/* Live Active Order Tracking Banner on Home Screen */}
+            {activeOrder && (
+              <div className="bg-gradient-to-r from-pink-600 via-rose-600 to-pink-700 text-white p-4 rounded-3xl shadow-lg shadow-pink-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-pink-400/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-xl shrink-0">
+                    🛵
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-pink-200">Live GPS Order</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    </div>
+                    <h4 className="font-extrabold text-sm truncate">{activeOrder.service_title} • #{activeOrder.booking_reference}</h4>
+                    <p className="text-xs text-pink-100/90 truncate">Partner {activeOrder.professional_name || 'Rahul Kumar'} is on the way</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTrackingOrder(activeOrder)}
+                    className="px-4 py-2 bg-white text-pink-700 hover:bg-pink-50 text-xs font-black rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <Navigation className="w-3.5 h-3.5 text-pink-600 animate-pulse" />
+                    <span>Track on Map</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* 4. CATEGORY NAVIGATION (Pink Accent Cards) */}
             <div>
@@ -627,6 +668,15 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         />
       )}
 
+      {/* Feature 4: Live Map Tracking Modal */}
+      {selectedTrackingOrder && (
+        <LiveTrackingModal
+          booking={selectedTrackingOrder}
+          onClose={() => setSelectedTrackingOrder(null)}
+        />
+      )}
+
     </div>
   );
 };
+

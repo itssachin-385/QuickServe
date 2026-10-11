@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CustomerUser } from '../types';
-import { sendOtp, verifyOtp } from '../api';
+import { sendOtp, sendWhatsAppOtp, verifyOtp } from '../api';
 import { 
   ShieldCheck, Phone, User, ArrowRight, ArrowLeft, 
-  CheckCircle2, AlertCircle, RefreshCw, Check, Sparkles
+  CheckCircle2, AlertCircle, RefreshCw, Check, Sparkles,
+  MessageCircle
 } from 'lucide-react';
 
 interface CleanAuthScreenProps {
@@ -26,6 +27,8 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [resendSeconds, setResendSeconds] = useState(30);
   const [hintOtp, setHintOtp] = useState<string | null>(null);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+  const [whatsAppOpened, setWhatsAppOpened] = useState(false);
 
   const otpInputRefs = [
     useRef<HTMLInputElement>(null),
@@ -159,6 +162,27 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
       setIsLoading(false);
     }
   };
+
+  const handleGetWhatsAppOtp = async () => {
+    setIsSendingWhatsApp(true);
+    setErrorMessage('');
+    try {
+      const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+      const res = await sendWhatsAppOtp(cleanPhone);
+      if (res && res.whatsapp_url) {
+        setWhatsAppOpened(true);
+        if (res.otp) {
+          setHintOtp(res.otp);
+        }
+        window.open(res.whatsapp_url, '_blank');
+      }
+    } catch (err: any) {
+      setErrorMessage('Could not open WhatsApp. Please use SMS code.');
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-[#FFF7F9] flex flex-col justify-between max-w-md mx-auto relative overflow-hidden shadow-2xl">
@@ -323,7 +347,24 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
               </button>
             </div>
 
-            {/* Demo Hint Banner */}
+            {/* Real Carrier SMS Dispatched Status */}
+            <div className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="font-medium">Real SMS sent to <strong>+91 {phone}</strong></span>
+            </div>
+
+            {/* 1-Click WhatsApp OTP Option */}
+            <button
+              type="button"
+              onClick={handleGetWhatsAppOtp}
+              disabled={isSendingWhatsApp}
+              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>{isSendingWhatsApp ? 'Opening WhatsApp...' : '💬 Send OTP on WhatsApp'}</span>
+            </button>
+
+            {/* Auto-fill Helper Banner */}
             {hintOtp && (
               <div className="p-2.5 bg-pink-50 border border-pink-200 rounded-xl flex items-center justify-between text-xs text-pink-900">
                 <span>Code: <strong className="font-mono text-sm tracking-wider font-bold">{hintOtp}</strong></span>
@@ -340,6 +381,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                 </button>
               </div>
             )}
+
 
             {/* 4 Digit OTP Inputs */}
             <div className="flex justify-center gap-3 py-2">

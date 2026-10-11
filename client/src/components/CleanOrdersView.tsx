@@ -7,8 +7,9 @@ import {
   CheckCircle2, XCircle, AlertCircle, Ban, 
   ChevronRight, RefreshCw, FileText, Image as ImageIcon, 
   ShieldCheck, Star, MessageCircle, Download, Printer, 
-  X, Sparkles, Volume2, Check
+  X, Sparkles, Volume2, Check, Navigation
 } from 'lucide-react';
+import { LiveTrackingModal } from './LiveTrackingModal';
 
 interface CleanOrdersViewProps {
   bookings: Booking[];
@@ -88,6 +89,9 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
   // Feature 3: Official Invoice / Bill Modal State
   const [selectedBookingForInvoice, setSelectedBookingForInvoice] = useState<Booking | null>(null);
+
+  // Feature 4: Live Map Tracking Modal State
+  const [selectedBookingForTracking, setSelectedBookingForTracking] = useState<Booking | null>(null);
 
   const handleCancelBooking = async () => {
     if (!selectedBookingForCancel) return;
@@ -341,6 +345,19 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                         {b.service_start_otp || (b.booking_reference ? b.booking_reference.slice(-4) : '4821')}
                       </span>
                     </div>
+                  )}
+
+                  {/* Live Map Tracking Action Button */}
+                  {!isCancelled && !isCompleted && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBookingForTracking(b)}
+                      className="w-full py-2.5 px-3 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm shadow-pink-500/20 hover:shadow-md transition-all cursor-pointer active:scale-[0.99]"
+                    >
+                      <Navigation className="w-3.5 h-3.5 animate-pulse" />
+                      <span>Live Map Tracking (लाइव मैप ट्रैक करें)</span>
+                      <span className="px-1.5 py-0.2 bg-white/20 rounded text-[9px] uppercase tracking-wider font-extrabold">GPS</span>
+                    </button>
                   )}
 
                   {/* Stepper Status Progress if not cancelled */}
@@ -786,6 +803,15 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
         </div>
       )}
 
+      {/* Feature 4: Live Map Tracking Modal */}
+      {selectedBookingForTracking && (
+        <LiveTrackingModal
+          booking={selectedBookingForTracking}
+          onClose={() => setSelectedBookingForTracking(null)}
+        />
+      )}
+
     </div>
   );
 };
+
