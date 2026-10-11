@@ -8,6 +8,7 @@ interface CleanProfileViewProps {
   onLogout: () => void;
   onOpenLocationModal: () => void;
   onSwitchToPartnerPortal: () => void;
+  onOpenAdminDesk?: () => void;
 }
 
 export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
@@ -15,7 +16,8 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
   activeCityZone,
   onLogout,
   onOpenLocationModal,
-  onSwitchToPartnerPortal
+  onSwitchToPartnerPortal,
+  onOpenAdminDesk
 }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -126,6 +128,27 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
           <ChevronRight className="w-4 h-4 text-slate-400" />
         </a>
       </div>
+
+      {/* Owner / Admin Control Room */}
+      {onOpenAdminDesk && (
+        <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white rounded-2xl p-5 mb-5 shadow-lg border border-purple-500/30 flex items-center justify-between">
+          <div className="pr-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>Owner Admin Control Room</span>
+            </div>
+            <h4 className="text-sm font-bold text-white mt-1">Partner Verification & Control</h4>
+            <p className="text-[11px] text-slate-300 mt-0.5">Review Aadhaar cards, photos, approve partners, & track live payments.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenAdminDesk}
+            className="px-4 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-bold rounded-xl shadow-md transition-all shrink-0 cursor-pointer active:scale-95"
+          >
+            Open Desk &rarr;
+          </button>
+        </div>
+      )}
 
       {/* Partner Onboarding Link */}
       <div className="bg-pink-50/70 border border-pink-200 rounded-2xl p-5 mb-5 flex items-center justify-between">

@@ -11,11 +11,13 @@ import {
 interface CleanPartnerPortalProps {
   categories: ServiceCategory[];
   onBackToCustomer: () => void;
+  initialShowAdminDesk?: boolean;
 }
 
 export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   categories,
-  onBackToCustomer
+  onBackToCustomer,
+  initialShowAdminDesk = false
 }) => {
   // Check if active partner saved in storage
   const [partnerProfile, setPartnerProfile] = useState<Professional | null>(() => {
@@ -47,7 +49,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   // Admin Verification Desk State
-  const [showAdminDesk, setShowAdminDesk] = useState(false);
+  const [showAdminDesk, setShowAdminDesk] = useState(initialShowAdminDesk);
   const [pendingPartners, setPendingPartners] = useState<Professional[]>([]);
   const [allPartners, setAllPartners] = useState<Professional[]>([]);
   const [isLoadingAdminDesk, setIsLoadingAdminDesk] = useState(false);

@@ -10,6 +10,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 export function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [appMode, setAppMode] = useState<'customer' | 'partner'>('customer');
+  const [openAdminDirect, setOpenAdminDirect] = useState(false);
 
   // Customer Authentication State (Clean mobile + OTP)
   // Returning users stay logged in automatically
@@ -114,12 +115,16 @@ export function App() {
     );
   }
 
-  // 2. SEPARATE PARTNER PORTAL ROUTE
+  // 2. SEPARATE PARTNER PORTAL / ADMIN DESK ROUTE
   if (appMode === 'partner') {
     return (
       <CleanPartnerPortal
         categories={categories}
-        onBackToCustomer={() => setAppMode('customer')}
+        onBackToCustomer={() => {
+          setOpenAdminDirect(false);
+          setAppMode('customer');
+        }}
+        initialShowAdminDesk={openAdminDirect}
       />
     );
   }
@@ -134,7 +139,10 @@ export function App() {
       onLogout={handleLogout}
       activeCityZone={activeCityZone}
       onSelectZone={handleSelectZone}
-      onSwitchToPartnerPortal={() => setAppMode('partner')}
+      onSwitchToPartnerPortal={(directAdmin) => {
+        setOpenAdminDirect(Boolean(directAdmin));
+        setAppMode('partner');
+      }}
     />
   );
 }

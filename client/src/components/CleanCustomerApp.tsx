@@ -23,7 +23,7 @@ interface CleanCustomerAppProps {
   onLogout: () => void;
   activeCityZone: string;
   onSelectZone: (zone: string, fullAddress?: string) => void;
-  onSwitchToPartnerPortal: () => void;
+  onSwitchToPartnerPortal: (directAdminDesk?: boolean) => void;
 }
 
 // 6 Core Categories - Urban Company & Linear Minimalist Style
@@ -254,7 +254,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
             <button
               type="button"
-              onClick={onSwitchToPartnerPortal}
+              onClick={() => onSwitchToPartnerPortal(false)}
               className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-pink-700 hover:text-pink-900 bg-pink-50/50 hover:bg-pink-100/70 rounded-xl border border-pink-200 transition-colors cursor-pointer"
             >
               <Briefcase className="w-3.5 h-3.5 text-pink-600" />
@@ -596,7 +596,8 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             activeCityZone={activeCityZone}
             onLogout={onLogout}
             onOpenLocationModal={() => setIsLocationModalOpen(true)}
-            onSwitchToPartnerPortal={onSwitchToPartnerPortal}
+            onSwitchToPartnerPortal={() => onSwitchToPartnerPortal(false)}
+            onOpenAdminDesk={() => onSwitchToPartnerPortal(true)}
           />
         )}
 

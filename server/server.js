@@ -964,6 +964,14 @@ app.post('/api/admin/verifications/:id/action', (req, res) => {
     pro.verifications.police_clearance = true;
     pro.verifications.skill_trade_test = true;
     pro.admin_notes = notes || 'Profile and documents approved by Admin.';
+
+    // Send Fast2SMS Confirmation to partner
+    if (gatewayConfig.fast2smsApiKey && pro.phone) {
+      const cleanPhone = pro.phone.replace(/\D/g, '').slice(-10);
+      try {
+        fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(`QuickServe: Badhai ho ${pro.name}! Aapka QuickServe Partner account VERIFY ho gaya hai. Ab aap app me doorstep jobs accept kar sakte hain.`)}&language=english&flash=0&numbers=${cleanPhone}`).catch(() => {});
+      } catch (e) {}
+    }
   } else if (action === 'action_required') {
     pro.verification_state = 'action_required';
     pro.is_available = false;
