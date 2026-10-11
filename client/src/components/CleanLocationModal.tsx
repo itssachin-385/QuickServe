@@ -157,9 +157,9 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={isDetectingGps}
-                className="w-full p-3.5 bg-blue-50/70 hover:bg-blue-100/80 border border-blue-200 rounded-xl flex items-center gap-3 text-left transition-colors group cursor-pointer"
+                className="w-full p-3.5 bg-pink-50/70 hover:bg-pink-100/80 border border-pink-200 rounded-xl flex items-center gap-3 text-left transition-colors group cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                   {isDetectingGps ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
                   ) : (
@@ -167,10 +167,10 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-[#0F172A]">
+                  <p className="text-sm font-bold text-[#1F121C]">
                     {isDetectingGps ? 'Detecting current location...' : 'Use Current Location'}
                   </p>
-                  <p className="text-xs text-[#2563EB] mt-0.5 font-medium">
+                  <p className="text-xs text-pink-600 mt-0.5 font-medium">
                     Using GPS (Requires browser permission)
                   </p>
                 </div>
@@ -184,11 +184,11 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
 
               {/* Manual Search */}
               <div>
-                <label className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-[#1F121C] uppercase tracking-wider mb-2">
                   Or enter location manually
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-pink-400">
                     <Search className="w-4 h-4" />
                   </div>
                   <input
@@ -196,17 +196,17 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                     value={manualQuery}
                     onChange={(e) => setManualQuery(e.target.value)}
                     placeholder="Search sector, society, area or PIN code..."
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-[#0F172A] placeholder-slate-400 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-pink-100 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all"
                   />
                 </div>
                 {manualQuery.trim() && filteredAreas.length === 0 && (
                   <button
                     type="button"
                     onClick={() => handleSelectArea(manualQuery.trim())}
-                    className="w-full mt-2 p-2.5 text-xs text-left text-[#2563EB] bg-blue-50 rounded-lg hover:bg-blue-100 flex items-center justify-between cursor-pointer"
+                    className="w-full mt-2 p-2.5 text-xs text-left text-pink-600 bg-pink-50 rounded-lg hover:bg-pink-100 flex items-center justify-between cursor-pointer"
                   >
                     <span>Use &quot;<strong>{manualQuery.trim()}</strong>&quot; as custom locality</span>
-                    <span className="font-semibold text-[#2563EB]">Select &rarr;</span>
+                    <span className="font-semibold text-pink-600">Select &rarr;</span>
                   </button>
                 )}
               </div>
@@ -226,12 +226,12 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                         onClick={() => handleSelectArea(item.name)}
                         className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${
                           isSelected
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-medium'
-                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800'
+                            ? 'bg-pink-50 border-pink-300 text-pink-900 font-medium'
+                            : 'bg-white border-slate-200 hover:border-pink-200 hover:bg-pink-50/40 text-slate-800'
                         }`}
                       >
                         <div className="flex items-center gap-2.5 truncate">
-                          <MapPin className={`w-4 h-4 shrink-0 ${isSelected ? 'text-emerald-600' : 'text-slate-400'}`} />
+                          <MapPin className={`w-4 h-4 shrink-0 ${isSelected ? 'text-pink-600' : 'text-slate-400'}`} />
                           <span className="text-sm truncate">{item.name}</span>
                         </div>
                         <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 shrink-0">
@@ -246,26 +246,26 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
           ) : (
             /* STEP 2: DOORSTEP DETAILS */
             <div className="space-y-4">
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+              <div className="p-3 bg-pink-50/80 border border-pink-200 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <MapPin className="w-4 h-4 text-pink-600 shrink-0" />
                   <div>
-                    <p className="text-xs font-semibold text-emerald-900">Selected Locality</p>
-                    <p className="text-sm text-emerald-800 font-medium">{selectedArea}</p>
+                    <p className="text-xs font-semibold text-pink-900">Selected Locality</p>
+                    <p className="text-sm text-pink-800 font-medium">{selectedArea}</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setStep('select')}
-                  className="text-xs font-semibold text-emerald-700 hover:underline"
+                  className="text-xs font-semibold text-pink-600 hover:underline cursor-pointer"
                 >
                   Change
                 </button>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  House / Flat / Floor Number <span className="text-rose-500">*</span>
+                <label className="block text-xs font-semibold text-[#1F121C] mb-1">
+                  House / Flat / Floor Number <span className="text-pink-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -273,12 +273,12 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                   value={houseNo}
                   onChange={(e) => setHouseNo(e.target.value)}
                   placeholder="e.g. Flat 402, Tower B"
-                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-[#1F121C]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#1F121C] mb-1">
                   Apartment / Society / Street
                 </label>
                 <input
@@ -286,12 +286,12 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                   value={streetBuilding}
                   onChange={(e) => setStreetBuilding(e.target.value)}
                   placeholder="e.g. ATS Greens / Golf Links / Main Street"
-                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-[#1F121C]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#1F121C] mb-1">
                   Nearby Landmark (Optional)
                 </label>
                 <input
@@ -299,12 +299,12 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                   value={landmark}
                   onChange={(e) => setLandmark(e.target.value)}
                   placeholder="e.g. Near Mother Dairy / Gate No. 2"
-                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 text-[#1F121C]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-[#1F121C] mb-1.5">
                   Save Address As
                 </label>
                 <div className="flex gap-2">
@@ -313,9 +313,9 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                       key={tag}
                       type="button"
                       onClick={() => setAddressTag(tag)}
-                      className={`flex-1 py-2 px-3 text-xs font-medium rounded-xl border flex items-center justify-center gap-1.5 transition-colors ${
+                      className={`flex-1 py-2 px-3 text-xs font-medium rounded-xl border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                         addressTag === tag
-                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-600 shadow-sm'
                           : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -333,20 +333,20 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#E2E8F0] bg-slate-50 flex items-center justify-between">
+        <div className="p-4 border-t border-pink-100 bg-slate-50 flex items-center justify-between">
           {step === 'doorstep' ? (
             <>
               <button
                 type="button"
                 onClick={() => setStep('select')}
-                className="px-4 py-2.5 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-[#705869] hover:text-[#1F121C] cursor-pointer"
               >
                 &larr; Back
               </button>
               <button
                 type="button"
                 onClick={handleConfirmAndSave}
-                className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-md flex items-center gap-1.5 transition-all cursor-pointer active:scale-[0.98]"
+                className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-bold text-xs rounded-xl shadow-md shadow-pink-500/20 flex items-center gap-1.5 transition-all cursor-pointer active:scale-[0.98]"
               >
                 <Check className="w-4 h-4" />
                 <span>Confirm Address</span>
@@ -354,11 +354,11 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
             </>
           ) : (
             <div className="w-full flex items-center justify-between">
-              <span className="text-xs text-[#64748B]">Current: {selectedArea.slice(0, 24)}...</span>
+              <span className="text-xs text-[#705869]">Current: {selectedArea.slice(0, 24)}...</span>
               <button
                 type="button"
                 onClick={() => setStep('doorstep')}
-                className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
+                className="px-4 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all cursor-pointer"
               >
                 Next &rarr;
               </button>

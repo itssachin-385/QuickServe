@@ -48,9 +48,9 @@ const getStatusBadgeStyle = (status: CleanStatusKey) => {
     case 'Booking Requested':
       return 'bg-amber-50 text-amber-800 border-amber-200';
     case 'Confirmed':
-      return 'bg-blue-50 text-blue-800 border-blue-200';
+      return 'bg-pink-50 text-pink-700 border-pink-200';
     case 'Partner Assigned':
-      return 'bg-indigo-50 text-indigo-800 border-indigo-200';
+      return 'bg-pink-100 text-pink-800 border-pink-300';
     case 'Service In Progress':
       return 'bg-purple-50 text-purple-800 border-purple-200';
     case 'Completed':
@@ -148,27 +148,27 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 font-sans">
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 pb-3 border-b border-[#E2E8F0]">
+      <div className="flex items-center justify-between mb-6 pb-3 border-b border-pink-100">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] font-heading">My Orders</h1>
-          <p className="text-xs sm:text-sm text-[#64748B] mt-0.5">Track your ongoing and past home service bookings</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#1F121C] font-heading">My Orders</h1>
+          <p className="text-xs sm:text-sm text-[#705869] mt-0.5">Track your ongoing and past home service bookings</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Sound Test Button */}
           <button
             type="button"
             onClick={() => playDoorbellChime()}
-            className="p-2 sm:px-3 sm:py-2 text-slate-700 hover:text-blue-600 bg-white border border-[#E2E8F0] rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+            className="p-2 sm:px-3 sm:py-2 text-[#705869] hover:text-pink-600 bg-white border border-pink-200 rounded-xl hover:bg-pink-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             title="Test Doorstep Chime Sound"
           >
-            <Volume2 className="w-3.5 h-3.5 text-blue-600" />
+            <Volume2 className="w-3.5 h-3.5 text-pink-600" />
             <span className="hidden sm:inline">Doorbell Sound</span>
           </button>
 
           <button
             type="button"
             onClick={onRefresh}
-            className="p-2 sm:px-3 sm:py-2 text-[#0F172A] hover:text-[#2563EB] bg-white border border-[#E2E8F0] rounded-xl hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            className="p-2 sm:px-3 sm:py-2 text-[#1F121C] hover:text-pink-600 bg-white border border-pink-200 rounded-xl hover:bg-pink-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Refresh</span>
@@ -178,18 +178,18 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
       {/* Orders List */}
       {myBookings.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-10 sm:p-12 text-center shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)]">
-          <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-400 mb-3 border border-slate-100">
+        <div className="bg-white rounded-2xl border border-pink-100 p-10 sm:p-12 text-center shadow-[0_4px_20px_-2px_rgba(219,39,119,0.06)]">
+          <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center mx-auto text-pink-400 mb-3 border border-pink-100">
             <FileText className="w-7 h-7" />
           </div>
-          <h3 className="text-base font-bold text-[#0F172A]">No bookings found</h3>
-          <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-[#1F121C]">No bookings found</h3>
+          <p className="text-xs text-[#705869] mt-1 max-w-sm mx-auto">
             You haven&apos;t placed any home service orders yet. Select a service to get started.
           </p>
           <button
             type="button"
             onClick={onNavigateHome}
-            className="mt-5 px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
+            className="mt-5 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all cursor-pointer"
           >
             Explore Services
           </button>
@@ -316,7 +316,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                         {b.professional_phone && (
                           <a
                             href={`tel:${b.professional_phone}`}
-                            className="px-3 py-1.5 bg-[#2563EB] text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                            className="px-3 py-1.5 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
                             title="Call Partner"
                           >
                             <Phone className="w-3.5 h-3.5" />
@@ -329,15 +329,15 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
                   {/* Doorstep Service Security OTP */}
                   {!isCancelled && (b.status === 'partner_assigned' || b.status === 'confirmed' || b.status === 'in_progress') && (
-                    <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex items-center justify-between text-xs">
+                    <div className="p-3 bg-pink-50/70 border border-pink-200 rounded-xl flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
+                        <ShieldCheck className="w-4 h-4 text-pink-600" />
                         <div>
-                          <span className="font-bold text-[#0F172A]">Doorstep Start OTP: </span>
-                          <span className="text-[#64748B]">Share with professional upon arrival</span>
+                          <span className="font-bold text-[#1F121C]">Doorstep Start OTP: </span>
+                          <span className="text-[#705869]">Share with professional upon arrival</span>
                         </div>
                       </div>
-                      <span className="px-3 py-1 bg-white border border-blue-200 rounded-lg font-mono font-extrabold text-[#2563EB] text-sm tracking-wider shadow-2xs">
+                      <span className="px-3 py-1 bg-white border border-pink-200 rounded-lg font-mono font-extrabold text-pink-600 text-sm tracking-wider shadow-2xs">
                         {b.service_start_otp || (b.booking_reference ? b.booking_reference.slice(-4) : '4821')}
                       </span>
                     </div>
@@ -355,13 +355,13 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                               <div
                                 className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
                                   isPastOrCurrent
-                                    ? 'bg-[#2563EB] text-white'
+                                    ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
                                     : 'bg-slate-100 text-slate-400'
                                 }`}
                               >
                                 {isPastOrCurrent ? '✓' : sIdx + 1}
                               </div>
-                              <span className={`text-[9px] mt-1 line-clamp-1 ${isPastOrCurrent ? 'font-bold text-slate-800' : 'text-slate-400'}`}>
+                              <span className={`text-[9px] mt-1 line-clamp-1 ${isPastOrCurrent ? 'font-bold text-pink-700' : 'text-slate-400'}`}>
                                 {stepName.split(' ')[0]}
                               </span>
                             </div>
@@ -401,9 +401,9 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedBookingForInvoice(b)}
-                          className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                          className="px-3 py-1.5 bg-white hover:bg-pink-50 text-[#1F121C] border border-pink-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
                         >
-                          <FileText className="w-3.5 h-3.5 text-blue-600" />
+                          <FileText className="w-3.5 h-3.5 text-pink-600" />
                           <span>Download Bill</span>
                         </button>
 
@@ -415,7 +415,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                               setRatingStars(5);
                               setReviewComment('');
                             }}
-                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1 transition-colors shadow-2xs"
+                            className="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 transition-colors shadow-2xs"
                           >
                             <Star className="w-3.5 h-3.5 fill-current" />
                             <span>Rate Service</span>
@@ -514,8 +514,8 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                       }}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                         isSelected
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
+                          : 'bg-pink-50 text-pink-900 border border-pink-100 hover:bg-pink-100'
                       }`}
                     >
                       {tag} {isSelected ? '✓' : '+'}
@@ -532,7 +532,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
                 placeholder="Share your experience with the service professional..."
-                className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full p-3 text-xs bg-white border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:outline-none"
                 rows={3}
               />
             </div>
@@ -549,7 +549,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                 type="button"
                 onClick={handleSubmitReview}
                 disabled={isSubmittingReview}
-                className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-300 text-white font-bold text-xs rounded-xl shadow-md shadow-pink-500/20 transition-all flex items-center justify-center gap-1.5"
               >
                 {isSubmittingReview ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -565,19 +565,19 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
       {/* Feature 3: Official Printable Service Invoice / Bill Modal */}
       {selectedBookingForInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-xs print:p-0 print:bg-white">
-          <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] print:max-h-none print:shadow-none print:border-none">
+          <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-pink-100 overflow-hidden flex flex-col max-h-[90vh] print:max-h-none print:shadow-none print:border-none">
             
             {/* Invoice Header Bar */}
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 print:hidden">
+            <div className="p-4 border-b border-pink-100 flex items-center justify-between bg-pink-50/50 print:hidden">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-bold text-slate-900">Official Service Bill / Receipt</span>
+                <FileText className="w-4 h-4 text-pink-600" />
+                <span className="text-sm font-bold text-[#1F121C]">Official Service Bill / Receipt</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5"
+                  className="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Print / Save PDF</span>
@@ -599,7 +599,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
               <div className="flex items-start justify-between border-b pb-4 border-slate-200">
                 <div>
                   <h2 className="text-xl font-extrabold text-slate-900 tracking-tight font-heading">
-                    Quick<span className="text-blue-600">Serve</span>
+                    Quick<span className="text-pink-600">Serve</span>
                   </h2>
                   <p className="text-[11px] text-slate-500 mt-0.5">QuickServe Technologies Private Limited</p>
                   <p className="text-[11px] text-slate-500">Greater Noida & NCR Service Cluster Hub</p>
@@ -620,15 +620,15 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
               {/* Customer & Professional Details */}
               <div className="grid grid-cols-2 gap-4 text-xs">
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-500">Billed To (Customer):</p>
+                <div className="p-3 bg-pink-50/40 rounded-xl border border-pink-100">
+                  <p className="font-bold uppercase tracking-wider text-[10px] text-pink-700">Billed To (Customer):</p>
                   <p className="font-bold text-slate-900 mt-1">{selectedBookingForInvoice.customer_name}</p>
                   <p className="text-slate-600">{selectedBookingForInvoice.customer_phone}</p>
                   <p className="text-slate-500 mt-0.5">{selectedBookingForInvoice.customer_address || selectedBookingForInvoice.locality}</p>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <p className="font-bold text-slate-900 uppercase tracking-wider text-[10px] text-slate-500">Fulfilled By (Partner):</p>
+                <div className="p-3 bg-pink-50/40 rounded-xl border border-pink-100">
+                  <p className="font-bold uppercase tracking-wider text-[10px] text-pink-700">Fulfilled By (Partner):</p>
                   <p className="font-bold text-slate-900 mt-1">{selectedBookingForInvoice.professional_name || 'QuickServe Certified Pro'}</p>
                   <p className="text-slate-600">Phone: {selectedBookingForInvoice.professional_phone || 'Verified'}</p>
                   <p className="text-emerald-700 font-medium text-[11px]">✓ 100% Aadhaar & Police Verified</p>
@@ -667,10 +667,10 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                       </td>
                     </tr>
                   </tbody>
-                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+                  <tfoot className="bg-pink-50/50 font-bold border-t border-slate-200">
                     <tr>
                       <td colSpan={2} className="p-3 text-right text-slate-700">Total Billed Amount:</td>
-                      <td className="p-3 text-right text-base text-blue-600">₹{selectedBookingForInvoice.total_amount}</td>
+                      <td className="p-3 text-right text-base text-pink-600 font-extrabold">₹{selectedBookingForInvoice.total_amount}</td>
                     </tr>
                   </tfoot>
                 </table>

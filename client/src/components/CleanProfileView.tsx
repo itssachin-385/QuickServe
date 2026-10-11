@@ -34,15 +34,15 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       
       {/* Profile Header Card */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] mb-5">
+      <div className="bg-white rounded-2xl border border-pink-100 p-5 sm:p-6 shadow-[0_4px_20px_-2px_rgba(219,39,119,0.06)] mb-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#0F172A] text-[#2563EB] flex items-center justify-center font-extrabold text-xl shadow-md border border-slate-800">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md shadow-pink-500/25">
             {currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-[#0F172A] truncate font-heading">{currentUser.name || 'QuickServe Customer'}</h2>
-            <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-slate-400" />
+            <h2 className="text-lg sm:text-xl font-bold text-[#1F121C] truncate font-heading">{currentUser.name || 'QuickServe Customer'}</h2>
+            <p className="text-xs sm:text-sm text-[#705869] mt-0.5 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-pink-400" />
               <span>{currentUser.phone}</span>
             </p>
           </div>
@@ -50,20 +50,20 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
       </div>
 
       {/* Saved Address Section */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] mb-5">
+      <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-[0_4px_20px_-2px_rgba(219,39,119,0.06)] mb-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Default Service Address</h3>
+          <h3 className="text-xs font-bold text-[#1F121C] uppercase tracking-wider">Default Service Address</h3>
           <button
             type="button"
             onClick={onOpenLocationModal}
-            className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer"
+            className="text-xs font-bold text-pink-600 hover:text-pink-700 hover:underline cursor-pointer"
           >
             Change Address
           </button>
         </div>
-        <div className="p-3.5 bg-slate-50 border border-[#E2E8F0] rounded-xl flex items-start gap-2.5">
-          <MapPin className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
-          <p className="text-xs text-[#0F172A] leading-relaxed">
+        <div className="p-3.5 bg-pink-50/40 border border-pink-100 rounded-xl flex items-start gap-2.5">
+          <MapPin className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-[#1F121C] leading-relaxed">
             {doorstepAddress}
           </p>
         </div>
@@ -128,15 +128,15 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
       </div>
 
       {/* Partner Onboarding Link */}
-      <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-5 mb-5 flex items-center justify-between">
+      <div className="bg-pink-50/70 border border-pink-200 rounded-2xl p-5 mb-5 flex items-center justify-between">
         <div>
-          <h4 className="text-sm font-bold text-emerald-950">Are you a Service Professional?</h4>
-          <p className="text-xs text-emerald-800 mt-0.5">Register your trade and start getting local service bookings.</p>
+          <h4 className="text-sm font-bold text-[#1F121C]">Are you a Service Professional?</h4>
+          <p className="text-xs text-[#705869] mt-0.5">Register your trade and start getting local service bookings.</p>
         </div>
         <button
           type="button"
           onClick={onSwitchToPartnerPortal}
-          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors shrink-0 flex items-center gap-1.5"
+          className="px-3.5 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors shrink-0 flex items-center gap-1.5"
         >
           <Wrench className="w-3.5 h-3.5" />
           <span>Partner Portal</span>

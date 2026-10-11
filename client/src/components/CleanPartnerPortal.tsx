@@ -346,8 +346,8 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
             </button>
             <div>
               <h1 className="text-sm font-bold text-white flex items-center gap-1.5">
-                <Wrench className="w-4 h-4 text-emerald-400" />
-                <span>QuickServe Partner Portal</span>
+                <Wrench className="w-4 h-4 text-pink-400" />
+                <span>Quick<span className="text-pink-400">Serve</span> Partner Portal</span>
               </h1>
               <p className="text-[11px] text-slate-400">Professional Safety & Onboarding Hub</p>
             </div>
@@ -363,11 +363,11 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
               }}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border ${
                 showAdminDesk 
-                  ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
+                  ? 'bg-pink-600 text-white border-pink-500 shadow-sm'
                   : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700 hover:bg-slate-750'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-pink-400" />
               <span>Admin Desk</span>
               {pendingPartners.length > 0 && (
                 <span className="ml-0.5 px-1.5 py-0.2 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-full">
@@ -379,7 +379,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
             <button
               type="button"
               onClick={onBackToCustomer}
-              className="px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-800/80 rounded-lg hover:bg-emerald-900 transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold text-pink-300 bg-pink-950/60 border border-pink-800/80 rounded-lg hover:bg-pink-900 transition-colors"
             >
               Customer App &rarr;
             </button>
