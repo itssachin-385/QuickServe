@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CustomerUser } from '../types';
 import { sendOtp, verifyOtp } from '../api';
-import { ShieldCheck, Phone, User, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { 
+  ShieldCheck, Phone, User, ArrowRight, ArrowLeft, 
+  CheckCircle2, AlertCircle, RefreshCw, Check, Sparkles
+} from 'lucide-react';
 
 interface CleanAuthScreenProps {
   onSuccess: (user: CustomerUser) => void;
@@ -17,6 +20,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState(initialPhone.replace(/\D/g, '').slice(-10));
   const [name, setName] = useState('');
+  const [whatsappUpdates, setWhatsappUpdates] = useState(true);
   const [otp, setOtp] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -30,6 +34,18 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
     useRef<HTMLInputElement>(null)
   ];
 
+  // Collage images from local assets matching Photo 1
+  const collageImages = [
+    { src: '/images/bathroom_clean_3d.jpg', alt: 'Bathroom Cleaning' },
+    { src: '/images/sweeping_mopping_3d.jpg', alt: 'Floor Mopping' },
+    { src: '/images/dusting_wiping_3d.jpg', alt: 'Kitchen Dusting' },
+    { src: '/images/utensils_3d.jpg', alt: 'Utensil Washing' },
+    { src: '/images/kitchen_prep_3d.jpg', alt: 'Kitchen Prep' },
+    { src: '/images/hourly_bookings_3d.jpg', alt: 'Helper Mopping' },
+    { src: '/images/washing_machine_3d.jpg', alt: 'Appliance Care' },
+    { src: '/images/fan_electrician_3d.jpg', alt: 'Fan & Electrician' },
+  ];
+
   // Countdown timer for resend OTP
   useEffect(() => {
     let timer: any;
@@ -39,6 +55,16 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
     return () => clearInterval(timer);
   }, [step, resendSeconds]);
 
+  const handleSkipLogin = () => {
+    // Allows instant guest browsing as requested by "Skip login" in Photo 1
+    const guestUser: CustomerUser = {
+      id: `guest-${Date.now()}`,
+      name: 'QuickServe Guest',
+      phone: '+91 95701 51834'
+    };
+    onSuccess(guestUser);
+  };
+
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -46,11 +72,6 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
     const cleanPhone = phone.replace(/\D/g, '').slice(-10);
     if (cleanPhone.length !== 10) {
       setErrorMessage('Please enter a valid 10-digit mobile number');
-      return;
-    }
-
-    if (!name.trim()) {
-      setErrorMessage('Please enter your full name');
       return;
     }
 
@@ -106,7 +127,8 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
     setIsLoading(true);
     try {
-      const res = await verifyOtp(phone, fullOtp, name.trim());
+      const customerName = name.trim() || 'QuickServe Customer';
+      const res = await verifyOtp(phone, fullOtp, customerName);
       if (res.success && res.user) {
         onSuccess(res.user);
       } else {
@@ -139,112 +161,172 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF7F9] flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_4px_25px_rgba(219,39,119,0.08)] border border-pink-100 p-6 md:p-8">
+    <div className="min-h-screen bg-[#FFF7F9] flex flex-col justify-between max-w-md mx-auto relative overflow-hidden shadow-2xl">
+      
+      {/* 1. TOP CURVED BRAND BANNER (Photo 1 Style) */}
+      <div className="relative bg-gradient-to-b from-pink-600 via-rose-600 to-pink-700 text-white pt-6 pb-8 px-5 rounded-b-[36px] shadow-lg shadow-pink-600/20">
         
-        {/* Brand Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-600 to-rose-600 text-white shadow-md shadow-pink-500/30 border border-pink-400/30 mb-3">
-            <span className="font-black text-xl"><span className="text-white">Q</span><span className="text-pink-200">S</span></span>
-          </div>
-          <h1 className="text-2xl font-extrabold text-[#1F121C] tracking-tight font-heading">
-            Quick<span className="text-pink-600">Serve</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-[#705869] mt-1">Reliable on-demand home services at your doorstep</p>
+        {/* Skip login button in top right */}
+        <div className="flex justify-end mb-4">
+          <button
+            type="button"
+            onClick={handleSkipLogin}
+            className="px-3.5 py-1 text-xs font-bold text-white bg-black/25 hover:bg-black/35 backdrop-blur-xs rounded-full border border-white/20 transition-all cursor-pointer"
+          >
+            Skip login
+          </button>
         </div>
 
+        {/* Brand Logo & Name */}
+        <div className="flex items-center justify-center gap-2.5 mb-3">
+          <div className="w-10 h-10 rounded-xl bg-white text-pink-600 flex items-center justify-center font-black text-xl shadow-md">
+            <span>QS</span>
+          </div>
+          <span className="text-2xl font-black tracking-tight text-white font-heading">
+            Quick<span className="text-yellow-300">Serve</span>
+          </span>
+        </div>
+
+        {/* Hero Tagline */}
+        <h2 className="text-center text-lg sm:text-xl font-extrabold text-white leading-snug px-2">
+          Get professional house help in minutes!
+        </h2>
+      </div>
+
+      {/* 2. MIDDLE PHOTO COLLAGE (Photo 1 8-Tile Rounded Grid) */}
+      <div className="px-4 py-3 flex-1 flex flex-col justify-center">
+        <div className="grid grid-cols-4 gap-2">
+          {collageImages.map((img, i) => (
+            <div
+              key={i}
+              className="relative aspect-4/3 rounded-xl overflow-hidden border border-pink-100 shadow-2xs group bg-pink-100"
+            >
+              <img
+                src={img.src}
+                alt={img.alt}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+                onError={(e) => {
+                  // Fallback pleasant pastel background if image not found
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. BOTTOM SHEET LOGIN / SIGNUP CARD (Photo 1 Layout) */}
+      <div className="bg-white rounded-t-[32px] p-6 sm:p-7 shadow-[0_-8px_30px_rgba(219,39,119,0.12)] border-t border-pink-100">
+        
         {errorMessage && (
-          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-rose-700 text-sm">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-500" />
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-rose-700 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* STEP 1: Phone & Name Input */}
-        {step === 'phone' && (
+        {/* STEP 1: Phone Entry */}
+        {step === 'phone' ? (
           <form onSubmit={handlePhoneSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-[#1F121C] uppercase tracking-wider mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <User className="w-4 h-4" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-pink-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all"
-                />
-              </div>
-            </div>
+            
+            <h3 className="text-xl font-extrabold text-[#1F121C] tracking-tight font-heading">
+              Log in or Sign up
+            </h3>
 
+            {/* Mobile Number Input with +91 Separator */}
             <div>
-              <label className="block text-xs font-semibold text-[#1F121C] uppercase tracking-wider mb-1.5">
-                Mobile Number
-              </label>
-              <div className="relative flex">
-                <span className="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-pink-100 bg-pink-50/50 text-slate-700 text-sm font-medium">
+              <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-pink-300 focus-within:border-pink-600 rounded-2xl px-4 py-3 transition-colors shadow-2xs">
+                <span className="text-sm font-extrabold text-[#1F121C] pr-3 border-r border-slate-300">
                   +91
                 </span>
                 <input
                   type="tel"
                   maxLength={10}
                   required
+                  autoFocus
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  placeholder="9876543210"
-                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-pink-100 rounded-r-xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 tracking-wider font-medium transition-all"
+                  placeholder="Enter mobile number"
+                  className="w-full pl-3 text-sm font-medium text-[#1F121C] placeholder-slate-400 bg-transparent focus:outline-none tracking-wide"
                 />
               </div>
-              <p className="text-xs text-[#705869] mt-1.5">We will send a 4-digit one-time verification code.</p>
             </div>
 
+            {/* Optional Customer Name Input */}
+            <div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name (Optional)"
+                className="w-full px-4 py-2.5 text-xs text-[#1F121C] placeholder-slate-400 bg-pink-50/40 border border-pink-100 rounded-xl focus:bg-white focus:outline-none focus:border-pink-500 transition-colors"
+              />
+            </div>
+
+            {/* WhatsApp Updates Checkbox */}
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-slate-700 select-none pt-0.5">
+              <input
+                type="checkbox"
+                checked={whatsappUpdates}
+                onChange={(e) => setWhatsappUpdates(e.target.checked)}
+                className="w-4 h-4 rounded text-pink-600 border-slate-300 focus:ring-pink-500 accent-pink-600 cursor-pointer"
+              />
+              <span className="font-medium text-[#1F121C]">Get updates on WhatsApp</span>
+            </label>
+
+            {/* Continue CTA Button */}
             <button
               type="submit"
-              disabled={isLoading || phone.length !== 10 || !name.trim()}
-              className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              disabled={isLoading || phone.length !== 10}
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-200 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-md shadow-pink-500/25 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               {isLoading ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Sending code...</span>
+                  <span>Sending OTP...</span>
                 </>
               ) : (
-                <>
-                  <span>Continue</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
+                <span>Continue</span>
               )}
             </button>
-          </form>
-        )}
 
-        {/* STEP 2: OTP Verification */}
-        {step === 'otp' && (
-          <div className="space-y-5">
+            {/* Terms & Privacy Note */}
+            <p className="text-[11px] text-slate-500 text-center leading-relaxed pt-1">
+              By continuing, you agree to our{' '}
+              <a href="#terms" className="underline font-semibold text-slate-700 hover:text-pink-600">
+                Terms of Service
+              </a>{' '}
+              &{' '}
+              <a href="#privacy" className="underline font-semibold text-slate-700 hover:text-pink-600">
+                Privacy Policy
+              </a>
+            </p>
+
+          </form>
+        ) : (
+          /* STEP 2: OTP Verification */
+          <div className="space-y-4">
+            
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Verification Code</p>
-                <p className="text-sm text-slate-500 mt-0.5">Sent to +91 {phone}</p>
+                <h3 className="text-lg font-extrabold text-[#1F121C] tracking-tight">Enter Verification Code</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Sent to +91 {phone}</p>
               </div>
               <button
                 type="button"
                 onClick={() => { setStep('phone'); setErrorMessage(''); }}
-                className="text-xs font-semibold text-pink-600 hover:text-pink-700 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-pink-600 hover:text-pink-700 flex items-center gap-1 cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                Edit
+                <span>Edit</span>
               </button>
             </div>
 
-            {/* OTP Hint if available */}
+            {/* Demo Hint Banner */}
             {hintOtp && (
               <div className="p-2.5 bg-pink-50 border border-pink-200 rounded-xl flex items-center justify-between text-xs text-pink-900">
-                <span>Verification code: <strong className="font-mono text-sm tracking-wider font-bold">{hintOtp}</strong></span>
+                <span>Code: <strong className="font-mono text-sm tracking-wider font-bold">{hintOtp}</strong></span>
                 <button
                   type="button"
                   onClick={() => {
@@ -252,7 +334,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                     setOtp(digits);
                     handleOtpVerify(hintOtp);
                   }}
-                  className="px-2.5 py-1 bg-pink-600 text-white rounded-lg font-bold hover:bg-pink-700 cursor-pointer shadow-xs"
+                  className="px-2.5 py-1 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-lg font-bold hover:from-pink-700 hover:to-rose-700 cursor-pointer shadow-xs"
                 >
                   Auto-fill
                 </button>
@@ -260,7 +342,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
             )}
 
             {/* 4 Digit OTP Inputs */}
-            <div className="flex justify-center gap-3 my-2">
+            <div className="flex justify-center gap-3 py-2">
               {otp.map((digit, idx) => (
                 <input
                   key={idx}
@@ -271,7 +353,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                   value={digit}
                   onChange={(e) => handleOtpChange(idx, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                  className="w-12 h-14 text-center text-xl font-bold bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 text-[#1F121C] shadow-2xs"
+                  className="w-12 h-14 text-center text-xl font-bold bg-white border-2 border-pink-200 rounded-xl focus:border-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500/20 text-[#1F121C] shadow-2xs"
                 />
               ))}
             </div>
@@ -280,7 +362,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
               type="button"
               onClick={() => handleOtpVerify()}
               disabled={isLoading || otp.some(d => !d)}
-              className="w-full py-3 px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-200 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-md shadow-pink-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               {isLoading ? (
                 <>
@@ -288,49 +370,32 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                   <span>Verifying...</span>
                 </>
               ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Verify & Login</span>
-                </>
+                <span>Verify & Login</span>
               )}
             </button>
 
             <div className="text-center pt-1">
               {resendSeconds > 0 ? (
-                <p className="text-xs text-[#705869]">Resend code in <span className="font-semibold text-pink-600">{resendSeconds}s</span></p>
+                <p className="text-xs text-slate-500">
+                  Resend code in <span className="font-bold text-pink-600">{resendSeconds}s</span>
+                </p>
               ) : (
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={isLoading}
-                  className="text-xs font-semibold text-pink-600 hover:underline transition-colors cursor-pointer"
+                  className="text-xs font-bold text-pink-600 hover:underline cursor-pointer"
                 >
                   Resend verification code
                 </button>
               )}
             </div>
-          </div>
-        )}
 
-        {/* Security Trust Footnote */}
-        <div className="mt-8 pt-4 border-t border-pink-100 flex items-center justify-center gap-2 text-xs text-pink-700/80">
-          <ShieldCheck className="w-4 h-4 text-pink-600" />
-          <span>QuickServe Secure Session • No spam calls</span>
-        </div>
-
-        {onCancel && (
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="text-xs text-slate-500 hover:text-slate-800"
-            >
-              Back to main view
-            </button>
           </div>
         )}
 
       </div>
+
     </div>
   );
 };
