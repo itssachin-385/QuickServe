@@ -1,0 +1,19 @@
+{
+  "short_name": "QuickServe",
+  "name": "QuickServe - 15-Minute Hyperlocal Services",
+  "description": "Book trusted local professionals in 15 minutes. 100% Cashless & Verified.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#059669",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/"
+}

@@ -64,8 +64,8 @@ const staticOptions = {
     }
   }
 };
-app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
 app.use(express.static(path.join(__dirname, 'public'), staticOptions));
+app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
 
 // Direct APK Download Endpoint with no-cache headers to prevent mobile browser caching
 app.get(['/download-apk', '/QuickServe.apk'], (req, res) => {
@@ -1560,13 +1560,13 @@ app.use((req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  const distIndex = path.join(__dirname, '../client/dist/index.html');
   const publicIndex = path.join(__dirname, 'public/index.html');
-  if (fs.existsSync(distIndex)) {
-    return res.sendFile(distIndex);
-  }
+  const distIndex = path.join(__dirname, '../client/dist/index.html');
   if (fs.existsSync(publicIndex)) {
     return res.sendFile(publicIndex);
+  }
+  if (fs.existsSync(distIndex)) {
+    return res.sendFile(distIndex);
   }
   res.sendFile(distIndex);
 });
