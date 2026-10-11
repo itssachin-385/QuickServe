@@ -327,7 +327,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
           <button
             type="button"
             onClick={handleSubmitBooking}
-            disabled={isSubmitting || !problemDescription.trim()}
+            disabled={isSubmitting}
             className="px-6 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-[0.98]"
           >
             {isSubmitting ? (
