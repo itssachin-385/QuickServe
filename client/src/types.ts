@@ -197,6 +197,7 @@ export interface Booking {
   professional_earning?: number;
   payment_status: 'pending' | 'paid' | 'refunded';
   payment_method: 'upi' | 'card' | 'cash' | 'pay_after_work' | 'wallet' | string;
+  payment_id?: string;
   customer_notes?: string;
   customer_problem?: string;
   customer_photo?: string;

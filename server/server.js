@@ -1144,6 +1144,21 @@ app.post('/api/bookings/:id/status', (req, res) => {
   res.json({ success: true, booking });
 });
 
+// Update payment on existing booking (UPI Payment)
+app.post('/api/bookings/:id/payment', (req, res) => {
+  const { payment_status, payment_method, payment_id } = req.body;
+  const booking = bookings.find(b => b.id === req.params.id || b.booking_reference === req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+  booking.payment_status = payment_status || 'paid';
+  if (payment_method) booking.payment_method = payment_method;
+  if (payment_id) booking.payment_id = payment_id;
+
+  db.updateBooking(booking.id, booking);
+  res.json({ success: true, booking });
+});
+
+
 // Customer Service Review & Rating
 app.post('/api/bookings/:id/review', (req, res) => {
   const { rating, comment } = req.body;

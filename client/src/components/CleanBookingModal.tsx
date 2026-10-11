@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { CustomerUser, Booking } from '../types';
 import { HomeServiceCard } from '../data/homeServices';
 import { createBooking } from '../api';
-import { X, Calendar, Clock, MapPin, Camera, Trash2, CheckCircle2, ShieldCheck, AlertCircle, RefreshCw, CreditCard, Banknote } from 'lucide-react';
+import { 
+  X, Calendar, Clock, MapPin, Camera, Trash2, 
+  CheckCircle2, ShieldCheck, AlertCircle, RefreshCw, 
+  CreditCard, Banknote, Smartphone, QrCode, ArrowRight 
+} from 'lucide-react';
+import { RazorpayModal } from './RazorpayModal';
 
 interface CleanBookingModalProps {
   service: HomeServiceCard;
@@ -34,7 +39,8 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
   const [selectedSlot, setSelectedSlot] = useState<string>('10:00 AM - 01:00 PM');
   const [problemDescription, setProblemDescription] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'pay_after_work' | 'online'>('pay_after_work');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'pay_after_work'>('upi');
+  const [showUpiModal, setShowUpiModal] = useState(false);
   
   // Doorstep address from local storage
   const [savedAddress, setSavedAddress] = useState(() => {
@@ -72,7 +78,24 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
     }
   };
 
-  const handleSubmitBooking = async () => {
+  const handleInitiateBooking = () => {
+    if (paymentMethod === 'upi') {
+      setShowUpiModal(true);
+    } else {
+      handleCreateBookingFinal('pay_after_work', 'pending');
+    }
+  };
+
+  const handleUpiPaymentSuccess = async (paymentId: string) => {
+    setShowUpiModal(false);
+    await handleCreateBookingFinal('upi', 'paid', paymentId);
+  };
+
+  const handleCreateBookingFinal = async (
+    method: 'upi' | 'pay_after_work',
+    pStatus: 'paid' | 'pending',
+    paymentId?: string
+  ) => {
     setErrorMsg('');
     setIsSubmitting(true);
     try {
@@ -88,8 +111,9 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
         base_charge: basePrice,
         platform_fee: platformFee,
         total_amount: totalPrice,
-        payment_method: paymentMethod === 'pay_after_work' ? 'pay_after_work' : 'upi',
-        payment_status: paymentMethod === 'pay_after_work' ? 'pending' : 'paid',
+        payment_method: method,
+        payment_status: pStatus,
+        payment_id: paymentId,
         status: 'requested',
         booking_mode: 'instant',
         customer_notes: defaultProblem,
@@ -97,23 +121,6 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
         scheduled_date: selectedDate,
         scheduled_time_slot: selectedSlot
       };
-
-      // If online test payment is selected, simulate genuine gateway verification
-      if (paymentMethod === 'online') {
-        const verifyRes = await fetch('/api/payments/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: totalPrice,
-            method: 'upi_test_mode',
-            payment_id: `pay_test_${Date.now()}`
-          })
-        }).catch(() => null);
-        
-        if (verifyRes && verifyRes.ok) {
-          bookingData.payment_status = 'paid';
-        }
-      }
 
       const res = await createBooking(bookingData);
       if (res.success && res.booking) {
@@ -128,6 +135,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
@@ -250,7 +258,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
             </div>
           </div>
 
-          {/* 3. Payment Method */}
+          {/* 3. Payment Mode */}
           <div>
             <label className="block text-xs font-semibold text-[#1F121C] uppercase tracking-wider mb-2">
               3. Payment Mode
@@ -258,39 +266,44 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
-                onClick={() => setPaymentMethod('pay_after_work')}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                  paymentMethod === 'pay_after_work'
-                    ? 'bg-pink-50/80 border-pink-500 text-[#1F121C] shadow-2xs'
+                onClick={() => setPaymentMethod('upi')}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+                  paymentMethod === 'upi'
+                    ? 'bg-pink-50/90 border-pink-500 text-[#1F121C] shadow-sm'
                     : 'bg-white border-pink-100 text-[#705869] hover:bg-pink-50/40'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <Banknote className={`w-4 h-4 ${paymentMethod === 'pay_after_work' ? 'text-pink-600' : 'text-slate-400'}`} />
-                  <span className="text-xs font-bold text-[#1F121C]">Pay After Service</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Smartphone className={`w-4 h-4 ${paymentMethod === 'upi' ? 'text-pink-600' : 'text-slate-400'}`} />
+                    <span className="text-xs font-extrabold text-[#1F121C]">Pay via UPI</span>
+                  </div>
+                  <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] font-black rounded-md">
+                    Instant
+                  </span>
                 </div>
-                <p className="text-[11px] text-[#705869] mt-1">Cash or UPI after job completion</p>
+                <p className="text-[11px] text-[#705869] mt-1.5 font-medium leading-tight">GPay, PhonePe, Paytm, QR</p>
               </button>
 
               <button
                 type="button"
-                onClick={() => setPaymentMethod('online')}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                  paymentMethod === 'online'
-                    ? 'bg-pink-50/80 border-pink-500 text-[#1F121C] shadow-2xs'
+                onClick={() => setPaymentMethod('pay_after_work')}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  paymentMethod === 'pay_after_work'
+                    ? 'bg-pink-50/90 border-pink-500 text-[#1F121C] shadow-sm'
                     : 'bg-white border-pink-100 text-[#705869] hover:bg-pink-50/40'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <CreditCard className={`w-4 h-4 ${paymentMethod === 'online' ? 'text-pink-600' : 'text-slate-400'}`} />
-                  <span className="text-xs font-bold text-[#1F121C]">Pay Online</span>
+                <div className="flex items-center gap-1.5">
+                  <Banknote className={`w-4 h-4 ${paymentMethod === 'pay_after_work' ? 'text-pink-600' : 'text-slate-400'}`} />
+                  <span className="text-xs font-extrabold text-[#1F121C]">Pay After Service</span>
                 </div>
-                <p className="text-[11px] text-[#705869] mt-1">UPI / Card test gateway verified</p>
+                <p className="text-[11px] text-[#705869] mt-1.5 font-medium leading-tight">Cash or UPI upon visit</p>
               </button>
             </div>
           </div>
 
-          {/* 6. Transparent Price Breakdown */}
+          {/* 4. Transparent Price Breakdown */}
           <div className="p-3.5 bg-pink-50/30 border border-pink-100 rounded-xl space-y-1.5 text-xs">
             <div className="flex justify-between text-[#705869]">
               <span>Service Estimate ({service.title})</span>
@@ -326,7 +339,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
           </div>
           <button
             type="button"
-            onClick={handleSubmitBooking}
+            onClick={handleInitiateBooking}
             disabled={isSubmitting}
             className="px-6 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-[0.98]"
           >
@@ -334,6 +347,12 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
                 <span>Confirming Order...</span>
+              </>
+            ) : paymentMethod === 'upi' ? (
+              <>
+                <QrCode className="w-4 h-4" />
+                <span>Pay ₹{totalPrice} via UPI</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </>
             ) : (
               <>
@@ -345,6 +364,19 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
         </div>
 
       </div>
+
+      {/* Real Live UPI Gateway Modal */}
+      {showUpiModal && (
+        <RazorpayModal
+          amount={totalPrice}
+          serviceTitle={service.title}
+          customerName={currentUser.name}
+          customerPhone={currentUser.phone}
+          onSuccess={handleUpiPaymentSuccess}
+          onClose={() => setShowUpiModal(false)}
+        />
+      )}
+
     </div>
   );
 };

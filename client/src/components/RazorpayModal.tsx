@@ -142,14 +142,14 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
       <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 text-slate-900 font-sans flex flex-col max-h-[92vh]">
         {/* Gateway Header */}
-        <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white p-4 sm:p-5 flex items-center justify-between border-b border-emerald-500/20">
+        <div className="bg-gradient-to-r from-pink-700 via-rose-600 to-pink-800 text-white p-4 sm:p-5 flex items-center justify-between border-b border-pink-400/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-500/30">
+            <div className="w-10 h-10 rounded-xl bg-white text-pink-600 flex items-center justify-center font-black text-lg shadow-lg shadow-pink-900/20">
               ₹
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.2 rounded-full font-bold uppercase tracking-wider">
+                <span className="text-[10px] bg-white/20 text-white border border-white/30 px-2 py-0.2 rounded-full font-bold uppercase tracking-wider">
                   Live UPI Gateway
                 </span>
               </div>
@@ -161,21 +161,21 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
 
           <button 
             onClick={onClose} 
-            className="p-1.5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 hover:bg-white/10 rounded-full text-pink-200 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Order Price Strip */}
-        <div className="bg-slate-50 px-5 py-3 border-b border-slate-200/80 flex items-center justify-between text-xs">
+        <div className="bg-pink-50/50 px-5 py-3 border-b border-pink-100 flex items-center justify-between text-xs">
           <div>
             <span className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider block">Service Order</span>
             <span className="font-bold text-slate-800 line-clamp-1">{serviceTitle}</span>
           </div>
           <div className="text-right">
             <span className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider block">Total Payable</span>
-            <span className="text-xl font-black text-emerald-700">₹{amount}</span>
+            <span className="text-xl font-black text-pink-600">₹{amount}</span>
           </div>
         </div>
 
@@ -310,7 +310,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
                     {isProcessing ? (
                       <>
@@ -425,7 +425,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
                     {isProcessing ? (
                       <>

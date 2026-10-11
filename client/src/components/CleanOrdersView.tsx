@@ -7,9 +7,10 @@ import {
   CheckCircle2, XCircle, AlertCircle, Ban, 
   ChevronRight, RefreshCw, FileText, Image as ImageIcon, 
   ShieldCheck, Star, MessageCircle, Download, Printer, 
-  X, Sparkles, Volume2, Check, Navigation
+  X, Sparkles, Volume2, Check, Navigation, QrCode
 } from 'lucide-react';
 import { LiveTrackingModal } from './LiveTrackingModal';
+import { RazorpayModal } from './RazorpayModal';
 
 interface CleanOrdersViewProps {
   bookings: Booking[];
@@ -92,6 +93,30 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
   // Feature 4: Live Map Tracking Modal State
   const [selectedBookingForTracking, setSelectedBookingForTracking] = useState<Booking | null>(null);
+
+  // Feature 5: Direct UPI Payment Modal State
+  const [selectedBookingForPayment, setSelectedBookingForPayment] = useState<Booking | null>(null);
+
+  const handleOrderUpiPaid = async (paymentId: string) => {
+    if (!selectedBookingForPayment) return;
+    try {
+      await fetch(`/api/bookings/${selectedBookingForPayment.id}/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_status: 'paid',
+          payment_method: 'upi',
+          payment_id: paymentId
+        })
+      });
+      playSuccessPing();
+      setSelectedBookingForPayment(null);
+      onRefresh();
+    } catch (err) {
+      console.warn('Payment update notice:', err);
+    }
+  };
+
 
   const handleCancelBooking = async () => {
     if (!selectedBookingForCancel) return;
@@ -241,11 +266,22 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                       <h4 className="text-base font-bold text-slate-900">{b.service_title}</h4>
                       <p className="text-xs text-slate-600 mt-0.5">{b.sub_service_selected}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end">
                       <span className="text-base font-bold text-slate-900">₹{b.total_amount}</span>
                       <p className="text-[11px] text-slate-400 mt-0.5 capitalize">
-                        {b.payment_method === 'pay_after_work' ? 'Pay After Service' : b.payment_method}
+                        {b.payment_status === 'paid' ? 'Paid via UPI' : (b.payment_method === 'pay_after_work' ? 'Pay After Service' : b.payment_method)}
                       </p>
+                      {b.payment_status !== 'paid' && !isCancelled && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedBookingForPayment(b)}
+                          className="mt-1 px-2.5 py-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-2xs transition-all cursor-pointer active:scale-95"
+                          title="Pay via UPI (GPay, PhonePe, Paytm, QR)"
+                        >
+                          <QrCode className="w-3 h-3" />
+                          <span>Pay UPI</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -808,6 +844,19 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
         <LiveTrackingModal
           booking={selectedBookingForTracking}
           onClose={() => setSelectedBookingForTracking(null)}
+        />
+      )}
+
+      {/* Feature 5: Direct UPI Payment Gateway Modal */}
+      {selectedBookingForPayment && (
+        <RazorpayModal
+          amount={selectedBookingForPayment.total_amount}
+          serviceTitle={selectedBookingForPayment.service_title}
+          customerName={selectedBookingForPayment.customer_name}
+          customerPhone={selectedBookingForPayment.customer_phone}
+          bookingId={selectedBookingForPayment.id}
+          onSuccess={handleOrderUpiPaid}
+          onClose={() => setSelectedBookingForPayment(null)}
         />
       )}
 
