@@ -28,7 +28,7 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   onSelectZone
 }) => {
   const [manualQuery, setManualQuery] = useState('');
-  const [selectedArea, setSelectedArea] = useState(currentZone || 'Pari Chowk, Greater Noida');
+  const [selectedArea, setSelectedArea] = useState(currentZone || '');
   const [houseNo, setHouseNo] = useState('');
   const [streetBuilding, setStreetBuilding] = useState('');
   const [landmark, setLandmark] = useState('');
@@ -37,9 +37,12 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   const [gpsError, setGpsError] = useState('');
   const [step, setStep] = useState<'select' | 'doorstep'>('select');
 
-  // Load existing doorstep details if present
+  // Load existing doorstep details if present and sync selected zone
   useEffect(() => {
     if (isOpen) {
+      if (currentZone) {
+        setSelectedArea(currentZone);
+      }
       try {
         const saved = localStorage.getItem('quickserve_doorstep_details');
         if (saved) {
@@ -51,7 +54,7 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
         }
       } catch (e) {}
     }
-  }, [isOpen]);
+  }, [isOpen, currentZone]);
 
   if (!isOpen) return null;
 

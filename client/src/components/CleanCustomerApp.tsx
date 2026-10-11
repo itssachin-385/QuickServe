@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CustomerUser, Booking, ServiceCategory } from '../types';
 import { professionalHomeServices, HomeServiceCard } from '../data/homeServices';
 import { CleanOrdersView } from './CleanOrdersView';
@@ -92,6 +92,16 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<Booking | null>(null);
 
+  // Auto-prompt location picker if no location is selected yet (for new users)
+  useEffect(() => {
+    if (!activeCityZone) {
+      const timer = setTimeout(() => {
+        setIsLocationModalOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeCityZone]);
+
   // Active customer orders count & current active booking
   const myCleanPhone = (currentUser.phone || '').replace(/\D/g, '').slice(-10);
   const activeOrdersCount = useMemo(() => {
@@ -174,12 +184,13 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF7F9] text-[#1F121C] flex flex-col pb-20 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
+    <div className="min-h-screen bg-[#FFF7F9] text-[#1F121C] flex flex-col pb-28 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
       
       {/* 1. COMPACT, REFINED HEADER */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-6">
-          
+      <header className="bg-white/95 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 transition-all pt-[max(env(safe-area-inset-top,0px),0px)]">
+        
+        {/* DESKTOP HEADER (sm and up) */}
+        <div className="hidden sm:flex max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 items-center justify-between gap-4 lg:gap-6">
           {/* Left: QuickServe Logo + Location Pill */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <button
@@ -190,7 +201,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-pink-500/25 border border-pink-400/30 transition-all group-hover:scale-105">
                 <span className="text-white">Q</span><span className="text-pink-200">S</span>
               </div>
-              <span className="text-lg font-extrabold text-[#1F121C] tracking-tight hidden sm:inline font-heading">
+              <span className="text-lg font-extrabold text-[#1F121C] tracking-tight font-heading">
                 Quick<span className="text-pink-600">Serve</span>
               </span>
             </button>
@@ -199,21 +210,21 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             <button
               type="button"
               onClick={() => setIsLocationModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-pink-50/60 hover:bg-pink-50 rounded-full border border-pink-200/80 text-left transition-all max-w-[160px] sm:max-w-[220px] md:max-w-[260px] group shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-pink-50/60 hover:bg-pink-50 rounded-full border border-pink-200/80 text-left transition-all max-w-[220px] md:max-w-[280px] group shadow-2xs cursor-pointer"
               title="Change Delivery Location"
             >
               <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
               <span className="text-xs font-semibold text-[#1F121C] truncate">
-                {activeCityZone || 'Select Location'}
+                {activeCityZone || (lang === 'hi' ? 'लोकेशन चुनें' : 'Select Location')}
               </span>
-              <span className="text-[10px] text-pink-600 font-bold shrink-0 ml-0.5 group-hover:underline hidden sm:inline">
-                Change
+              <span className="text-[10px] text-pink-600 font-bold shrink-0 ml-0.5 group-hover:underline">
+                {lang === 'hi' ? 'बदलें' : 'Change'}
               </span>
             </button>
           </div>
 
-          {/* Center: Desktop Floating Refined Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-2">
+          {/* Center: Desktop Search Bar */}
+          <div className="flex flex-1 max-w-md mx-2">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-pink-400">
                 <Search className="w-4 h-4" />
@@ -239,7 +250,6 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
           {/* Right Header Navigation: Language Switcher, Orders, Profile, Partner Portal */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Dual Language Switcher Pill (Feature 5) */}
             <button
               type="button"
               onClick={toggleLanguage}
@@ -255,7 +265,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             <button
               type="button"
               onClick={() => onSwitchToPartnerPortal(false)}
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-pink-700 hover:text-pink-900 bg-pink-50/50 hover:bg-pink-100/70 rounded-xl border border-pink-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-pink-700 hover:text-pink-900 bg-pink-50/50 hover:bg-pink-100/70 rounded-xl border border-pink-200 transition-colors cursor-pointer"
             >
               <Briefcase className="w-3.5 h-3.5 text-pink-600" />
               <span>{t.partnerPortal}</span>
@@ -292,11 +302,77 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               <User className="w-4 h-4" />
             </button>
           </div>
-
         </div>
 
-        {/* Mobile Search Bar Row */}
-        <div className="md:hidden px-4 pb-3">
+        {/* MOBILE HEADER (sm:hidden) */}
+        <div className="sm:hidden px-3 pt-2 pb-2 space-y-2">
+          {/* Mobile Top Row: Logo & Language Toggle & Partner Shortcut */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
+              className="flex items-center gap-2 group text-left focus:outline-none"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white flex items-center justify-center font-extrabold text-xs shadow-sm shadow-pink-500/25 border border-pink-400/30">
+                <span className="text-white">Q</span><span className="text-pink-200">S</span>
+              </div>
+              <span className="text-base font-extrabold text-[#1F121C] tracking-tight font-heading">
+                Quick<span className="text-pink-600">Serve</span>
+              </span>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              {/* Dual Language Switcher */}
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                className="px-2.5 py-1 text-xs font-bold rounded-lg border border-pink-200 bg-pink-50/60 hover:bg-pink-100 transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
+                title="Switch Language / भाषा बदलें"
+              >
+                <Globe className="w-3.5 h-3.5 text-pink-600" />
+                <span className={lang === 'en' ? 'text-pink-600 font-black' : 'text-slate-400'}>EN</span>
+                <span className="text-pink-200">|</span>
+                <span className={lang === 'hi' ? 'text-pink-600 font-black' : 'text-slate-400'}>हिंदी</span>
+              </button>
+
+              {/* Partner Portal Shortcut */}
+              <button
+                type="button"
+                onClick={() => onSwitchToPartnerPortal(false)}
+                className="px-2 py-1 text-[11px] font-semibold text-pink-700 bg-pink-50/70 hover:bg-pink-100 rounded-lg border border-pink-200 transition-colors flex items-center gap-1 cursor-pointer"
+                title={t.partnerPortal}
+              >
+                <Briefcase className="w-3 h-3 text-pink-600" />
+                <span>Partner</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Row 2: Dedicated Full-Width Location Selector Bar */}
+          <button
+            type="button"
+            onClick={() => setIsLocationModalOpen(true)}
+            className="w-full flex items-center justify-between px-3 py-1.5 bg-pink-50/70 hover:bg-pink-100/70 active:bg-pink-100 rounded-xl border border-pink-200/90 text-left transition-all shadow-2xs group cursor-pointer"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-6 h-6 rounded-lg bg-pink-600/10 text-pink-600 flex items-center justify-center shrink-0">
+                <MapPin className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-pink-600 uppercase font-bold tracking-wider leading-none">
+                  {lang === 'hi' ? 'डिलीवरी लोकेशन' : 'Delivery Location'}
+                </p>
+                <p className="text-xs font-bold text-[#1F121C] truncate mt-0.5">
+                  {activeCityZone || (lang === 'hi' ? '📍 अपनी लोकेशन चुनें (क्लिक करें)' : '📍 Select Your Location')}
+                </p>
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-pink-600 bg-white px-2 py-0.5 rounded-lg border border-pink-200 shrink-0 ml-2 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+              {lang === 'hi' ? 'बदलें ▾' : 'Change ▾'}
+            </span>
+          </button>
+
+          {/* Mobile Row 3: Search Bar */}
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
               <Search className="w-4 h-4" />
@@ -306,19 +382,20 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="w-full pl-9 pr-9 py-2 text-xs bg-pink-50/40 focus:bg-white border border-pink-200/80 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400"
+              className="w-full pl-9 pr-8 py-2 text-xs bg-white focus:bg-white border border-pink-200/90 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-pink-600"
+                className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-pink-600"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         </div>
+
       </header>
 
       {/* Toast Notification */}
@@ -543,7 +620,13 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
                             <button
                               type="button"
-                              onClick={() => setBookingService(service)}
+                              onClick={() => {
+                                if (!activeCityZone) {
+                                  setIsLocationModalOpen(true);
+                                  return;
+                                }
+                                setBookingService(service);
+                              }}
                               className="px-4 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 active:scale-[0.98] text-white font-bold text-xs rounded-xl shadow-sm hover:shadow-md hover:shadow-pink-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
                             >
                               <span>{t.bookNow}</span>
@@ -604,43 +687,51 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
       </main>
 
       {/* Responsive Bottom Navigation Bar for Mobile */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-pink-100 z-30 px-6 py-2 flex items-center justify-around sm:hidden">
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-pink-100 z-40 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),12px)] flex items-stretch justify-around sm:hidden shadow-lg shadow-pink-900/5">
         <button
           type="button"
-          onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center gap-0.5 transition-colors cursor-pointer ${
-            activeTab === 'home' ? 'text-pink-600 font-bold' : 'text-[#705869]'
+          onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'home'
+              ? 'text-pink-600 font-bold bg-pink-50/70'
+              : 'text-[#705869] hover:text-pink-600 font-medium'
           }`}
         >
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">{lang === 'hi' ? 'होम' : 'Home'}</span>
+          <Home className={`w-5 h-5 ${activeTab === 'home' ? 'stroke-[2.5]' : ''}`} />
+          <span className="text-[11px] mt-0.5 leading-none">{lang === 'hi' ? 'होम' : 'Home'}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`flex flex-col items-center gap-0.5 relative transition-colors cursor-pointer ${
-            activeTab === 'orders' ? 'text-pink-600 font-bold' : 'text-[#705869]'
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl relative transition-all cursor-pointer ${
+            activeTab === 'orders'
+              ? 'text-pink-600 font-bold bg-pink-50/70'
+              : 'text-[#705869] hover:text-pink-600 font-medium'
           }`}
         >
-          <ShoppingBag className="w-5 h-5" />
-          {activeOrdersCount > 0 && (
-            <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
-              {activeOrdersCount}
-            </span>
-          )}
-          <span className="text-[10px]">{t.myOrders}</span>
+          <div className="relative">
+            <ShoppingBag className={`w-5 h-5 ${activeTab === 'orders' ? 'stroke-[2.5]' : ''}`} />
+            {activeOrdersCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
+                {activeOrdersCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] mt-0.5 leading-none">{t.myOrders}</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center gap-0.5 transition-colors cursor-pointer ${
-            activeTab === 'profile' ? 'text-pink-600 font-bold' : 'text-[#705869]'
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'profile'
+              ? 'text-pink-600 font-bold bg-pink-50/70'
+              : 'text-[#705869] hover:text-pink-600 font-medium'
           }`}
         >
-          <User className="w-5 h-5" />
-          <span className="text-[10px]">{t.profile}</span>
+          <User className={`w-5 h-5 ${activeTab === 'profile' ? 'stroke-[2.5]' : ''}`} />
+          <span className="text-[11px] mt-0.5 leading-none">{t.profile}</span>
         </button>
       </nav>
 

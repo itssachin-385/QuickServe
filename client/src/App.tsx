@@ -7,10 +7,26 @@ import { CustomerUser, Booking, ServiceCategory } from './types';
 import { fetchCategories, fetchBookings } from './api';
 import { App as CapacitorApp } from '@capacitor/app';
 
+import { StatusBar, Style } from '@capacitor/status-bar';
+
 export function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [appMode, setAppMode] = useState<'customer' | 'partner'>('customer');
   const [openAdminDirect, setOpenAdminDirect] = useState(false);
+
+  // Native StatusBar & Inset Configuration
+  useEffect(() => {
+    const initNativeUI = async () => {
+      try {
+        await StatusBar.setStyle({ style: Style.Dark });
+        await StatusBar.setBackgroundColor({ color: '#ffffff' });
+        await StatusBar.setOverlaysWebView({ overlay: false });
+      } catch (err) {
+        // Fallback for web browser
+      }
+    };
+    initNativeUI();
+  }, []);
 
   // Customer Authentication State (Clean mobile + OTP)
   // Returning users stay logged in automatically
@@ -31,9 +47,9 @@ export function App() {
     return null;
   });
 
-  // Selected Service Location
+  // Selected Service Location (Empty by default for new users, user chooses or GPS detects)
   const [activeCityZone, setActiveCityZone] = useState(() => {
-    return localStorage.getItem('quickserve_active_zone') || 'Pari Chowk, Greater Noida';
+    return localStorage.getItem('quickserve_active_zone') || '';
   });
 
   // Global Data State
