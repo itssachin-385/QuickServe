@@ -17,7 +17,75 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Dedicated Uploads Directory for Partner Aadhaar & Selfie documents
+const UPLOADS_DIR = path.join(__dirname, 'public/uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Helper: Save Base64 Data URL to real file in server/public/uploads
+function saveBase64Image(dataUri, prefix) {
+  if (!dataUri || typeof dataUri !== 'string' || !dataUri.startsWith('data:image')) {
+    return dataUri;
+  }
+  try {
+    const matches = dataUri.match(/^data:image\/([a-zA-Z0-9.+]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) return dataUri;
+    const ext = matches[1].replace('jpeg', 'jpg');
+    const base64Data = matches[2];
+    const filename = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`;
+    const filePath = path.join(UPLOADS_DIR, filename);
+    fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+    console.log(`[Upload Stored] Saved partner document to ${filePath}`);
+    return `/uploads/${filename}`;
+  } catch (e) {
+    console.warn('Failed to save base64 image to disk:', e.message);
+    return dataUri;
+  }
+}
+
+// UIDAI Standard Verhoeff Checksum Matrix for Indian Aadhaar Verification
+const verhoeffD = [
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  [1, 2, 3, 4, 0, 6, 7, 8, 9, 5],
+  [2, 3, 4, 0, 1, 7, 8, 9, 5, 6],
+  [3, 4, 0, 1, 2, 8, 9, 5, 6, 7],
+  [4, 0, 1, 2, 3, 9, 5, 6, 7, 8],
+  [5, 9, 8, 7, 6, 0, 4, 3, 2, 1],
+  [6, 5, 9, 8, 7, 1, 0, 4, 3, 2],
+  [7, 6, 5, 9, 8, 2, 1, 0, 4, 3],
+  [8, 7, 6, 5, 9, 3, 2, 1, 0, 4],
+  [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+];
+
+const verhoeffP = [
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  [1, 5, 7, 6, 2, 8, 3, 0, 9, 4],
+  [5, 8, 0, 3, 7, 9, 6, 1, 4, 2],
+  [8, 9, 1, 6, 0, 4, 3, 5, 2, 7],
+  [9, 4, 5, 3, 1, 2, 6, 8, 7, 0],
+  [4, 2, 8, 6, 5, 7, 3, 9, 0, 1],
+  [2, 7, 9, 3, 8, 0, 6, 4, 1, 5],
+  [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]
+];
+
+function validateAadhaarNumber(aadhaarStr) {
+  if (!aadhaarStr) return false;
+  const clean = aadhaarStr.replace(/\D/g, '');
+  if (clean.length !== 12) return false;
+  if (clean[0] === '0' || clean[0] === '1') return false; // Cannot begin with 0 or 1
+  if (/^(\d)\1{11}$/.test(clean)) return false; // Cannot be repetitive
+  let c = 0;
+  const invertedArray = clean.split('').reverse().map(Number);
+  for (let i = 0; i < invertedArray.length; i++) {
+    c = verhoeffD[c][verhoeffP[i % 8][invertedArray[i]]];
+  }
+  return c === 0;
+}
 
 // Public Health Check Endpoint for external uptime monitors & crawlers
 app.get(['/health', '/api/health'], (req, res) => {
@@ -762,11 +830,20 @@ app.post('/api/professionals/register', (req, res) => {
   const category = categories.find(c => c.id === service_id);
   const zone = zones.find(z => z.id === primary_zone_id) || zones[0];
 
+  const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+  const cleanAadhaar = (aadhaar_number || '').replace(/\D/g, '');
+  const isAadhaarValid = cleanAadhaar.length === 12;
+  const isAadhaarChecksumValid = validateAadhaarNumber(cleanAadhaar);
+
+  // Persist documents as real image files on disk in server/public/uploads
+  const savedAadhaarDoc = saveBase64Image(aadhaar_doc, `aadhaar_${cleanPhone}`);
+  const savedSelfieDoc = saveBase64Image(selfie_doc, `selfie_${cleanPhone}`);
+
   const newPro = {
     id: `pro-${Date.now()}`,
     name,
-    phone,
-    avatar: selfie_doc || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    phone: cleanPhone,
+    avatar: savedSelfieDoc || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     service_id,
     service_name: category ? category.name : 'Home Service',
     primary_zone_id: zone.id,
@@ -776,11 +853,12 @@ app.post('/api/professionals/register', (req, res) => {
     skills: skills ? (Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim())) : ['General repair'],
     bio: bio || 'Certified local professional registered on QuickServe.',
     verification_state: 'pending', // 🟡 Pending initial review
-    aadhaar_number: aadhaar_number || '',
-    aadhaar_doc: aadhaar_doc || '',
-    selfie_doc: selfie_doc || '',
+    aadhaar_number: cleanAadhaar,
+    aadhaar_doc: savedAadhaarDoc || '',
+    selfie_doc: savedSelfieDoc || '',
     verifications: {
-      aadhaar: Boolean(aadhaar_number),
+      aadhaar: isAadhaarValid,
+      aadhaar_checksum_valid: isAadhaarChecksumValid,
       police_clearance: false,
       skill_trade_test: false,
       emergency_contact_verified: Boolean(emergency_contact)
