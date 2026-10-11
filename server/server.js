@@ -67,9 +67,13 @@ const staticOptions = {
 app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
 app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 
-// Direct APK Download Endpoint
+// Direct APK Download Endpoint with no-cache headers to prevent mobile browser caching
 app.get(['/download-apk', '/QuickServe.apk'], (req, res) => {
-  res.redirect('/QuickServe_v2.apk');
+  const apkPath = path.join(__dirname, 'public/QuickServe_v2.apk');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.download(apkPath, 'QuickServe_v2.apk');
 });
 
 // Persistent Database Collections (Auto-saved to disk and survived across restarts)
