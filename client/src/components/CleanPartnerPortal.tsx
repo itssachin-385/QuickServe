@@ -1190,6 +1190,15 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                               <div className="text-right">
                                 <span className="text-base font-bold text-slate-900">₹{job.total_amount}</span>
                                 <p className="text-[10px] text-emerald-600 font-semibold uppercase">{job.status.replace('_', ' ')}</p>
+                                {job.payment_status === 'paid' ? (
+                                  <span className="inline-block mt-0.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-bold">
+                                    ✔ Paid Online (UPI)
+                                  </span>
+                                ) : (
+                                  <span className="inline-block mt-0.5 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] font-bold">
+                                    💵 Pay on Visit
+                                  </span>
+                                )}
                               </div>
                             </div>
 

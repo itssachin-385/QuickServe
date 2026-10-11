@@ -35,12 +35,11 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   onSuccess,
   onClose
 }) => {
-  const [activeTab, setActiveTab] = useState<'upi_qr' | 'upi_apps' | 'settings'>('upi_qr');
+  const [activeTab, setActiveTab] = useState<'upi_apps' | 'upi_qr' | 'settings'>('upi_apps');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [copiedVpa, setCopiedVpa] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
-  const [enteredUtr, setEnteredUtr] = useState('');
   const [orderData, setOrderData] = useState<any>(null);
   const [gatewayConfig, setGatewayConfig] = useState<any>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
@@ -103,7 +102,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
 
   const handleConfirmUpiPayment = async () => {
     setIsProcessing(true);
-    const paymentId = enteredUtr.trim() ? `upi_${enteredUtr.trim()}` : `pay_upi_${Date.now()}`;
+    const paymentId = `upi_pay_${Date.now()}`;
     try {
       await verifyPayment({
         booking_id: bookingId || 'bk-direct',
@@ -182,32 +181,32 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
         {/* Payment Methods Nav Tabs (UPI ONLY - NO CARDS) */}
         <div className="flex border-b border-slate-200 bg-slate-100/70 p-1.5 gap-1.5 text-xs font-bold">
           <button
+            onClick={() => setActiveTab('upi_apps')}
+            className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              activeTab === 'upi_apps'
+                ? 'bg-white text-pink-700 shadow-sm border border-pink-200'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Smartphone className="w-4 h-4 text-pink-600" />
+            <span>1-Tap UPI Apps</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('upi_qr')}
-            className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               activeTab === 'upi_qr'
-                ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
+                ? 'bg-white text-pink-700 shadow-sm border border-pink-200'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <QrCode className="w-4 h-4 text-emerald-600" />
-            <span>Scan UPI QR</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('upi_apps')}
-            className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'upi_apps'
-                ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Smartphone className="w-4 h-4 text-blue-600" />
-            <span>Pay via UPI App</span>
+            <span>Scan QR Code</span>
           </button>
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition-all ${
+            className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
               activeTab === 'settings'
                 ? 'bg-white text-slate-950 shadow-sm border border-slate-200/80'
                 : 'text-slate-500 hover:text-slate-800'
@@ -291,36 +290,30 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Optional UTR / Reference ID Field */}
-                  <div className="text-left space-y-1">
-                    <label className="text-[11px] font-bold text-slate-700 block">
-                      UPI Ref / UTR No (Optional - payment confirmation):
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 427819283741 (12 digits)" 
-                      value={enteredUtr}
-                      onChange={(e) => setEnteredUtr(e.target.value.trim())}
-                      maxLength={16}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                    />
+                  {/* Super Fast 1-Tap Confirmation */}
+                  <div className="p-3 bg-pink-50/70 border border-pink-200/80 rounded-2xl text-left flex items-start gap-2.5">
+                    <Sparkles className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-pink-950">
+                      <p className="font-bold text-pink-900">Scan & Pay ₹{amount}</p>
+                      <p className="text-slate-600 mt-0.5">Kisi bhi UPI app se QR scan karke pay karein, fir neeche button daba kar order confirm karein.</p>
+                    </div>
                   </div>
 
                   {/* Action Confirm Button */}
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
                     {isProcessing ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verifying UPI Transaction...</span>
+                        <span>Confirming Payment...</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>I Have Paid ₹{amount} (Confirm Payment)</span>
+                        <span>I Have Paid ₹{amount} • Confirm Order</span>
                       </>
                     )}
                   </button>
@@ -406,36 +399,30 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </button>
                   </div>
 
-                  {/* Optional UTR / Reference ID Field */}
-                  <div className="text-left space-y-1">
-                    <label className="text-[11px] font-bold text-slate-700 block">
-                      UPI Ref / UTR No (Optional - payment confirmation):
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 427819283741 (12 digits)" 
-                      value={enteredUtr}
-                      onChange={(e) => setEnteredUtr(e.target.value.trim())}
-                      maxLength={16}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                    />
+                  {/* Super Fast 1-Tap Confirmation */}
+                  <div className="p-3 bg-pink-50/70 border border-pink-200/80 rounded-2xl text-left flex items-start gap-2.5">
+                    <Sparkles className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-pink-950">
+                      <p className="font-bold text-pink-900">Direct 1-Tap UPI Payment</p>
+                      <p className="text-slate-600 mt-0.5">Upar kisi bhi app se ₹{amount} pay karne ke baad, seedhe neeche button daba kar order confirm karein.</p>
+                    </div>
                   </div>
 
                   {/* Action Confirm Button */}
                   <button
                     disabled={isProcessing}
                     onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
                     {isProcessing ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verifying UPI Transaction...</span>
+                        <span>Confirming Payment...</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>I Have Paid ₹{amount} (Confirm Payment)</span>
+                        <span>I Have Paid ₹{amount} • Confirm Order</span>
                       </>
                     )}
                   </button>
