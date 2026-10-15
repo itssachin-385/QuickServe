@@ -1045,19 +1045,19 @@ export const CustomerWebsite: React.FC<CustomerWebsiteProps> = ({
               <div className="flex items-center gap-2 justify-center sm:justify-start">
                 <h4 className="font-black text-sm sm:text-base text-white">QuickServe Android App</h4>
                 <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  v2.1
+                  v3.2 (Latest)
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Track partners live with GPS, manage orders, and rebook in seconds.</p>
             </div>
           </div>
           <a
-            href="/downloads/QuickServe_v2.apk"
-            download="QuickServe_v2.apk"
-            className="px-5 py-3 bg-[#04b565] hover:bg-[#039e57] active:scale-95 text-white font-black text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all flex-shrink-0"
+            href="/QuickServe_v3.2_PinkLogo.apk"
+            download="QuickServe_v3.2_PinkLogo.apk"
+            className="px-5 py-3 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-black text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-pink-500/25 transition-all flex-shrink-0"
           >
             <Download className="w-4 h-4" />
-            <span>Download APK (14.6 MB)</span>
+            <span>Download APK v3.2 (16.2 MB)</span>
           </a>
         </div>
       </section>
