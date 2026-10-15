@@ -136,9 +136,9 @@ app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
 
 // Direct APK Download Endpoint with no-cache headers to prevent mobile browser caching
-app.get(['/download-apk', '/QuickServe.apk'], (req, res) => {
+app.get(['/download-apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
   const apkPath = path.join(__dirname, 'public/QuickServe_v2.apk');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.download(apkPath, 'QuickServe_v2.apk');

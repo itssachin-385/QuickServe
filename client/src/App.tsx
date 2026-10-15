@@ -49,7 +49,13 @@ export function App() {
 
   // Selected Service Location (Empty by default for new users, user chooses or GPS detects)
   const [activeCityZone, setActiveCityZone] = useState(() => {
-    return localStorage.getItem('quickserve_active_zone') || '';
+    const saved = localStorage.getItem('quickserve_active_zone');
+    // If it was the old dummy default from previous testing versions, purge it immediately
+    if (!saved || saved === 'Pari Chowk, Greater Noida' || saved === 'Ansal Golf Links 1, Greater Noida') {
+      localStorage.removeItem('quickserve_active_zone');
+      return '';
+    }
+    return saved;
   });
 
   // Global Data State
