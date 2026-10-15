@@ -49,17 +49,17 @@ export const AppSplashScreen: React.FC<AppSplashScreenProps> = ({
 
       {/* Center Branding & Logo */}
       <div className="flex flex-col items-center text-center max-w-sm">
-        {/* Animated Logo Container with 3D Glossy Emblem */}
+        {/* Animated Logo Container with Pink House Emblem */}
         <div className="relative mb-5 flex flex-col items-center">
-          <BrandLogo size="xl" showText={false} variant="3d" className="shadow-2xl shadow-pink-500/50" />
+          <BrandLogo size="xl" showText={false} theme="dark" className="drop-shadow-2xl" />
           {/* Subtle pulse ring behind */}
           <div className="absolute inset-0 rounded-3xl bg-pink-400/20 -z-10 animate-ping pointer-events-none"></div>
         </div>
 
         {/* Brand Name */}
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-1.5 font-heading">
-          <span>Quick</span>
-          <span className="text-yellow-300">Serve</span>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-1 font-heading">
+          <span className="text-pink-300">Quick</span>
+          <span className="text-white">Serve</span>
         </h1>
 
         {/* Main Catchy Quote */}
