@@ -18,6 +18,9 @@ server/data/persistent/*.tmp*
 server/data/persistent/*.bak
 *.apk
 !server/public/QuickServe_v2.apk
+!server/public/QuickServe_v3.2_PinkLogo.apk
+!server/public/QuickServe_v3.2.apk
+!server/public/QuickServe_Latest.apk
 client/public/downloads/*.apk
 client/public/downloads/
 handbook_*.html
