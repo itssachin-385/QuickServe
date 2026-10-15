@@ -14,6 +14,7 @@ import {
 import { translations, Language } from '../utils/translations';
 import { playDoorbellChime } from '../utils/sound';
 import { LiveTrackingModal } from './LiveTrackingModal';
+import { BrandLogo } from './BrandLogo';
 
 interface CleanCustomerAppProps {
   currentUser: CustomerUser;
@@ -196,14 +197,9 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             <button
               type="button"
               onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-              className="flex items-center gap-2.5 group text-left focus:outline-none cursor-pointer"
+              className="group text-left focus:outline-none cursor-pointer"
             >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-pink-500/25 border border-pink-400/30 transition-all group-hover:scale-105">
-                <span className="text-white">Q</span><span className="text-pink-200">S</span>
-              </div>
-              <span className="text-lg font-extrabold text-[#1F121C] tracking-tight font-heading">
-                Quick<span className="text-pink-600">Serve</span>
-              </span>
+              <BrandLogo size="md" />
             </button>
 
             {/* Selected Location Pill */}
@@ -311,14 +307,9 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             <button
               type="button"
               onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-              className="flex items-center gap-2 group text-left focus:outline-none"
+              className="group text-left focus:outline-none"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-600 to-rose-600 text-white flex items-center justify-center font-extrabold text-xs shadow-sm shadow-pink-500/25 border border-pink-400/30">
-                <span className="text-white">Q</span><span className="text-pink-200">S</span>
-              </div>
-              <span className="text-base font-extrabold text-[#1F121C] tracking-tight font-heading">
-                Quick<span className="text-pink-600">Serve</span>
-              </span>
+              <BrandLogo size="sm" />
             </button>
 
             <div className="flex items-center gap-1.5">

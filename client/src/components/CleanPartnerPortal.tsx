@@ -7,6 +7,7 @@ import {
   FileText, Camera, UploadCloud, Eye, X, 
   Lock, ShieldAlert, Sparkles, Check
 } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 interface CleanPartnerPortalProps {
   categories: ServiceCategory[];
@@ -347,8 +348,8 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-sm font-bold text-white flex items-center gap-1.5">
-                <Wrench className="w-4 h-4 text-pink-400" />
+              <h1 className="text-sm font-bold text-white flex items-center gap-2">
+                <BrandLogo size="xs" showText={false} />
                 <span>Quick<span className="text-pink-400">Serve</span> Partner Portal</span>
               </h1>
               <p className="text-[11px] text-slate-400">Professional Safety & Onboarding Hub</p>

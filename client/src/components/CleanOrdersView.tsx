@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { LiveTrackingModal } from './LiveTrackingModal';
 import { RazorpayModal } from './RazorpayModal';
+import { BrandLogo } from './BrandLogo';
 
 interface CleanOrdersViewProps {
   bookings: Booking[];
@@ -651,9 +652,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
               {/* Brand Letterhead */}
               <div className="flex items-start justify-between border-b pb-4 border-slate-200">
                 <div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight font-heading">
-                    Quick<span className="text-pink-600">Serve</span>
-                  </h2>
+                  <BrandLogo size="md" className="mb-1" />
                   <p className="text-[11px] text-slate-500 mt-0.5">QuickServe Technologies Private Limited</p>
                   <p className="text-[11px] text-slate-500">Greater Noida & NCR Service Cluster Hub</p>
                   <p className="text-[11px] text-slate-500 font-mono">GSTIN / Reg: 09AAACQ1234F1Z8</p>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ShieldCheck, Zap, Sparkles, Clock } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 interface AppSplashScreenProps {
   onFinish?: () => void;
@@ -48,23 +49,17 @@ export const AppSplashScreen: React.FC<AppSplashScreenProps> = ({
 
       {/* Center Branding & Logo */}
       <div className="flex flex-col items-center text-center max-w-sm">
-        {/* Animated Logo Container */}
-        <div className="relative mb-5">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 flex items-center justify-center shadow-2xl shadow-pink-500/50 p-4 transition-transform hover:scale-105 border border-pink-400/30">
-            <svg viewBox="0 0 48 48" fill="none" className="w-full h-full drop-shadow-md">
-              <path d="M24 4L4 20V42C4 43.1 4.9 44 6 44H42C43.1 44 44 43.1 44 42V20L24 4Z" fill="white"/>
-              <path d="M24 12L34 22H28V36H20V22H14L24 12Z" fill="#F472B6"/>
-              <path d="M19 44V29H29V44" fill="#9D174D"/>
-            </svg>
-          </div>
+        {/* Animated Logo Container with 3D Glossy Emblem */}
+        <div className="relative mb-5 flex flex-col items-center">
+          <BrandLogo size="xl" showText={false} variant="3d" className="shadow-2xl shadow-pink-500/50" />
           {/* Subtle pulse ring behind */}
-          <div className="absolute inset-0 rounded-3xl bg-pink-400/25 -z-10 animate-ping"></div>
+          <div className="absolute inset-0 rounded-3xl bg-pink-400/20 -z-10 animate-ping pointer-events-none"></div>
         </div>
 
         {/* Brand Name */}
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-2">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-1.5 font-heading">
           <span>Quick</span>
-          <span className="text-pink-400">Serve</span>
+          <span className="text-yellow-300">Serve</span>
         </h1>
 
         {/* Main Catchy Quote */}
@@ -100,7 +95,7 @@ export const AppSplashScreen: React.FC<AppSplashScreenProps> = ({
           <div className="h-full bg-gradient-to-r from-pink-500 via-rose-400 to-pink-300 rounded-full animate-[progress_1.6s_ease-in-out_infinite]"></div>
         </div>
         <span className="text-[11px] text-pink-200/70 font-medium tracking-wide">
-          Connecting to Greater Noida Hub...
+          Connecting to QuickServe Fast Network...
         </span>
       </div>
     </div>

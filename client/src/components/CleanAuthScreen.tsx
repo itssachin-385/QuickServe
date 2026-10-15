@@ -6,6 +6,7 @@ import {
   CheckCircle2, AlertCircle, RefreshCw, Check, Sparkles,
   MessageCircle
 } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 interface CleanAuthScreenProps {
   onSuccess: (user: CustomerUser) => void;
@@ -202,13 +203,8 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
         </div>
 
         {/* Brand Logo & Name */}
-        <div className="flex items-center justify-center gap-2.5 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-white text-pink-600 flex items-center justify-center font-black text-xl shadow-md">
-            <span>QS</span>
-          </div>
-          <span className="text-2xl font-black tracking-tight text-white font-heading">
-            Quick<span className="text-yellow-300">Serve</span>
-          </span>
+        <div className="flex items-center justify-center mb-3">
+          <BrandLogo size="lg" theme="dark" />
         </div>
 
         {/* Hero Tagline */}
