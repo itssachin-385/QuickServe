@@ -149,7 +149,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] bg-white/20 text-white border border-white/30 px-2 py-0.2 rounded-full font-bold uppercase tracking-wider">
-                  Live UPI Gateway
+                  Instant UPI Payment
                 </span>
               </div>
               <h3 className="font-extrabold text-base text-white mt-0.5">
@@ -295,7 +295,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     <Sparkles className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
                     <div className="text-[11px] text-pink-950">
                       <p className="font-bold text-pink-900">Scan & Pay ₹{amount}</p>
-                      <p className="text-slate-600 mt-0.5">Kisi bhi UPI app se QR scan karke pay karein, fir neeche button daba kar order confirm karein.</p>
+                      <p className="text-slate-600 mt-0.5">Scan this QR code using any UPI app (GPay, PhonePe, Paytm, BHIM). After payment, tap the button below to confirm your order.</p>
                     </div>
                   </div>
 
@@ -404,7 +404,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     <Sparkles className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
                     <div className="text-[11px] text-pink-950">
                       <p className="font-bold text-pink-900">Direct 1-Tap UPI Payment</p>
-                      <p className="text-slate-600 mt-0.5">Upar kisi bhi app se ₹{amount} pay karne ke baad, seedhe neeche button daba kar order confirm karein.</p>
+                      <p className="text-slate-600 mt-0.5">After completing payment in your UPI app, tap the button below to confirm your order.</p>
                     </div>
                   </div>
 

@@ -222,18 +222,8 @@ if (!customers || customers.length === 0) {
       phone: '9570151834',
       email: 'kumar@quickserve.in',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      saved_addresses: [
-        {
-          id: 'addr-home',
-          label: 'Home',
-          flat: 'Villa 14, Ansal Golf Links 1',
-          area: 'Ansal Golf Links 1',
-          city: 'Greater Noida',
-          landmark: 'Near Jaypee Greens',
-          is_default: true
-        }
-      ],
-      default_address_id: 'addr-home'
+      saved_addresses: [],
+      default_address_id: null
     }
   ];
 }

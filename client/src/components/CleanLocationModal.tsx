@@ -10,15 +10,17 @@ interface CleanLocationModalProps {
 }
 
 const POPULAR_AREAS = [
-  { name: 'Pari Chowk, Greater Noida', tag: 'Popular' },
-  { name: 'Sector 18, Noida', tag: 'Commercial' },
+  { name: 'Begusarai, Bihar', tag: 'Bihar' },
+  { name: 'Patna, Bihar', tag: 'Bihar' },
   { name: 'Sector 62, Noida', tag: 'IT Hub' },
-  { name: 'Alpha 1, Greater Noida', tag: 'Residential' },
-  { name: 'Beta 2, Greater Noida', tag: 'Residential' },
-  { name: 'Sector 137, Noida Expressway', tag: 'High-rise' },
+  { name: 'Sector 18, Noida', tag: 'Commercial' },
+  { name: 'Connaught Place, New Delhi', tag: 'Delhi NCR' },
+  { name: 'South Delhi, New Delhi', tag: 'Delhi NCR' },
+  { name: 'Cyber City, Gurugram', tag: 'NCR' },
   { name: 'Indirapuram, Ghaziabad', tag: 'NCR' },
-  { name: 'South Delhi, New Delhi', tag: 'NCR' },
-  { name: 'Connaught Place, Central Delhi', tag: 'NCR' },
+  { name: 'Hazratganj, Lucknow', tag: 'UP' },
+  { name: 'Koramangala, Bengaluru', tag: 'Karnataka' },
+  { name: 'Bandra West, Mumbai', tag: 'Maharashtra' },
 ];
 
 export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
@@ -28,7 +30,12 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   onSelectZone
 }) => {
   const [manualQuery, setManualQuery] = useState('');
-  const [selectedArea, setSelectedArea] = useState(currentZone || '');
+  const [selectedArea, setSelectedArea] = useState(() => {
+    if (currentZone && !currentZone.includes('Pari Chowk') && !currentZone.includes('Ansal Golf')) {
+      return currentZone;
+    }
+    return '';
+  });
   const [houseNo, setHouseNo] = useState('');
   const [streetBuilding, setStreetBuilding] = useState('');
   const [landmark, setLandmark] = useState('');
@@ -40,17 +47,23 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   // Load existing doorstep details if present and sync selected zone
   useEffect(() => {
     if (isOpen) {
-      if (currentZone) {
+      if (currentZone && !currentZone.includes('Pari Chowk') && !currentZone.includes('Ansal Golf')) {
         setSelectedArea(currentZone);
+      } else {
+        setSelectedArea('');
       }
       try {
         const saved = localStorage.getItem('quickserve_doorstep_details');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed.houseNo) setHouseNo(parsed.houseNo);
-          if (parsed.streetGali) setStreetBuilding(parsed.streetGali);
-          if (parsed.landmark) setLandmark(parsed.landmark);
-          if (parsed.addressTag) setAddressTag(parsed.addressTag);
+          if (parsed.fullCompleteAddress?.includes('Ansal Golf') || parsed.fullCompleteAddress?.includes('Pari Chowk')) {
+            localStorage.removeItem('quickserve_doorstep_details');
+          } else {
+            if (parsed.houseNo) setHouseNo(parsed.houseNo);
+            if (parsed.streetGali) setStreetBuilding(parsed.streetGali);
+            if (parsed.landmark) setLandmark(parsed.landmark);
+            if (parsed.addressTag) setAddressTag(parsed.addressTag);
+          }
         }
       } catch (e) {}
     }
@@ -198,18 +211,32 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                     type="text"
                     value={manualQuery}
                     onChange={(e) => setManualQuery(e.target.value)}
-                    placeholder="Search sector, society, area or PIN code..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && manualQuery.trim()) {
+                        e.preventDefault();
+                        handleSelectArea(manualQuery.trim());
+                      }
+                    }}
+                    placeholder="Type city (e.g. Begusarai, Patna, Noida)..."
                     className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-pink-100 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all"
                   />
                 </div>
-                {manualQuery.trim() && filteredAreas.length === 0 && (
+                {manualQuery.trim() && (
                   <button
                     type="button"
                     onClick={() => handleSelectArea(manualQuery.trim())}
-                    className="w-full mt-2 p-2.5 text-xs text-left text-pink-600 bg-pink-50 rounded-lg hover:bg-pink-100 flex items-center justify-between cursor-pointer"
+                    className="w-full mt-2.5 p-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 active:scale-[0.98] text-white rounded-xl flex items-center justify-between shadow-md shadow-pink-500/25 transition-all cursor-pointer group"
                   >
-                    <span>Use &quot;<strong>{manualQuery.trim()}</strong>&quot; as custom locality</span>
-                    <span className="font-semibold text-pink-600">Select &rarr;</span>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <MapPin className="w-5 h-5 text-white shrink-0" />
+                      <div className="text-left min-w-0">
+                        <p className="text-[10px] uppercase tracking-wider text-pink-100 font-bold">Deliver to this location</p>
+                        <p className="text-sm font-extrabold text-white truncate">&quot;{manualQuery.trim()}&quot;</p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold text-white shrink-0 transition-colors">
+                      Select &rarr;
+                    </span>
                   </button>
                 )}
               </div>
@@ -356,12 +383,24 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
               </button>
             </>
           ) : (
-            <div className="w-full flex items-center justify-between">
-              <span className="text-xs text-[#705869]">Current: {selectedArea.slice(0, 24)}...</span>
+            <div className="w-full flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <span className="text-[10px] text-[#705869] uppercase font-bold tracking-wider block">Target Location</span>
+                <span className="text-xs font-bold text-[#1F121C] truncate block">
+                  {manualQuery.trim() || selectedArea || 'Select your city/locality'}
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => setStep('doorstep')}
-                className="px-4 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => {
+                  const target = manualQuery.trim() || selectedArea;
+                  if (!target) {
+                    setGpsError('Please type your city/locality or choose from the list below.');
+                    return;
+                  }
+                  handleSelectArea(target);
+                }}
+                className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all cursor-pointer shrink-0"
               >
                 Next &rarr;
               </button>

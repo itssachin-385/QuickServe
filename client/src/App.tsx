@@ -51,7 +51,7 @@ export function App() {
   const [activeCityZone, setActiveCityZone] = useState(() => {
     const saved = localStorage.getItem('quickserve_active_zone');
     // If it was the old dummy default from previous testing versions, purge it immediately
-    if (!saved || saved === 'Pari Chowk, Greater Noida' || saved === 'Ansal Golf Links 1, Greater Noida') {
+    if (!saved || saved.includes('Pari Chowk') || saved.includes('Ansal Golf')) {
       localStorage.removeItem('quickserve_active_zone');
       return '';
     }
