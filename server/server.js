@@ -587,18 +587,20 @@ app.post('/api/payments/create-order', (req, res) => {
   });
 });
 
-// Payments: Verify Payment & Mark Booking Paid
+// Payments: Record UPI UTR & Mark Verification Pending
 app.post('/api/payments/verify', async (req, res) => {
-  const { booking_id, payment_id, order_id, method, amount } = req.body;
+  const { booking_id, payment_id, order_id, method, amount, upi_utr } = req.body;
   
   const booking = bookings.find(b => b.id === booking_id || b.booking_reference === booking_id);
   if (booking) {
-    booking.payment_status = 'paid';
+    booking.payment_status = 'verification_pending';
     booking.payment_method = method || 'upi';
-    booking.payment_reference = payment_id || `pay_${Date.now()}`;
+    booking.payment_reference = payment_id || `UTR-${upi_utr || Date.now()}`;
+    booking.upi_utr = upi_utr || (payment_id && payment_id.startsWith('UTR-') ? payment_id.replace('UTR-', '') : null);
+    db.updateBooking(booking.id, booking);
   }
 
-  // Send Fast2SMS Payment Confirmation SMS if Key is present (skip for test numbers)
+  // Send Fast2SMS Payment Under Verification SMS if Key is present (skip for test numbers)
   if (booking && gatewayConfig.fast2smsApiKey && booking.customer_phone) {
     const cleanPhone = booking.customer_phone.replace(/\D/g, '').slice(-10);
     if (!TEST_NUMBERS.includes(cleanPhone)) {
@@ -611,24 +613,19 @@ app.post('/api/payments/verify', async (req, res) => {
           },
           body: JSON.stringify({
             route: 'q',
-            message: `QuickServe: Payment of Rs.${amount || booking.total_amount} received for Ref ${booking.booking_reference}. Partner ${booking.professional_name} is arriving in ~15 mins!`,
+            message: `QuickServe: Booking Ref ${booking.booking_reference} placed! UPI UTR ${booking.upi_utr || 'recorded'} is under verification. Our partner will verify before service.`,
             language: 'english',
             flash: 0,
             numbers: cleanPhone
           })
         });
       } catch (e) {
-        console.warn('Fast2SMS confirmation notice error:', e.message);
+        console.warn('Fast2SMS notification error:', e);
       }
     }
   }
 
-  res.json({
-    success: true,
-    message: 'Payment verified and confirmed successfully!',
-    payment_reference: payment_id || `pay_${Date.now()}`,
-    booking
-  });
+  res.json({ success: true, booking, message: 'UPI verification recorded. Payment under review.' });
 });
 
 // ==========================================
@@ -1151,9 +1148,10 @@ app.post('/api/bookings', (req, res) => {
     company_total_cut: companyCommission + platformFee,
     taxes: 0,
     total_amount: Number(req.body.total_amount) || totalAmount,
-    professional_earning: professionalEarning,
-    payment_status: payment_status || (payment_method === 'pay_after_work' ? 'pending' : 'paid'),
+    payment_status: payment_status || (payment_method === 'pay_after_work' ? 'pending' : (payment_method === 'upi' ? 'verification_pending' : 'pending')),
     payment_method: payment_method || 'pay_after_work',
+    payment_id: req.body.payment_id || null,
+    upi_utr: req.body.upi_utr || (req.body.payment_id && req.body.payment_id.startsWith('UTR-') ? req.body.payment_id.replace('UTR-', '') : null),
     customer_notes: customer_notes || '',
     customer_problem: req.body.customer_problem || customer_notes || '',
     customer_photo: req.body.customer_photo || '',
@@ -1226,13 +1224,14 @@ app.post('/api/bookings/:id/status', (req, res) => {
 
 // Update payment on existing booking (UPI Payment)
 app.post('/api/bookings/:id/payment', (req, res) => {
-  const { payment_status, payment_method, payment_id } = req.body;
+  const { payment_status, payment_method, payment_id, upi_utr } = req.body;
   const booking = bookings.find(b => b.id === req.params.id || b.booking_reference === req.params.id);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-  booking.payment_status = payment_status || 'paid';
+  if (payment_status) booking.payment_status = payment_status;
   if (payment_method) booking.payment_method = payment_method;
   if (payment_id) booking.payment_id = payment_id;
+  if (upi_utr) booking.upi_utr = upi_utr;
 
   db.updateBooking(booking.id, booking);
   res.json({ success: true, booking });

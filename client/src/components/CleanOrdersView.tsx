@@ -8,7 +8,7 @@ import {
   ChevronRight, RefreshCw, FileText, Image as ImageIcon, 
   ShieldCheck, Star, MessageCircle, Download, Printer, 
   X, Sparkles, Volume2, Check, Navigation, QrCode,
-  Search, Filter
+  Search, Filter, Banknote
 } from 'lucide-react';
 import { LiveTrackingModal } from './LiveTrackingModal';
 import { RazorpayModal } from './RazorpayModal';
@@ -115,16 +115,17 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
     return match?.image || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&auto=format&fit=crop&q=80';
   };
 
-  const handleOrderUpiPaid = async (paymentId: string) => {
+  const handleOrderUpiPaid = async (paymentId: string, utr?: string) => {
     if (!selectedBookingForPayment) return;
     try {
       await fetch(`/api/bookings/${selectedBookingForPayment.id}/payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          payment_status: 'paid',
+          payment_status: 'verification_pending',
           payment_method: 'upi',
-          payment_id: paymentId
+          payment_id: paymentId,
+          upi_utr: utr
         })
       });
       playSuccessPing();
@@ -463,7 +464,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Photo 2 Meesho-Style UPI Discount Pill Box */}
+                  {/* Payment Status Info Box */}
                   {b.payment_status === 'paid' ? (
                     <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-xl px-3 py-2 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
@@ -471,26 +472,39 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                         <span>Paid ₹{b.total_amount} via UPI</span>
                       </div>
                       <span className="text-[11px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
-                        Saved ₹20 with UPI Instant ✓
+                        Bank Verified ✓
                       </span>
                     </div>
-                  ) : (
-                    <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400 line-through text-[11px]">₹{b.total_amount + 20} with Cash</span>
-                        <span className="font-black text-emerald-900 text-sm">₹{b.total_amount} with UPI</span>
-                        <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md tracking-wide">
-                          Save ₹20
+                  ) : b.payment_status === 'verification_pending' ? (
+                    <div className="bg-amber-50/95 border border-amber-200/90 rounded-xl p-3 space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-amber-900 font-bold">
+                          <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>UPI Verification Pending</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                          Review Pending ⏳
                         </span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 leading-snug">
+                        UTR: <span className="font-mono font-bold">{b.upi_utr || b.payment_id || 'Submitted'}</span> • Bank credit verify hone par confirm hoga. Agar bank account me amount nahi mila to professional visit ke time cash/UPI collect karega.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <Banknote className="w-4 h-4 text-slate-500 shrink-0" />
+                        <span className="font-bold text-slate-800">Pay on Visit: ₹{b.total_amount}</span>
+                        <span className="text-[10px] text-slate-500">(Cash or UPI to Partner)</span>
                       </div>
                       {!isCancelled && (
                         <button
                           type="button"
                           onClick={() => setSelectedBookingForPayment(b)}
-                          className="px-3 py-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95 transition-all"
+                          className="px-2.5 py-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95 transition-all"
                         >
                           <QrCode className="w-3 h-3" />
-                          <span>Pay Now</span>
+                          <span>Pay Advance</span>
                           <ChevronRight className="w-3 h-3" />
                         </button>
                       )}

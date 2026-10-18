@@ -195,9 +195,10 @@ export interface Booking {
   taxes: number;
   total_amount: number;
   professional_earning?: number;
-  payment_status: 'pending' | 'paid' | 'refunded';
+  payment_status: 'pending' | 'paid' | 'refunded' | 'verification_pending';
   payment_method: 'upi' | 'card' | 'cash' | 'pay_after_work' | 'wallet' | string;
   payment_id?: string;
+  upi_utr?: string;
   customer_notes?: string;
   customer_problem?: string;
   customer_photo?: string;

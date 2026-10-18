@@ -39,7 +39,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
   const [selectedSlot, setSelectedSlot] = useState<string>('10:00 AM - 01:00 PM');
   const [problemDescription, setProblemDescription] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'pay_after_work'>('upi');
+  const [paymentMethod, setPaymentMethod] = useState<'pay_after_work' | 'upi'>('pay_after_work');
   const [showUpiModal, setShowUpiModal] = useState(false);
   
   // Doorstep address from local storage
@@ -86,15 +86,16 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
     }
   };
 
-  const handleUpiPaymentSuccess = async (paymentId: string) => {
+  const handleUpiPaymentSuccess = async (paymentId: string, utr?: string) => {
     setShowUpiModal(false);
-    await handleCreateBookingFinal('upi', 'paid', paymentId);
+    await handleCreateBookingFinal('upi', 'verification_pending', paymentId, utr);
   };
 
   const handleCreateBookingFinal = async (
     method: 'upi' | 'pay_after_work',
-    pStatus: 'paid' | 'pending',
-    paymentId?: string
+    pStatus: 'paid' | 'pending' | 'verification_pending',
+    paymentId?: string,
+    utr?: string
   ) => {
     setErrorMsg('');
     setIsSubmitting(true);
@@ -114,6 +115,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
         payment_method: method,
         payment_status: pStatus,
         payment_id: paymentId,
+        upi_utr: utr,
         status: 'requested',
         booking_mode: 'instant',
         customer_notes: defaultProblem,
@@ -266,39 +268,44 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
+                onClick={() => setPaymentMethod('pay_after_work')}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+                  paymentMethod === 'pay_after_work'
+                    ? 'bg-emerald-50/90 border-emerald-500 text-slate-900 shadow-sm ring-1 ring-emerald-500'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Banknote className={`w-4 h-4 ${paymentMethod === 'pay_after_work' ? 'text-emerald-600' : 'text-slate-400'}`} />
+                    <span className="text-xs font-black text-slate-900">Pay on Visit</span>
+                  </div>
+                  <span className="px-1.5 py-0.2 bg-emerald-600 text-white text-[9px] font-black rounded-md">
+                    Recommended
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 mt-1.5 font-medium leading-tight">Cash or UPI after work • ₹0 Advance</p>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setPaymentMethod('upi')}
                 className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
                   paymentMethod === 'upi'
-                    ? 'bg-pink-50/90 border-pink-500 text-[#1F121C] shadow-sm'
-                    : 'bg-white border-pink-100 text-[#705869] hover:bg-pink-50/40'
+                    ? 'bg-pink-50/90 border-pink-500 text-[#1F121C] shadow-sm ring-1 ring-pink-500'
+                    : 'bg-white border-slate-200 text-[#705869] hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Smartphone className={`w-4 h-4 ${paymentMethod === 'upi' ? 'text-pink-600' : 'text-slate-400'}`} />
-                    <span className="text-xs font-extrabold text-[#1F121C]">Pay via UPI</span>
+                    <span className="text-xs font-black text-[#1F121C]">Pay via UPI</span>
                   </div>
-                  <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] font-black rounded-md">
-                    Instant
+                  <span className="px-1.5 py-0.2 bg-pink-100 text-pink-700 text-[9px] font-black rounded-md">
+                    Verify UTR
                   </span>
                 </div>
-                <p className="text-[11px] text-[#705869] mt-1.5 font-medium leading-tight">GPay, PhonePe, Paytm, QR</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('pay_after_work')}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  paymentMethod === 'pay_after_work'
-                    ? 'bg-pink-50/90 border-pink-500 text-[#1F121C] shadow-sm'
-                    : 'bg-white border-pink-100 text-[#705869] hover:bg-pink-50/40'
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <Banknote className={`w-4 h-4 ${paymentMethod === 'pay_after_work' ? 'text-pink-600' : 'text-slate-400'}`} />
-                  <span className="text-xs font-extrabold text-[#1F121C]">Pay After Service</span>
-                </div>
-                <p className="text-[11px] text-[#705869] mt-1.5 font-medium leading-tight">Cash or UPI upon visit</p>
+                <p className="text-[11px] text-[#705869] mt-1.5 font-medium leading-tight">GPay, PhonePe & 12-digit UTR</p>
               </button>
             </div>
           </div>

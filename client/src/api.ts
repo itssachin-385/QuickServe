@@ -630,6 +630,7 @@ export async function verifyPayment(data: {
   order_id?: string;
   method?: string;
   amount?: number;
+  upi_utr?: string;
 }): Promise<any> {
   const res = await fetch(`${API_BASE}/payments/verify`, {
     method: 'POST',
@@ -637,6 +638,21 @@ export async function verifyPayment(data: {
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Failed to verify payment');
+  return await res.json();
+}
+
+export async function updateBookingPayment(id: string, data: {
+  payment_status: 'pending' | 'paid' | 'verification_pending';
+  payment_method?: string;
+  payment_id?: string;
+  upi_utr?: string;
+}): Promise<any> {
+  const res = await fetch(`${API_BASE}/bookings/${id}/payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to update booking payment');
   return await res.json();
 }
 

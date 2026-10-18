@@ -12,7 +12,8 @@ import {
   Wallet,
   Sparkles,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Clock
 } from 'lucide-react';
 import { createPaymentOrder, verifyPayment, fetchGatewayConfig, updateGatewayConfig } from '../api';
 
@@ -22,7 +23,7 @@ interface RazorpayModalProps {
   customerName?: string;
   customerPhone?: string;
   bookingId?: string;
-  onSuccess: (paymentId: string) => void;
+  onSuccess: (paymentId: string, utr?: string) => void;
   onClose: () => void;
 }
 
@@ -43,6 +44,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   const [orderData, setOrderData] = useState<any>(null);
   const [gatewayConfig, setGatewayConfig] = useState<any>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
+  const [enteredUtr, setEnteredUtr] = useState('');
+  const [utrError, setUtrError] = useState('');
 
   // Settings form state
   const [editFast2SmsKey, setEditFast2SmsKey] = useState('');
@@ -101,14 +104,21 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   };
 
   const handleConfirmUpiPayment = async () => {
+    const cleanUtr = enteredUtr.replace(/\D/g, '').trim();
+    if (cleanUtr.length < 10) {
+      setUtrError('Payment verification: Please enter the 12-digit UPI Reference Number / UTR from your UPI payment app (GPay / PhonePe / Paytm).');
+      return;
+    }
+    setUtrError('');
     setIsProcessing(true);
-    const paymentId = `upi_pay_${Date.now()}`;
+    const paymentId = `UTR-${cleanUtr}`;
     try {
       await verifyPayment({
         booking_id: bookingId || 'bk-direct',
         payment_id: paymentId,
         method: 'upi',
-        amount
+        amount,
+        upi_utr: cleanUtr
       });
     } catch (e) {
       console.warn('Payment verify sync:', e);
@@ -116,8 +126,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     setIsProcessing(false);
     setIsSuccess(true);
     setTimeout(() => {
-      onSuccess(paymentId);
-    }, 1200);
+      onSuccess(paymentId, cleanUtr);
+    }, 1800);
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
@@ -221,16 +231,19 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
         <div className="p-5 overflow-y-auto flex-1 space-y-4 text-xs">
           {isSuccess ? (
             <div className="py-8 text-center space-y-3 animate-in zoom-in-95">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-                <CheckCircle2 className="w-10 h-10" />
+              <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto shadow-inner">
+                <Clock className="w-9 h-9" />
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900">Payment Completed!</h3>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                ₹{amount} received successfully. Transaction verified.
+              <h3 className="text-lg font-extrabold text-slate-900">Order Placed • Verification Pending</h3>
+              <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
+                Aapka 12-digit UTR <span className="font-mono font-black text-slate-900">({enteredUtr})</span> submit ho gaya hai. Humare professional visit se pehle bank credit verify karenge.
               </p>
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 inline-block font-mono text-emerald-900 font-bold text-xs">
-                Ref ID: QS-PAY-{Date.now().toString().slice(-6)}
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 inline-block font-mono text-amber-900 font-bold text-xs">
+                UTR: {enteredUtr} • Verification Pending ⏳
               </div>
+              <p className="text-[10px] text-slate-400">
+                Doorstep par agar amount bank me credit confirm nahi hua to cash ya QR se pay karna hoga.
+              </p>
             </div>
           ) : (
             <>
@@ -290,13 +303,41 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Super Fast 1-Tap Confirmation */}
-                  <div className="p-3 bg-pink-50/70 border border-pink-200/80 rounded-2xl text-left flex items-start gap-2.5">
-                    <Sparkles className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
-                    <div className="text-[11px] text-pink-950">
-                      <p className="font-bold text-pink-900">Scan & Pay ₹{amount}</p>
-                      <p className="text-slate-600 mt-0.5">Scan this QR code using any UPI app (GPay, PhonePe, Paytm, BHIM). After payment, tap the button below to confirm your order.</p>
+                  {/* Mandatory UPI UTR Reference Card */}
+                  <div className="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-200/90 space-y-2 text-left">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-black text-pink-950 flex items-center gap-1.5">
+                        <span>12-Digit UPI Ref / UTR Number</span>
+                        <span className="text-rose-600 font-bold text-[10px] bg-rose-100 px-1.5 py-0.2 rounded-full">*Mandatory</span>
+                      </label>
+                      <span className="text-[10px] font-mono text-pink-700 font-bold">
+                        {enteredUtr.replace(/\D/g, '').length}/12
+                      </span>
                     </div>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={12}
+                      value={enteredUtr}
+                      onChange={(e) => {
+                        setEnteredUtr(e.target.value.replace(/\D/g, ''));
+                        if (utrError) setUtrError('');
+                      }}
+                      placeholder="e.g. 4289 1234 5678"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-pink-300 focus:border-pink-600 focus:ring-2 focus:ring-pink-200 font-mono text-sm tracking-wider font-extrabold text-slate-900 bg-white outline-none transition-all shadow-inner"
+                    />
+
+                    <p className="text-[10px] text-slate-600 leading-tight">
+                      📌 Payment karne ke baad apne Google Pay, PhonePe ya Paytm app ke <strong>Transaction Details</strong> se 12-digit UPI Ref/UTR No. yahan enter karein.
+                    </p>
+
+                    {utrError && (
+                      <div className="p-2 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-1.5 text-[11px] text-rose-700 font-medium">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{utrError}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Confirm Button */}
@@ -308,15 +349,26 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     {isProcessing ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Confirming Payment...</span>
+                        <span>Verifying UTR Reference...</span>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>I Have Paid ₹{amount} • Confirm Order</span>
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Submit UTR & Confirm Booking</span>
                       </>
                     )}
                   </button>
+
+                  {/* Safe fallback for customer */}
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="text-[11px] text-slate-500 hover:text-pink-600 font-semibold underline transition-colors"
+                    >
+                      Abhi pay nahi kiya? 'Pay After Service (Cash on Visit)' chunein
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -399,13 +451,41 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </button>
                   </div>
 
-                  {/* Super Fast 1-Tap Confirmation */}
-                  <div className="p-3 bg-pink-50/70 border border-pink-200/80 rounded-2xl text-left flex items-start gap-2.5">
-                    <Sparkles className="w-4 h-4 text-pink-600 shrink-0 mt-0.5" />
-                    <div className="text-[11px] text-pink-950">
-                      <p className="font-bold text-pink-900">Direct 1-Tap UPI Payment</p>
-                      <p className="text-slate-600 mt-0.5">After completing payment in your UPI app, tap the button below to confirm your order.</p>
+                  {/* Mandatory UPI UTR Reference Card */}
+                  <div className="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-200/90 space-y-2 text-left">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-black text-pink-950 flex items-center gap-1.5">
+                        <span>12-Digit UPI Ref / UTR Number</span>
+                        <span className="text-rose-600 font-bold text-[10px] bg-rose-100 px-1.5 py-0.2 rounded-full">*Mandatory</span>
+                      </label>
+                      <span className="text-[10px] font-mono text-pink-700 font-bold">
+                        {enteredUtr.replace(/\D/g, '').length}/12
+                      </span>
                     </div>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={12}
+                      value={enteredUtr}
+                      onChange={(e) => {
+                        setEnteredUtr(e.target.value.replace(/\D/g, ''));
+                        if (utrError) setUtrError('');
+                      }}
+                      placeholder="e.g. 4289 1234 5678"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-pink-300 focus:border-pink-600 focus:ring-2 focus:ring-pink-200 font-mono text-sm tracking-wider font-extrabold text-slate-900 bg-white outline-none transition-all shadow-inner"
+                    />
+
+                    <p className="text-[10px] text-slate-600 leading-tight">
+                      📌 Payment hone par apne Google Pay, PhonePe ya Paytm app ke <strong>Transaction Details</strong> se 12-digit UPI Ref/UTR No. yahan enter karein.
+                    </p>
+
+                    {utrError && (
+                      <div className="p-2 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-1.5 text-[11px] text-rose-700 font-medium">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{utrError}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Confirm Button */}
@@ -417,15 +497,26 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     {isProcessing ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Confirming Payment...</span>
+                        <span>Verifying UTR Reference...</span>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>I Have Paid ₹{amount} • Confirm Order</span>
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Submit UTR & Confirm Booking</span>
                       </>
                     )}
                   </button>
+
+                  {/* Safe fallback for customer */}
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="text-[11px] text-slate-500 hover:text-pink-600 font-semibold underline transition-colors"
+                    >
+                      Abhi pay nahi kiya? 'Pay After Service (Cash on Visit)' chunein
+                    </button>
+                  </div>
                 </div>
               )}
 
