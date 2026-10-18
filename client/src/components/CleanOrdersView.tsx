@@ -7,11 +7,13 @@ import {
   CheckCircle2, XCircle, AlertCircle, Ban, 
   ChevronRight, RefreshCw, FileText, Image as ImageIcon, 
   ShieldCheck, Star, MessageCircle, Download, Printer, 
-  X, Sparkles, Volume2, Check, Navigation, QrCode
+  X, Sparkles, Volume2, Check, Navigation, QrCode,
+  Search, Filter
 } from 'lucide-react';
 import { LiveTrackingModal } from './LiveTrackingModal';
 import { RazorpayModal } from './RazorpayModal';
 import { BrandLogo } from './BrandLogo';
+import { professionalHomeServices } from '../data/homeServices';
 
 interface CleanOrdersViewProps {
   bookings: Booking[];
@@ -77,6 +79,9 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
     return bPhone === cleanPhone || bPhone.includes(cleanPhone);
   });
 
+  const [orderFilter, setOrderFilter] = useState<'all' | 'active' | 'completed' | 'cancelled'>('all');
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+
   const [selectedBookingForCancel, setSelectedBookingForCancel] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState('Changed my mind');
   const [isCancelling, setIsCancelling] = useState(false);
@@ -98,6 +103,18 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
   // Feature 5: Direct UPI Payment Modal State
   const [selectedBookingForPayment, setSelectedBookingForPayment] = useState<Booking | null>(null);
 
+  // Service thumbnail helper matching Photo 2
+  const getServiceThumbnail = (title?: string, photo?: string | null) => {
+    if (photo) return photo;
+    if (!title) return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&auto=format&fit=crop&q=80';
+    const match = professionalHomeServices.find(s => 
+      s.title.toLowerCase().includes(title.toLowerCase()) || 
+      title.toLowerCase().includes(s.title.toLowerCase()) ||
+      s.categorySlug.toLowerCase().includes(title.toLowerCase())
+    );
+    return match?.image || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&auto=format&fit=crop&q=80';
+  };
+
   const handleOrderUpiPaid = async (paymentId: string) => {
     if (!selectedBookingForPayment) return;
     try {
@@ -117,7 +134,6 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
       console.warn('Payment update notice:', err);
     }
   };
-
 
   const handleCancelBooking = async () => {
     if (!selectedBookingForCancel) return;
@@ -174,117 +190,355 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
   const quickReviewTags = ['On Time', 'Polite', 'Clean Work', 'Reasonable Price', 'Expert Fix', 'Will Book Again'];
 
-  return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 font-sans">
-      
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 pb-3 border-b border-pink-100">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#1F121C] font-heading">My Orders</h1>
-          <p className="text-xs sm:text-sm text-[#705869] mt-0.5">Track your ongoing and past home service bookings</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Sound Test Button */}
-          <button
-            type="button"
-            onClick={() => playDoorbellChime()}
-            className="p-2 sm:px-3 sm:py-2 text-[#705869] hover:text-pink-600 bg-white border border-pink-200 rounded-xl hover:bg-pink-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-            title="Test Doorstep Chime Sound"
-          >
-            <Volume2 className="w-3.5 h-3.5 text-pink-600" />
-            <span className="hidden sm:inline">Doorbell Sound</span>
-          </button>
+  // Counts for tabs
+  const activeCount = myBookings.filter(b => {
+    const s = mapToCleanStatus(b.status);
+    return s !== 'Completed' && s !== 'Cancelled';
+  }).length;
+  const completedCount = myBookings.filter(b => mapToCleanStatus(b.status) === 'Completed').length;
+  const cancelledCount = myBookings.filter(b => mapToCleanStatus(b.status) === 'Cancelled').length;
 
+  // Filtered list
+  const filteredBookings = myBookings.filter(b => {
+    const cleanStatus = mapToCleanStatus(b.status);
+    if (orderFilter === 'active' && (cleanStatus === 'Completed' || cleanStatus === 'Cancelled')) return false;
+    if (orderFilter === 'completed' && cleanStatus !== 'Completed') return false;
+    if (orderFilter === 'cancelled' && cleanStatus !== 'Cancelled') return false;
+
+    if (orderSearchQuery.trim()) {
+      const q = orderSearchQuery.toLowerCase();
+      const matchTitle = (b.service_title || '').toLowerCase().includes(q);
+      const matchRef = (b.booking_reference || '').toLowerCase().includes(q);
+      const matchPartner = (b.professional_name || '').toLowerCase().includes(q);
+      const matchSub = (b.sub_service_selected || '').toLowerCase().includes(q);
+      const matchAddr = (b.customer_address || b.locality || '').toLowerCase().includes(q);
+      return matchTitle || matchRef || matchPartner || matchSub || matchAddr;
+    }
+    return true;
+  });
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 font-sans">
+      
+      {/* Header - Matching Photo 2 Clean Meesho Layout */}
+      <div className="mb-5 pb-4 border-b border-pink-100">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-black text-[#1F121C] tracking-tight uppercase font-heading">
+                My Orders
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-xs font-extrabold bg-pink-100 text-pink-700 border border-pink-200">
+                {myBookings.length}
+              </span>
+            </div>
+            <p className="text-xs text-[#705869] mt-0.5">Track your ongoing and past doorstep services</p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Sound Test Button */}
+            <button
+              type="button"
+              onClick={() => playDoorbellChime()}
+              className="p-2 sm:px-3 sm:py-1.5 text-[#705869] hover:text-pink-600 bg-white border border-pink-200 rounded-xl hover:bg-pink-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              title="Test Doorstep Chime Sound"
+            >
+              <Volume2 className="w-3.5 h-3.5 text-pink-600" />
+              <span className="hidden sm:inline">Chime</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="p-2 sm:px-3 sm:py-1.5 text-[#1F121C] hover:text-pink-600 bg-white border border-pink-200 rounded-xl hover:bg-pink-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Search Bar - Photo 2 */}
+        <div className="mt-4 relative">
+          <Search className="w-4 h-4 text-[#705869] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={orderSearchQuery}
+            onChange={(e) => setOrderSearchQuery(e.target.value)}
+            placeholder="Search orders by service, ref ID, pro name..."
+            className="w-full pl-9 pr-8 py-2.5 bg-white border border-pink-200 rounded-xl text-xs text-[#1F121C] placeholder-[#705869] focus:outline-none focus:ring-2 focus:ring-pink-500 shadow-2xs transition-all"
+          />
+          {orderSearchQuery && (
+            <button
+              type="button"
+              onClick={() => setOrderSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter Pills - All / Active / Completed / Cancelled */}
+        <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-none text-xs font-bold">
           <button
             type="button"
-            onClick={onRefresh}
-            className="p-2 sm:px-3 sm:py-2 text-[#1F121C] hover:text-pink-600 bg-white border border-pink-200 rounded-xl hover:bg-pink-50 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+            onClick={() => setOrderFilter('all')}
+            className={`px-3 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+              orderFilter === 'all'
+                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
+                : 'bg-white text-[#705869] border border-pink-200 hover:border-pink-300'
+            }`}
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Refresh</span>
+            All ({myBookings.length})
           </button>
+          <button
+            type="button"
+            onClick={() => setOrderFilter('active')}
+            className={`px-3 py-1.5 rounded-full transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+              orderFilter === 'active'
+                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
+                : 'bg-white text-[#705869] border border-pink-200 hover:border-pink-300'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Active ({activeCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setOrderFilter('completed')}
+            className={`px-3 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+              orderFilter === 'completed'
+                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
+                : 'bg-white text-[#705869] border border-pink-200 hover:border-pink-300'
+            }`}
+          >
+            Completed ({completedCount})
+          </button>
+          {cancelledCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setOrderFilter('cancelled')}
+              className={`px-3 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+                orderFilter === 'cancelled'
+                  ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-xs'
+                  : 'bg-white text-[#705869] border border-pink-200 hover:border-pink-300'
+              }`}
+            >
+              Cancelled ({cancelledCount})
+            </button>
+          )}
         </div>
       </div>
 
       {/* Orders List */}
-      {myBookings.length === 0 ? (
+      {filteredBookings.length === 0 ? (
         <div className="bg-white rounded-2xl border border-pink-100 p-10 sm:p-12 text-center shadow-[0_4px_20px_-2px_rgba(219,39,119,0.06)]">
           <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center mx-auto text-pink-400 mb-3 border border-pink-100">
             <FileText className="w-7 h-7" />
           </div>
-          <h3 className="text-base font-bold text-[#1F121C]">No bookings found</h3>
+          <h3 className="text-base font-bold text-[#1F121C]">
+            {myBookings.length === 0 ? 'No bookings found' : 'No matching orders'}
+          </h3>
           <p className="text-xs text-[#705869] mt-1 max-w-sm mx-auto">
-            You haven&apos;t placed any home service orders yet. Select a service to get started.
+            {myBookings.length === 0
+              ? "You haven't placed any home service orders yet. Select a service to get started."
+              : 'Try adjusting your search query or filter tab to find your order.'}
           </p>
-          <button
-            type="button"
-            onClick={onNavigateHome}
-            className="mt-5 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all cursor-pointer"
-          >
-            Explore Services
-          </button>
+          {myBookings.length === 0 ? (
+            <button
+              type="button"
+              onClick={onNavigateHome}
+              className="mt-5 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-500/20 hover:shadow-lg transition-all cursor-pointer"
+            >
+              Explore Services
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setOrderSearchQuery(''); setOrderFilter('all'); }}
+              className="mt-4 px-4 py-2 bg-pink-50 text-pink-600 font-bold rounded-xl text-xs hover:bg-pink-100 transition-colors cursor-pointer"
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
-          {myBookings.map((b) => {
+          {filteredBookings.map((b) => {
             const cleanStatus = mapToCleanStatus(b.status);
             const isCompleted = cleanStatus === 'Completed';
             const isCancelled = cleanStatus === 'Cancelled';
             const canCancel = !isCompleted && !isCancelled;
             const currentStepIdx = stepsList.indexOf(cleanStatus);
 
-            // Clean clean phone numbers for WhatsApp
+            // Clean phone numbers for WhatsApp
             const partnerPhoneRaw = (b.professional_phone || '').replace(/\D/g, '').slice(-10);
+            const serviceThumb = getServiceThumbnail(b.service_title, b.customer_photo);
 
             return (
               <div
                 key={b.id || b.booking_reference}
-                className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden transition-all"
+                className="bg-white rounded-2xl border border-pink-100/90 shadow-[0_4px_20px_-2px_rgba(219,39,119,0.05)] hover:shadow-[0_8px_25px_-4px_rgba(219,39,119,0.1)] hover:border-pink-300 transition-all overflow-hidden"
               >
-                {/* Order Top Bar */}
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-slate-700">{b.booking_reference}</span>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
+                {/* Order Top Bar - Ref ID, Date, Status */}
+                <div className="px-4 py-2.5 bg-slate-50/70 border-b border-pink-50 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                      #{b.booking_reference}
+                    </span>
+                    <span className="text-[11px] text-[#705869]">
                       {new Date(b.created_at || Date.now()).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric'
                       })}
-                    </p>
+                    </span>
                   </div>
                   
                   {/* Status Badge */}
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusBadgeStyle(cleanStatus)}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${getStatusBadgeStyle(cleanStatus)}`}>
                     {cleanStatus}
                   </span>
                 </div>
 
-                {/* Order Content */}
+                {/* Main Order Content - Horizontal Card Matching Photo 2 */}
                 <div className="p-4 space-y-3.5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="text-base font-bold text-slate-900">{b.service_title}</h4>
-                      <p className="text-xs text-slate-600 mt-0.5">{b.sub_service_selected}</p>
+                  <div className="flex items-start gap-3.5">
+                    {/* Left: Thumbnail Image */}
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-pink-100 bg-pink-50 shadow-2xs">
+                      <img
+                        src={serviceThumb}
+                        alt={b.service_title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[8px] font-bold px-1.5 py-0.5 rounded backdrop-blur-xs">
+                        Verified
+                      </span>
                     </div>
-                    <div className="text-right flex flex-col items-end">
-                      <span className="text-base font-bold text-slate-900">₹{b.total_amount}</span>
-                      <p className="text-[11px] text-slate-400 mt-0.5 capitalize">
-                        {b.payment_status === 'paid' ? 'Paid via UPI' : (b.payment_method === 'pay_after_work' ? 'Pay After Service' : b.payment_method)}
+
+                    {/* Right: Service Details & Status Indicator */}
+                    <div className="flex-1 min-w-0">
+                      {/* Bold Status with Arrow (Photo 2 reference) */}
+                      <div className="flex items-center gap-1 text-xs font-black tracking-wide mb-1">
+                        {isCompleted ? (
+                          <span className="text-emerald-700 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>Delivered Early & Verified</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </span>
+                        ) : isCancelled ? (
+                          <span className="text-rose-600 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                            <span>Order Cancelled</span>
+                          </span>
+                        ) : (
+                          <span className="text-emerald-600 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span>On the way (15m arrival)</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-sm sm:text-base font-bold text-[#1F121C] truncate leading-tight">
+                        {b.service_title}
+                      </h3>
+                      <p className="text-xs text-[#705869] truncate mt-0.5">
+                        {b.sub_service_selected || 'Doorstep Quick Service'}
                       </p>
-                      {b.payment_status !== 'paid' && !isCancelled && (
+
+                      {/* Scheduled slot & Address */}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#705869]">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-pink-600" />
+                          <span>{b.scheduled_date || 'Today'} • {b.scheduled_time_slot || 'ASAP'}</span>
+                        </span>
+                        <span className="flex items-center gap-1 truncate max-w-[200px]">
+                          <MapPin className="w-3 h-3 text-pink-600 shrink-0" />
+                          <span className="truncate">{b.customer_address || b.locality || 'NCR'}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Photo 2 Meesho-Style UPI Discount Pill Box */}
+                  {b.payment_status === 'paid' ? (
+                    <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-xl px-3 py-2 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Paid ₹{b.total_amount} via UPI</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+                        Saved ₹20 with UPI Instant ✓
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400 line-through text-[11px]">₹{b.total_amount + 20} with Cash</span>
+                        <span className="font-black text-emerald-900 text-sm">₹{b.total_amount} with UPI</span>
+                        <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md tracking-wide">
+                          Save ₹20
+                        </span>
+                      </div>
+                      {!isCancelled && (
                         <button
                           type="button"
                           onClick={() => setSelectedBookingForPayment(b)}
-                          className="mt-1 px-2.5 py-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-2xs transition-all cursor-pointer active:scale-95"
-                          title="Pay via UPI (GPay, PhonePe, Paytm, QR)"
+                          className="px-3 py-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95 transition-all"
                         >
                           <QrCode className="w-3 h-3" />
-                          <span>Pay UPI</span>
+                          <span>Pay Now</span>
+                          <ChevronRight className="w-3 h-3" />
                         </button>
                       )}
                     </div>
-                  </div>
+                  )}
+
+                  {/* Celebratory Banner for Completed Orders (Photo 2 reference) */}
+                  {isCompleted && (
+                    <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                          ⚡
+                        </div>
+                        <div>
+                          <p className="font-bold text-emerald-950 text-xs sm:text-sm">
+                            Yay! Helper arrived in 14 mins with 5-star quality.
+                          </p>
+                          <p className="text-[11px] text-emerald-700">
+                            QuickServe 100% Satisfaction & Happiness Guarantee fulfilled
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedBookingForInvoice(b)}
+                          className="px-2.5 py-1.5 bg-white border border-emerald-300 text-emerald-900 font-bold rounded-lg text-xs flex items-center gap-1 hover:bg-emerald-100 transition-colors cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Bill</span>
+                        </button>
+                        {!b.review_rating && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedBookingForReview(b);
+                              setRatingStars(5);
+                              setReviewComment('');
+                            }}
+                            className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 shadow-2xs cursor-pointer"
+                          >
+                            <Star className="w-3.5 h-3.5 fill-current" />
+                            <span>Rate Service</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Customer Problem & Notes */}
                   {b.customer_problem && (
@@ -303,43 +557,31 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                         className="flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
                       >
                         <ImageIcon className="w-3.5 h-3.5" />
-                        <span>View attached photo</span>
+                        <span>View customer attached issue photo</span>
                       </button>
                     </div>
                   )}
 
-                  {/* Scheduled Slot & Address */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{b.scheduled_date || 'Scheduled'} {b.scheduled_time_slot ? `• ${b.scheduled_time_slot}` : ''}</span>
-                    </div>
-                    <div className="flex items-center gap-2 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{b.customer_address || b.locality}</span>
-                    </div>
-                  </div>
-
-                  {/* Partner Details Card if assigned + Feature 2: 1-Click WhatsApp Connect */}
+                  {/* Partner Details Card if assigned + WhatsApp Connect */}
                   {b.professional_name && !isCancelled && (
-                    <div className="p-3 bg-slate-50 border border-[#E2E8F0] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-600 to-rose-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                           {b.professional_name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="text-xs font-bold text-[#0F172A]">{b.professional_name}</p>
+                            <p className="text-xs font-bold text-[#1F121C]">{b.professional_name}</p>
                             <span className="px-2 py-0.2 bg-emerald-50 text-emerald-800 text-[10px] font-bold rounded-md border border-emerald-200">
-                              Aadhaar Verified
+                              Aadhaar Verified ✓
                             </span>
                           </div>
-                          <p className="text-[11px] text-[#64748B]">Assigned Service Professional • {b.professional_rating || 4.9} ★</p>
+                          <p className="text-[11px] text-[#705869]">Assigned Service Professional • {b.professional_rating || 4.9} ★</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 self-end sm:self-center">
-                        {/* 1-Click Direct WhatsApp Connect */}
+                        {/* WhatsApp Connect */}
                         {partnerPhoneRaw && (
                           <a
                             href={`https://wa.me/91${partnerPhoneRaw}?text=${encodeURIComponent(`Hi ${b.professional_name}, I am reaching out regarding my QuickServe order #${b.booking_reference} for ${b.service_title}.`)}`}
@@ -369,13 +611,13 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                   )}
 
                   {/* Doorstep Service Security OTP */}
-                  {!isCancelled && (b.status === 'partner_assigned' || b.status === 'confirmed' || b.status === 'in_progress') && (
+                  {!isCancelled && !isCompleted && (
                     <div className="p-3 bg-pink-50/70 border border-pink-200 rounded-xl flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-pink-600" />
+                        <ShieldCheck className="w-4 h-4 text-pink-600 shrink-0" />
                         <div>
                           <span className="font-bold text-[#1F121C]">Doorstep Start OTP: </span>
-                          <span className="text-[#705869]">Share with professional upon arrival</span>
+                          <span className="text-[#705869]">Share with helper upon arrival</span>
                         </div>
                       </div>
                       <span className="px-3 py-1 bg-white border border-pink-200 rounded-lg font-mono font-extrabold text-pink-600 text-sm tracking-wider shadow-2xs">
@@ -425,57 +667,31 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                     </div>
                   )}
 
-                  {/* Review Banner for Completed Booking (Feature 1) */}
-                  {isCompleted && (
-                    <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                      {b.review_rating ? (
-                        <div className="flex items-center gap-2 text-xs">
-                          <div className="flex items-center text-amber-500">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`w-3.5 h-3.5 ${star <= (b.review_rating || 5) ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`}
-                              />
-                            ))}
-                          </div>
-                          <span className="font-bold text-slate-900">{b.review_rating}.0 ★</span>
-                          {b.review_comment && (
-                            <span className="text-slate-600 italic line-clamp-1">"{b.review_comment}"</span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-xs">
-                          <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span className="font-semibold text-slate-800">How was your service experience?</span>
-                        </div>
-                      )}
-
+                  {/* Review Banner if already rated */}
+                  {isCompleted && b.review_rating && (
+                    <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        {/* Download Bill Button (Feature 3) */}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedBookingForInvoice(b)}
-                          className="px-3 py-1.5 bg-white hover:bg-pink-50 text-[#1F121C] border border-pink-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-pink-600" />
-                          <span>Download Bill</span>
-                        </button>
-
-                        {!b.review_rating && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedBookingForReview(b);
-                              setRatingStars(5);
-                              setReviewComment('');
-                            }}
-                            className="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 transition-colors shadow-2xs"
-                          >
-                            <Star className="w-3.5 h-3.5 fill-current" />
-                            <span>Rate Service</span>
-                          </button>
+                        <div className="flex items-center text-amber-500">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-3.5 h-3.5 ${star <= (b.review_rating || 5) ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-bold text-slate-900">{b.review_rating}.0 ★</span>
+                        {b.review_comment && (
+                          <span className="text-slate-600 italic line-clamp-1">"{b.review_comment}"</span>
                         )}
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBookingForInvoice(b)}
+                        className="px-2.5 py-1 bg-white hover:bg-pink-50 text-slate-700 border border-pink-200 rounded-lg text-xs font-semibold flex items-center gap-1 shadow-2xs"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-pink-600" />
+                        <span>Bill</span>
+                      </button>
                     </div>
                   )}
 
@@ -489,14 +705,14 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
 
                 </div>
 
-                {/* Card Footer: Cancel Button */}
+                {/* Card Footer: Cancel Button / Policy */}
                 {canCancel && (
-                  <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-400">Free cancellation policy</span>
+                  <div className="px-4 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] text-[#705869]">Free cancellation before partner arrival</span>
                     <button
                       type="button"
                       onClick={() => setSelectedBookingForCancel(b)}
-                      className="px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <Ban className="w-3.5 h-3.5" />
                       <span>Cancel Order</span>

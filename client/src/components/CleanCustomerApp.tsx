@@ -9,7 +9,8 @@ import {
   Search, MapPin, Sparkles, Wrench, Zap, 
   Wind, Utensils, Truck, Home, ShoppingBag, 
   User, ChevronRight, Clock, ShieldCheck, CheckCircle2, 
-  X, Briefcase, Check, ArrowRight, Globe, Navigation 
+  X, Briefcase, Check, ArrowRight, Globe, Navigation,
+  Mic, Heart, Package, LayoutGrid
 } from 'lucide-react';
 import { translations, Language } from '../utils/translations';
 import { playDoorbellChime } from '../utils/sound';
@@ -187,8 +188,8 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   return (
     <div className="min-h-screen bg-[#FFF7F9] text-[#1F121C] flex flex-col pb-28 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
       
-      {/* 1. COMPACT, REFINED HEADER */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 transition-all pt-[max(env(safe-area-inset-top,0px),0px)]">
+      {/* 1. COMPACT, REFINED HEADER WITH AUTO SAFE AREA */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 transition-all pt-[max(12px,env(safe-area-inset-top,0px))]">
         
         {/* DESKTOP HEADER (sm and up) */}
         <div className="hidden sm:flex max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 items-center justify-between gap-4 lg:gap-6">
@@ -300,70 +301,61 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           </div>
         </div>
 
-        {/* MOBILE HEADER (sm:hidden) */}
-        <div className="sm:hidden px-3 pt-2 pb-2 space-y-2">
-          {/* Mobile Top Row: Logo & Language Toggle & Partner Shortcut */}
+        {/* MOBILE HEADER (sm:hidden) - Photo 1 Design */}
+        <div className="sm:hidden px-3 pt-1 pb-2 space-y-2">
+          {/* Mobile Top Row: User Avatar (Left) + QuickServe Logo (Center) + Wishlist & Cart/Orders Badge (Right) */}
           <div className="flex items-center justify-between">
+            {/* Left: User Avatar & Greeting */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className="flex items-center gap-1.5 text-left focus:outline-none cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-pink-100 border border-pink-200 text-pink-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+                {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : <User className="w-4 h-4" />}
+              </div>
+              <span className="text-xs font-bold text-[#1F121C] truncate max-w-[80px]">
+                {currentUser?.name || (lang === 'hi' ? 'नमस्ते' : 'Hi')}
+              </span>
+            </button>
+
+            {/* Center: Brand Logo */}
             <button
               type="button"
               onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-              className="group text-left focus:outline-none"
+              className="focus:outline-none cursor-pointer"
             >
               <BrandLogo size="sm" />
             </button>
 
+            {/* Right: Wishlist Chime + Active Orders Cart Badge */}
             <div className="flex items-center gap-1.5">
-              {/* Dual Language Switcher */}
               <button
                 type="button"
-                onClick={toggleLanguage}
-                className="px-2.5 py-1 text-xs font-bold rounded-lg border border-pink-200 bg-pink-50/60 hover:bg-pink-100 transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
-                title="Switch Language / भाषा बदलें"
+                onClick={() => playDoorbellChime()}
+                className="w-8 h-8 rounded-full bg-pink-50 border border-pink-200/80 text-pink-600 flex items-center justify-center hover:bg-pink-100 transition-colors shadow-2xs cursor-pointer"
+                title="Doorbell Chime"
               >
-                <Globe className="w-3.5 h-3.5 text-pink-600" />
-                <span className={lang === 'en' ? 'text-pink-600 font-black' : 'text-slate-400'}>EN</span>
-                <span className="text-pink-200">|</span>
-                <span className={lang === 'hi' ? 'text-pink-600 font-black' : 'text-slate-400'}>हिंदी</span>
+                <Heart className="w-4 h-4 text-pink-600" />
               </button>
 
-              {/* Partner Portal Shortcut */}
               <button
                 type="button"
-                onClick={() => onSwitchToPartnerPortal(false)}
-                className="px-2 py-1 text-[11px] font-semibold text-pink-700 bg-pink-50/70 hover:bg-pink-100 rounded-lg border border-pink-200 transition-colors flex items-center gap-1 cursor-pointer"
-                title={t.partnerPortal}
+                onClick={() => setActiveTab('orders')}
+                className="w-8 h-8 rounded-full bg-pink-50 border border-pink-200/80 text-pink-600 flex items-center justify-center hover:bg-pink-100 transition-colors relative shadow-2xs cursor-pointer"
+                title={t.myOrders}
               >
-                <Briefcase className="w-3 h-3 text-pink-600" />
-                <span>Partner</span>
+                <ShoppingBag className="w-4 h-4 text-pink-600" />
+                {activeOrdersCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-[9px] font-extrabold flex items-center justify-center shadow-xs">
+                    {activeOrdersCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
 
-          {/* Mobile Row 2: Dedicated Full-Width Location Selector Bar */}
-          <button
-            type="button"
-            onClick={() => setIsLocationModalOpen(true)}
-            className="w-full flex items-center justify-between px-3 py-1.5 bg-pink-50/70 hover:bg-pink-100/70 active:bg-pink-100 rounded-xl border border-pink-200/90 text-left transition-all shadow-2xs group cursor-pointer"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-6 h-6 rounded-lg bg-pink-600/10 text-pink-600 flex items-center justify-center shrink-0">
-                <MapPin className="w-3.5 h-3.5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] text-pink-600 uppercase font-bold tracking-wider leading-none">
-                  {lang === 'hi' ? 'डिलीवरी लोकेशन' : 'Delivery Location'}
-                </p>
-                <p className="text-xs font-bold text-[#1F121C] truncate mt-0.5">
-                  {activeCityZone || (lang === 'hi' ? '📍 अपनी लोकेशन चुनें (क्लिक करें)' : '📍 Select Your Location')}
-                </p>
-              </div>
-            </div>
-            <span className="text-[11px] font-bold text-pink-600 bg-white px-2 py-0.5 rounded-lg border border-pink-200 shrink-0 ml-2 group-hover:bg-pink-600 group-hover:text-white transition-colors">
-              {lang === 'hi' ? 'बदलें ▾' : 'Change ▾'}
-            </span>
-          </button>
-
-          {/* Mobile Row 3: Search Bar */}
+          {/* Mobile Row 2: Search Bar with Mic Icon (Photo 1 Style) */}
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
               <Search className="w-4 h-4" />
@@ -372,19 +364,41 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.searchPlaceholder}
-              className="w-full pl-9 pr-8 py-2 text-xs bg-white focus:bg-white border border-pink-200/90 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400"
+              placeholder={lang === 'hi' ? 'सर्विस या काम खोजें (उदा. प्लंबर, नौकरानी)...' : 'Search by service or chore (e.g. Maid, Plumber)...'}
+              className="w-full pl-9 pr-14 py-2 text-xs bg-pink-50/40 hover:bg-white focus:bg-white border border-pink-200/90 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all"
             />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-pink-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-1 text-pink-500">
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-slate-400 hover:text-pink-600 p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <span className="p-1 text-pink-500 cursor-pointer">
+                <Mic className="w-3.5 h-3.5" />
+              </span>
+            </div>
           </div>
+
+          {/* Mobile Row 3: Dedicated Location Selector Bar (Delivering to ... >) */}
+          <button
+            type="button"
+            onClick={() => setIsLocationModalOpen(true)}
+            className="w-full flex items-center justify-between px-3 py-1.5 bg-pink-50/60 hover:bg-pink-100/70 active:bg-pink-100 rounded-xl border border-pink-200/80 text-left transition-all shadow-2xs group cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+              <span className="text-[11px] font-semibold text-slate-700 truncate">
+                {lang === 'hi' ? 'डिलीवरी:' : 'Delivering to'} <strong className="text-pink-700 font-bold">{activeCityZone || (lang === 'hi' ? 'लोकेशन चुनें' : 'Select Location')}</strong>
+              </span>
+            </div>
+            <span className="text-[11px] font-bold text-pink-600 shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform">
+              &gt;
+            </span>
+          </button>
         </div>
 
       </header>
@@ -677,21 +691,47 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
       </main>
 
-      {/* Responsive Bottom Navigation Bar for Mobile */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-pink-100 z-40 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),12px)] flex items-stretch justify-around sm:hidden shadow-lg shadow-pink-900/5">
+      {/* Responsive Bottom Navigation Bar for Mobile - Photo 1 Design */}
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-pink-100 z-40 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),16px)] flex items-stretch justify-around sm:hidden shadow-lg shadow-pink-900/5">
+        {/* Tab 1: Home */}
         <button
           type="button"
           onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
           className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'home'
+            activeTab === 'home' && selectedCategoryKey === 'all'
               ? 'text-pink-600 font-bold bg-pink-50/70'
               : 'text-[#705869] hover:text-pink-600 font-medium'
           }`}
         >
-          <Home className={`w-5 h-5 ${activeTab === 'home' ? 'stroke-[2.5]' : ''}`} />
-          <span className="text-[11px] mt-0.5 leading-none">{lang === 'hi' ? 'होम' : 'Home'}</span>
+          <Home className={`w-5 h-5 ${activeTab === 'home' && selectedCategoryKey === 'all' ? 'stroke-[2.5]' : ''}`} />
+          <span className="text-[10px] mt-0.5 leading-none">{lang === 'hi' ? 'होम' : 'Home'}</span>
         </button>
 
+        {/* Tab 2: Categories */}
+        <button
+          type="button"
+          onClick={() => { setActiveTab('home'); setSelectedCategoryKey('cleaning'); }}
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'home' && selectedCategoryKey !== 'all'
+              ? 'text-pink-600 font-bold bg-pink-50/70'
+              : 'text-[#705869] hover:text-pink-600 font-medium'
+          }`}
+        >
+          <LayoutGrid className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 leading-none">{lang === 'hi' ? 'कैटेगरी' : 'Categories'}</span>
+        </button>
+
+        {/* Tab 3: Partner Hub */}
+        <button
+          type="button"
+          onClick={() => onSwitchToPartnerPortal(false)}
+          className="flex-1 flex flex-col items-center justify-center py-1 rounded-xl text-[#705869] hover:text-pink-600 font-medium transition-all cursor-pointer"
+        >
+          <Briefcase className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 leading-none">Partner</span>
+        </button>
+
+        {/* Tab 4: My Orders */}
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
@@ -702,16 +742,17 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           }`}
         >
           <div className="relative">
-            <ShoppingBag className={`w-5 h-5 ${activeTab === 'orders' ? 'stroke-[2.5]' : ''}`} />
+            <Package className={`w-5 h-5 ${activeTab === 'orders' ? 'stroke-[2.5]' : ''}`} />
             {activeOrdersCount > 0 && (
               <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
                 {activeOrdersCount}
               </span>
             )}
           </div>
-          <span className="text-[11px] mt-0.5 leading-none">{t.myOrders}</span>
+          <span className="text-[10px] mt-0.5 leading-none">{t.myOrders}</span>
         </button>
 
+        {/* Tab 5: Profile */}
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
@@ -722,7 +763,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           }`}
         >
           <User className={`w-5 h-5 ${activeTab === 'profile' ? 'stroke-[2.5]' : ''}`} />
-          <span className="text-[11px] mt-0.5 leading-none">{t.profile}</span>
+          <span className="text-[10px] mt-0.5 leading-none">{t.profile}</span>
         </button>
       </nav>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Booking, Professional, ServiceCategory } from '../types';
 import { 
   Wrench, CheckCircle2, Clock, MapPin, Phone, 
-  Wallet, ShieldCheck, AlertCircle, ArrowLeft, 
+  Wallet, ShieldCheck, AlertCircle, ArrowLeft, ArrowRight,
   Calendar, RefreshCw, UserCheck, Briefcase, 
   FileText, Camera, UploadCloud, Eye, X, 
   Lock, ShieldAlert, Sparkles, Check
@@ -335,28 +335,28 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       
-      {/* Top Header */}
-      <header className="bg-[#0F172A] border-b border-slate-800 px-4 py-3 sticky top-0 z-20 text-white shadow-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      {/* Top Header with Safe Area Protection */}
+      <header className="bg-[#0F172A] border-b border-slate-800 px-3 sm:px-4 pt-[max(12px,env(safe-area-inset-top,0px))] pb-2.5 sm:pb-3 sticky top-0 z-30 text-white shadow-md">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={onBackToCustomer}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors shrink-0"
               title="Return to Customer App"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <div>
-              <h1 className="text-sm font-bold text-white flex items-center gap-2">
+            <div className="min-w-0">
+              <h1 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 truncate">
                 <BrandLogo size="xs" showText={false} />
-                <span>Quick<span className="text-pink-400">Serve</span> Partner Portal</span>
+                <span className="truncate">Quick<span className="text-pink-400">Serve</span> <span className="hidden sm:inline">Partner Portal</span><span className="sm:hidden text-slate-300 font-medium">Partner</span></span>
               </h1>
-              <p className="text-[11px] text-slate-400">Professional Safety & Onboarding Hub</p>
+              <p className="text-[10px] text-slate-400 hidden sm:block truncate">Professional Safety & Onboarding Hub</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Admin Desk Switch Button */}
             <button
               type="button"
@@ -364,14 +364,14 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 setShowAdminDesk(!showAdminDesk);
                 fetchAdminVerifications();
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all flex items-center gap-1 border ${
                 showAdminDesk 
                   ? 'bg-pink-600 text-white border-pink-500 shadow-sm'
                   : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700 hover:bg-slate-750'
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-pink-400" />
-              <span>Admin Desk</span>
+              <span>Admin</span>
               {pendingPartners.length > 0 && (
                 <span className="ml-0.5 px-1.5 py-0.2 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-full">
                   {pendingPartners.length}
@@ -382,16 +382,17 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
             <button
               type="button"
               onClick={onBackToCustomer}
-              className="px-3 py-1.5 text-xs font-semibold text-pink-300 bg-pink-950/60 border border-pink-800/80 rounded-lg hover:bg-pink-900 transition-colors"
+              className="px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-pink-300 bg-pink-950/60 border border-pink-800/80 rounded-lg hover:bg-pink-900 transition-colors flex items-center gap-1"
             >
-              Customer App &rarr;
+              <span>App</span>
+              <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-[max(90px,env(safe-area-inset-bottom,0px))]">
 
         {/* Global Toast Message */}
         {actionSuccessMsg && (
