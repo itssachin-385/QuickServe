@@ -10,7 +10,7 @@ import {
   Wind, Utensils, Truck, Home, ShoppingBag, 
   User, ChevronRight, Clock, ShieldCheck, CheckCircle2, 
   X, Briefcase, Check, ArrowRight, Globe, Navigation,
-  Mic, Heart, Package, LayoutGrid
+  Mic, Heart, Package, LayoutGrid, ArrowUpDown, Tag, Star, Flame
 } from 'lucide-react';
 import { translations, Language } from '../utils/translations';
 import { playDoorbellChime } from '../utils/sound';
@@ -88,6 +88,55 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Meesho Photo 2 Filtering & Sorting State
+  const [sortBy, setSortBy] = useState<'popular' | 'price_low' | 'price_high' | 'rating'>('popular');
+  const [quickFilter, setQuickFilter] = useState<'all' | '15m' | 'top_rated' | 'under300'>('all');
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('quickserve_wishlist');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [isListeningMic, setIsListeningMic] = useState(false);
+
+  const toggleWishlist = (serviceId: string) => {
+    playDoorbellChime();
+    setWishlist(prev => {
+      const updated = prev.includes(serviceId) ? prev.filter(id => id !== serviceId) : [...prev, serviceId];
+      localStorage.setItem('quickserve_wishlist', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleVoiceSearch = () => {
+    playDoorbellChime();
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
+        recognition.onstart = () => setIsListeningMic(true);
+        recognition.onend = () => setIsListeningMic(false);
+        recognition.onerror = () => setIsListeningMic(false);
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setSearchQuery(transcript);
+          }
+          setIsListeningMic(false);
+        };
+        recognition.start();
+      } catch (e) {
+        setIsListeningMic(false);
+      }
+    } else {
+      const input = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
+      if (input) input.focus();
+    }
+  };
+
   // Modals
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [bookingService, setBookingService] = useState<HomeServiceCard | null>(null);
@@ -123,14 +172,14 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   }, [bookings, myCleanPhone]);
 
 
-  // Filtered services
+  // Filtered and sorted services (Meesho Photo 2 layout)
   const filteredServices = useMemo(() => {
-    let list = professionalHomeServices;
+    let list = [...professionalHomeServices];
 
     // Filter by search query if any
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      return list.filter(s => 
+      list = list.filter(s => 
         s.title.toLowerCase().includes(q) ||
         (s.subServiceName && s.subServiceName.toLowerCase().includes(q)) ||
         (s.tagline && s.tagline.toLowerCase().includes(q)) ||
@@ -146,8 +195,26 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
       }
     }
 
+    // Quick filters
+    if (quickFilter === '15m') {
+      list = list.filter(s => s.duration_mins <= 60);
+    } else if (quickFilter === 'top_rated') {
+      list = list.filter(s => s.isPopular);
+    } else if (quickFilter === 'under300') {
+      list = list.filter(s => s.startingPrice <= 299);
+    }
+
+    // Sorting
+    if (sortBy === 'price_low') {
+      list.sort((a, b) => a.startingPrice - b.startingPrice);
+    } else if (sortBy === 'price_high') {
+      list.sort((a, b) => b.startingPrice - a.startingPrice);
+    } else if (sortBy === 'rating') {
+      list.sort((a, b) => (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0));
+    }
+
     return list;
-  }, [searchQuery, selectedCategoryKey]);
+  }, [searchQuery, selectedCategoryKey, quickFilter, sortBy]);
 
   // Dual-Language Support (English & Hindi)
   const [lang, setLang] = useState<Language>(() => {
@@ -524,18 +591,72 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               </div>
             </div>
 
-            {/* 5. SERVICE CARDS (3-4 cols desktop, 2 cols tablet, 1 col mobile) */}
-            <div>
-              <div className="flex items-center justify-between mb-3.5">
-                <h3 className="text-sm sm:text-base font-bold text-[#1F121C] flex items-center gap-2">
+            {/* 5. MEESHO-STYLE 2-COLUMN SERVICE MARKETPLACE (Photo 2 Reference) */}
+            <div className="space-y-3">
+              
+              {/* Meesho Top Filter Bar: Sort, Instant, Top Rated, Budget */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none text-xs font-bold text-slate-700">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortBy(prev => prev === 'price_low' ? 'price_high' : prev === 'price_high' ? 'rating' : prev === 'rating' ? 'popular' : 'price_low');
+                  }}
+                  className="px-3 py-1.5 rounded-full border border-pink-200 bg-white hover:bg-pink-50 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-2xs active:scale-95"
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5 text-pink-600" />
+                  <span>
+                    Sort: {sortBy === 'price_low' ? 'Price: Low' : sortBy === 'price_high' ? 'Price: High' : sortBy === 'rating' ? 'Top Rated' : 'Popular'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setQuickFilter(prev => prev === '15m' ? 'all' : '15m')}
+                  className={`px-3 py-1.5 rounded-full border shrink-0 transition-all cursor-pointer active:scale-95 ${
+                    quickFilter === '15m'
+                      ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-600 shadow-xs'
+                      : 'bg-white border-pink-200 text-slate-700 hover:bg-pink-50 shadow-2xs'
+                  }`}
+                >
+                  ⚡ 15 Mins Instant
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setQuickFilter(prev => prev === 'top_rated' ? 'all' : 'top_rated')}
+                  className={`px-3 py-1.5 rounded-full border shrink-0 transition-all cursor-pointer active:scale-95 ${
+                    quickFilter === 'top_rated'
+                      ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-600 shadow-xs'
+                      : 'bg-white border-pink-200 text-slate-700 hover:bg-pink-50 shadow-2xs'
+                  }`}
+                >
+                  ⭐ Top Rated (4.8★)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setQuickFilter(prev => prev === 'under300' ? 'all' : 'under300')}
+                  className={`px-3 py-1.5 rounded-full border shrink-0 transition-all cursor-pointer active:scale-95 ${
+                    quickFilter === 'under300'
+                      ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-pink-600 shadow-xs'
+                      : 'bg-white border-pink-200 text-slate-700 hover:bg-pink-50 shadow-2xs'
+                  }`}
+                >
+                  ₹ Under 299
+                </button>
+              </div>
+
+              {/* Title & Count Header */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm sm:text-base font-extrabold text-[#1F121C] flex items-center gap-2">
                   <span>
                     {selectedCategoryKey !== 'all'
                       ? CORE_CATEGORIES.find(c => c.id === selectedCategoryKey)?.name
                       : searchQuery
-                      ? `Search Results for "${searchQuery}"`
-                      : 'Available Services'}
+                      ? `Search: "${searchQuery}"`
+                      : 'Services for You'}
                   </span>
-                  <span className="text-xs font-semibold text-pink-700 bg-pink-100/60 px-2 py-0.5 rounded-full border border-pink-200/60">
+                  <span className="text-[11px] font-extrabold text-pink-700 bg-pink-100/70 px-2 py-0.5 rounded-full border border-pink-200/60">
                     {filteredServices.length}
                   </span>
                 </h3>
@@ -552,92 +673,125 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                   </p>
                   <button
                     type="button"
-                    onClick={() => { setSearchQuery(''); setSelectedCategoryKey('all'); }}
+                    onClick={() => { setSearchQuery(''); setSelectedCategoryKey('all'); setQuickFilter('all'); }}
                     className="mt-4 px-4 py-2 text-xs bg-pink-50 text-pink-600 font-bold rounded-xl hover:bg-pink-100 transition-colors cursor-pointer"
                   >
                     Reset Search & Filters
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-4.5">
+                /* 2-COLUMN GRID (Photo 2 Reference) */
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                   {filteredServices.map((service) => {
-                    const catConfig = CORE_CATEGORIES.find(c => c.matchCatIds.includes(service.categoryId) || c.matchCatIds.includes(service.categorySlug)) || CORE_CATEGORIES[0];
-                    const tasksList = service.includedTasks || [];
+                    const isWishlisted = wishlist.includes(service.id);
+                    const originalPrice = Math.round(service.startingPrice * 1.35);
+                    const discountPercent = Math.round(((originalPrice - service.startingPrice) / originalPrice) * 100);
+                    const areaName = activeCityZone ? activeCityZone.split(',')[0] : 'Your Locality';
 
                     return (
                       <div
                         key={service.id}
-                        className="bg-white rounded-2xl border border-pink-100/80 overflow-hidden shadow-[0_4px_20px_-2px_rgba(219,39,119,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(219,39,119,0.12)] hover:border-pink-300 transition-all duration-200 service-card flex flex-col justify-between h-full group"
+                        className="bg-white rounded-2xl border border-pink-100/90 overflow-hidden shadow-[0_2px_12px_-2px_rgba(219,39,119,0.05)] hover:shadow-[0_8px_24px_-4px_rgba(219,39,119,0.12)] hover:border-pink-300 transition-all duration-200 flex flex-col justify-between group"
                       >
-                        {/* 2D Photo Thumbnail with Category Pill & Sleek Dark Plum Glassmorphism Duration Badge */}
-                        <div className="relative h-40 sm:h-44 w-full overflow-hidden bg-pink-50/50">
+                        {/* Photo Container with Wishlist & Badge Overlays */}
+                        <div className="relative aspect-square w-full overflow-hidden bg-pink-50/40">
                           <img
                             src={service.image}
                             alt={service.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
-                          <div className="absolute top-2.5 left-2.5">
-                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md bg-white/95 border border-pink-200 text-pink-700 shadow-2xs">
-                              {catConfig.name}
+                          
+                          {/* Top-left Mall / Fast Tag */}
+                          <div className="absolute top-2 left-2 flex flex-col gap-1">
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-purple-700 text-white shadow-xs">
+                              ⚡ 15m Fast
                             </span>
                           </div>
-                          <div className="absolute bottom-2.5 right-2.5">
-                            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg backdrop-blur-[8px] bg-[#2D0A22]/85 text-white flex items-center gap-1.5 border border-pink-500/20 shadow-xs">
-                              <Clock className="w-3.5 h-3.5 text-pink-300" />
+
+                          {/* Top-right Wishlist Heart Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleWishlist(service.id);
+                            }}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-slate-400 hover:text-pink-600 flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-90"
+                            title="Add to Wishlist"
+                          >
+                            <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-pink-600 text-pink-600' : ''}`} />
+                          </button>
+
+                          {/* Bottom-right Duration Pill */}
+                          <div className="absolute bottom-1.5 right-1.5">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-black/70 text-white backdrop-blur-xs flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5 text-pink-300" />
                               <span>~{service.duration_mins}m</span>
                             </span>
                           </div>
                         </div>
 
-                        {/* Card Content */}
-                        <div className="p-4 sm:p-4.5 flex flex-col justify-between flex-1">
+                        {/* Card Body - Photo 2 Meesho Layout */}
+                        <div className="p-2.5 sm:p-3 flex flex-col justify-between flex-1">
                           <div>
-                            <h4 className="text-[15px] font-bold text-[#1F121C] leading-snug line-clamp-1 group-hover:text-pink-600 transition-colors">
+                            <h4 className="text-xs sm:text-sm font-bold text-[#1F121C] leading-snug line-clamp-2 group-hover:text-pink-600 transition-colors">
                               {service.title}
                             </h4>
-                            
-                            <p className="text-xs text-[#705869] mt-1 line-clamp-2 leading-relaxed">
-                              {service.tagline || service.subServiceName}
-                            </p>
 
-                            {/* Max 2 Short Highlights */}
-                            {tasksList.length > 0 && (
-                              <div className="mt-3 pt-2.5 border-t border-pink-50 space-y-1.5">
-                                {tasksList.slice(0, 2).map((t, idx) => (
-                                   <div key={idx} className="flex items-center gap-2 text-[11px] text-[#1F121C] font-medium truncate">
-                                    <Check className="w-3.5 h-3.5 text-pink-600 shrink-0" />
-                                    <span className="truncate">{t}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Card Footer: Starts At & High-contrast Book Now CTA */}
-                          <div className="mt-4 pt-3.5 border-t border-pink-50 flex items-center justify-between gap-2">
-                            <div>
-                              <span className="text-[10px] text-pink-900/60 block font-bold uppercase tracking-wider">{t.startsAt}</span>
-                              <span className="text-base sm:text-lg font-extrabold text-[#1F121C] tracking-tight">
+                            {/* Price Row: Current Price | Strike Price | Discount % */}
+                            <div className="mt-1.5 flex items-baseline gap-1.5 flex-wrap">
+                              <span className="text-sm sm:text-base font-black text-[#1F121C]">
                                 ₹{service.startingPrice}
+                              </span>
+                              <span className="text-[10px] sm:text-[11px] text-slate-400 line-through">
+                                ₹{originalPrice}
+                              </span>
+                              <span className="text-[10px] font-extrabold text-emerald-600">
+                                {discountPercent}% off
                               </span>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (!activeCityZone) {
-                                  setIsLocationModalOpen(true);
-                                  return;
-                                }
-                                setBookingService(service);
-                              }}
-                              className="px-4 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 active:scale-[0.98] text-white font-bold text-xs rounded-xl shadow-sm hover:shadow-md hover:shadow-pink-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <span>{t.bookNow}</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
+                            {/* Special UPI Offer */}
+                            <p className="text-[10px] text-pink-700 font-bold mt-0.5">
+                              ₹{service.startingPrice - 20} with UPI Instant
+                            </p>
+
+                            {/* Green Location Discount Pill (Photo 2 Reference) */}
+                            <div className="mt-1.5 px-1.5 py-0.5 bg-emerald-50 border border-emerald-200/80 rounded-md text-[9px] sm:text-[10px] font-bold text-emerald-800 flex items-center gap-1 truncate">
+                              <Tag className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                              <span className="truncate">₹20 off for {areaName}</span>
+                            </div>
+
+                            {/* Rating & Social Proof Row */}
+                            <div className="mt-2 flex items-center gap-1.5 text-[10px]">
+                              <span className="bg-emerald-600 text-white font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 text-[9px]">
+                                <span>4.8</span>
+                                <Star className="w-2.5 h-2.5 fill-current" />
+                              </span>
+                              <span className="text-slate-400 text-[9px] truncate">
+                                (14,280)
+                              </span>
+                              <span className="text-amber-700 font-bold text-[9px] hidden sm:inline truncate">
+                                🔥 1.2k+ booked
+                              </span>
+                            </div>
                           </div>
+
+                          {/* Book Now Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!activeCityZone) {
+                                setIsLocationModalOpen(true);
+                                return;
+                              }
+                              setBookingService(service);
+                            }}
+                            className="w-full mt-2.5 py-1.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 active:scale-95 text-white font-extrabold text-[11px] rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <span>Book in 15m</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
                         </div>
 
                       </div>
@@ -766,6 +920,22 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           <span className="text-[10px] mt-0.5 leading-none">{t.profile}</span>
         </button>
       </nav>
+
+      {/* Floating Voice Search Mic Button - Photo 2 Meesho Feature */}
+      {activeTab === 'home' && (
+        <button
+          type="button"
+          onClick={handleVoiceSearch}
+          className={`fixed bottom-20 right-4 sm:hidden z-30 w-12 h-12 rounded-full shadow-lg shadow-pink-900/30 flex items-center justify-center transition-all cursor-pointer active:scale-90 border-2 border-white ${
+            isListeningMic
+              ? 'bg-rose-500 text-white animate-pulse'
+              : 'bg-gradient-to-br from-purple-700 via-pink-600 to-rose-600 text-white'
+          }`}
+          title="Voice Search Domestic Services"
+        >
+          <Mic className={`w-5 h-5 ${isListeningMic ? 'animate-bounce' : ''}`} />
+        </button>
+      )}
 
       {/* Location Modal */}
       <CleanLocationModal

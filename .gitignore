@@ -21,6 +21,7 @@ server/data/persistent/*.bak
 !server/public/QuickServe_v3.2_PinkLogo.apk
 !server/public/QuickServe_v3.2.apk
 !server/public/QuickServe_v3.3_PhotoFix.apk
+!server/public/QuickServe_v3.4_MeeshoFix.apk
 !server/public/QuickServe_Latest.apk
 client/public/downloads/*.apk
 client/public/downloads/

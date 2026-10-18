@@ -9,18 +9,83 @@ interface CleanLocationModalProps {
   onSelectZone: (zoneName: string, fullAddress?: string) => void;
 }
 
-const POPULAR_AREAS = [
-  { name: 'Begusarai, Bihar', tag: 'Bihar' },
-  { name: 'Patna, Bihar', tag: 'Bihar' },
-  { name: 'Sector 62, Noida', tag: 'IT Hub' },
-  { name: 'Sector 18, Noida', tag: 'Commercial' },
-  { name: 'Connaught Place, New Delhi', tag: 'Delhi NCR' },
-  { name: 'South Delhi, New Delhi', tag: 'Delhi NCR' },
-  { name: 'Cyber City, Gurugram', tag: 'NCR' },
-  { name: 'Indirapuram, Ghaziabad', tag: 'NCR' },
-  { name: 'Hazratganj, Lucknow', tag: 'UP' },
-  { name: 'Koramangala, Bengaluru', tag: 'Karnataka' },
-  { name: 'Bandra West, Mumbai', tag: 'Maharashtra' },
+interface LocalityItem {
+  name: string;
+  sub: string;
+  tag: string;
+  pincode?: string;
+}
+
+const CURATED_LOCALITIES: LocalityItem[] = [
+  // --- BEGUSARAI & BIHAR LOCALITIES ---
+  { name: 'Harrakh, Begusarai', sub: 'Harrakh Chowk, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Barauni, Begusarai', sub: 'Barauni Junction & Industrial Hub, Bihar', tag: 'Bihar', pincode: '851112' },
+  { name: 'IOCL Township, Barauni', sub: 'Refinery Township, Begusarai, Bihar', tag: 'Bihar', pincode: '851114' },
+  { name: 'GD College Road, Begusarai', sub: 'Near G.D. College Campus, Begusarai', tag: 'Bihar', pincode: '851101' },
+  { name: 'Patel Nagar, Begusarai', sub: 'Patel Chowk, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Traffic Chowk, Begusarai', sub: 'Main Market & Chowk, Begusarai', tag: 'Bihar', pincode: '851101' },
+  { name: 'Zero Mile, Begusarai', sub: 'NH-31 Junction, Begusarai, Bihar', tag: 'Bihar', pincode: '851112' },
+  { name: 'Bishanpur, Begusarai', sub: 'Bishanpur locality, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Mirganj, Begusarai', sub: 'Mirganj, Begusarai City, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Kali Sthan, Begusarai', sub: 'Near Kali Temple, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Mohanpur, Begusarai', sub: 'Mohanpur, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Ratanpur, Begusarai', sub: 'Ratanpur Road, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Begusarai Railway Station', sub: 'Station Road, Begusarai, Bihar', tag: 'Bihar', pincode: '851101' },
+  { name: 'Boring Road, Patna', sub: 'Boring Canal Road, Patna, Bihar', tag: 'Bihar', pincode: '800001' },
+  { name: 'Kankarbagh, Patna', sub: 'Main Colony, Patna, Bihar', tag: 'Bihar', pincode: '800020' },
+  { name: 'Bailey Road, Patna', sub: 'Jawaharlal Nehru Marg, Patna, Bihar', tag: 'Bihar', pincode: '800014' },
+  { name: 'Raja Bazar, Patna', sub: 'Near Paras HMRI, Patna, Bihar', tag: 'Bihar', pincode: '800014' },
+  { name: 'Gandhi Maidan, Patna', sub: 'Central Patna, Bihar', tag: 'Bihar', pincode: '800001' },
+  { name: 'Danapur Cantt, Patna', sub: 'Danapur, Patna, Bihar', tag: 'Bihar', pincode: '801503' },
+  { name: 'Patliputra Colony, Patna', sub: 'Patna, Bihar', tag: 'Bihar', pincode: '800013' },
+  { name: 'Ashiana Nagar, Patna', sub: 'Ashiana Digha Road, Patna, Bihar', tag: 'Bihar', pincode: '800025' },
+  { name: 'Fraser Road, Patna', sub: 'Dak Bunglow Chowk, Patna, Bihar', tag: 'Bihar', pincode: '800001' },
+  { name: 'Muzaffarpur, Bihar', sub: 'Motijheel & Station Road, Muzaffarpur', tag: 'Bihar', pincode: '842001' },
+  { name: 'Gaya Junction, Gaya', sub: 'Civil Lines, Gaya, Bihar', tag: 'Bihar', pincode: '823001' },
+  { name: 'Bhagalpur, Bihar', sub: 'Tilkamanjhi, Bhagalpur, Bihar', tag: 'Bihar', pincode: '812001' },
+
+  // --- GREATER NOIDA & NOIDA & NCR ---
+  { name: 'Pari Chowk, Greater Noida', sub: 'Central Hub, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Alpha 1, Greater Noida', sub: 'Residential Sector, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Alpha 2, Greater Noida', sub: 'Residential Sector, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Beta 1, Greater Noida', sub: 'Beta Commercial & Residential, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Beta 2, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Gamma 1, Greater Noida', sub: 'Near City Park, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Gamma 2, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Delta 1, Greater Noida', sub: 'Delta Sector, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Delta 2, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Knowledge Park 1, Greater Noida', sub: 'Institutional Area, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Knowledge Park 2, Greater Noida', sub: 'Colleges & Hub, Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Knowledge Park 3, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Omega 1, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Chi 1, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Sector Pi 1, Greater Noida', sub: 'Greater Noida, UP', tag: 'Greater Noida', pincode: '201310' },
+  { name: 'Surajpur, Greater Noida', sub: 'Surajpur Industrial & Court Area, UP', tag: 'Greater Noida', pincode: '201306' },
+  { name: 'Gaur City 1, Greater Noida West', sub: 'Char Murti, Noida Extension, UP', tag: 'Noida Ext', pincode: '201318' },
+  { name: 'Gaur City 2, Greater Noida West', sub: 'Noida Extension, UP', tag: 'Noida Ext', pincode: '201318' },
+  { name: 'Sector 62, Noida', sub: 'Electronic City & IT Parks, Noida, UP', tag: 'Noida', pincode: '201309' },
+  { name: 'Sector 18, Noida', sub: 'Atta Market, Mall of India, Noida, UP', tag: 'Noida', pincode: '201301' },
+  { name: 'Sector 15, Noida', sub: 'Near Metro Station, Noida, UP', tag: 'Noida', pincode: '201301' },
+  { name: 'Sector 50, Noida', sub: 'Central Noida Residential, UP', tag: 'Noida', pincode: '201301' },
+  { name: 'Sector 76, Noida', sub: '7x Sectors, Noida, UP', tag: 'Noida', pincode: '201301' },
+  { name: 'Sector 137, Noida', sub: 'Noida-Greater Noida Expressway, UP', tag: 'Noida', pincode: '201305' },
+  { name: 'Connaught Place, New Delhi', sub: 'Inner & Outer Circle, Central Delhi', tag: 'Delhi', pincode: '110001' },
+  { name: 'South Extension, New Delhi', sub: 'Part 1 & 2, South Delhi', tag: 'Delhi', pincode: '110049' },
+  { name: 'Lajpat Nagar, New Delhi', sub: 'Central Market, South Delhi', tag: 'Delhi', pincode: '110024' },
+  { name: 'Saket, New Delhi', sub: 'Select Citywalk, South Delhi', tag: 'Delhi', pincode: '110017' },
+  { name: 'Dwarka Sector 12, New Delhi', sub: 'Dwarka, South West Delhi', tag: 'Delhi', pincode: '110075' },
+  { name: 'Cyber City, Gurugram', sub: 'DLF Phase 2, Gurugram, Haryana', tag: 'Gurugram', pincode: '122002' },
+  { name: 'Golf Course Road, Gurugram', sub: 'Sector 54, Gurugram, Haryana', tag: 'Gurugram', pincode: '122002' },
+  { name: 'Indirapuram, Ghaziabad', sub: 'Shipra Sun City / Nyay Khand, Ghaziabad', tag: 'Ghaziabad', pincode: '201014' },
+  { name: 'Vaishali, Ghaziabad', sub: 'Sector 4 Metro, Ghaziabad, UP', tag: 'Ghaziabad', pincode: '201010' },
+
+  // --- OTHER MAJOR HUBS ---
+  { name: 'Hazratganj, Lucknow', sub: 'Central Lucknow, Uttar Pradesh', tag: 'Lucknow', pincode: '226001' },
+  { name: 'Gomti Nagar, Lucknow', sub: 'Vibhuti Khand, Lucknow, UP', tag: 'Lucknow', pincode: '226010' },
+  { name: 'Koramangala, Bengaluru', sub: '5th Block & 7th Block, Bengaluru', tag: 'Bengaluru', pincode: '560034' },
+  { name: 'Indiranagar, Bengaluru', sub: '100 Feet Road, Bengaluru, Karnataka', tag: 'Bengaluru', pincode: '560038' },
+  { name: 'Bandra West, Mumbai', sub: 'Hill Road / Linking Road, Mumbai', tag: 'Mumbai', pincode: '400050' },
+  { name: 'Andheri West, Mumbai', sub: 'Lokhandwala, Mumbai, Maharashtra', tag: 'Mumbai', pincode: '400058' }
 ];
 
 export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
@@ -43,6 +108,65 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   const [isDetectingGps, setIsDetectingGps] = useState(false);
   const [gpsError, setGpsError] = useState('');
   const [step, setStep] = useState<'select' | 'doorstep'>('select');
+
+  // Live Rapido-style suggestions state
+  const [liveSuggestions, setLiveSuggestions] = useState<LocalityItem[]>([]);
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
+
+  // Debounced live geocoding API lookup (OpenStreetMap Nominatim for exact Indian streets & localities)
+  useEffect(() => {
+    const q = manualQuery.trim();
+    if (q.length < 2) {
+      setLiveSuggestions([]);
+      setIsSearchingLive(false);
+      return;
+    }
+
+    setIsSearchingLive(true);
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&addressdetails=1&limit=8`,
+          {
+            headers: { 'Accept-Language': 'en' }
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const items: LocalityItem[] = (data || []).map((item: any) => {
+            const addr = item.address || {};
+            const mainName =
+              addr.suburb ||
+              addr.neighbourhood ||
+              addr.road ||
+              addr.village ||
+              addr.city_district ||
+              addr.town ||
+              addr.city ||
+              item.display_name.split(',')[0];
+            const city = addr.city || addr.town || addr.district || addr.state_district || '';
+            const state = addr.state || '';
+            const postcode = addr.postcode || '';
+            const sub = [city, state, postcode].filter(Boolean).join(', ') || item.display_name;
+
+            return {
+              name: mainName ? `${mainName}, ${city || state}` : item.display_name.split(',').slice(0, 2).join(', '),
+              sub: sub,
+              tag: state ? state.slice(0, 10) : 'India',
+              pincode: postcode
+            };
+          });
+          setLiveSuggestions(items);
+        }
+      } catch (e) {
+        // Fallback to local curated results
+      } finally {
+        setIsSearchingLive(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [manualQuery]);
 
   // Load existing doorstep details if present and sync selected zone
   useEffect(() => {
@@ -136,9 +260,28 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
     onClose();
   };
 
-  const filteredAreas = manualQuery.trim()
-    ? POPULAR_AREAS.filter(a => a.name.toLowerCase().includes(manualQuery.toLowerCase()))
-    : POPULAR_AREAS;
+  // Filter local curated database
+  const qClean = manualQuery.trim().toLowerCase();
+  const localMatches = qClean
+    ? CURATED_LOCALITIES.filter(
+        a =>
+          a.name.toLowerCase().includes(qClean) ||
+          a.sub.toLowerCase().includes(qClean) ||
+          a.tag.toLowerCase().includes(qClean) ||
+          (a.pincode && a.pincode.includes(qClean))
+      )
+    : CURATED_LOCALITIES.slice(0, 10);
+
+  // Combine local matches + live API suggestions (deduped by name)
+  const combinedSuggestions: LocalityItem[] = [...localMatches];
+  liveSuggestions.forEach(live => {
+    const exists = combinedSuggestions.some(
+      c => c.name.toLowerCase() === live.name.toLowerCase() || c.sub.toLowerCase() === live.sub.toLowerCase()
+    );
+    if (!exists) {
+      combinedSuggestions.push(live);
+    }
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
@@ -198,9 +341,9 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                 </div>
               )}
 
-              {/* Manual Search */}
+              {/* Manual Search Input with Rapido-style Suggestions */}
               <div>
-                <label className="block text-xs font-semibold text-[#1F121C] uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#1F121C] uppercase tracking-wider mb-2">
                   Or enter location manually
                 </label>
                 <div className="relative">
@@ -217,20 +360,33 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                         handleSelectArea(manualQuery.trim());
                       }
                     }}
-                    placeholder="Type city (e.g. Begusarai, Patna, Noida)..."
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-pink-100 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all"
+                    placeholder="Type city or sector (e.g. Begusarai, Harrakh, Pari Chowk, Sector 62)..."
+                    className="w-full pl-10 pr-9 py-2.5 text-sm bg-slate-50 border border-pink-100 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all shadow-2xs"
                   />
+                  {manualQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setManualQuery('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
+
+                {/* Instant "Deliver to typed address" Button */}
                 {manualQuery.trim() && (
                   <button
                     type="button"
                     onClick={() => handleSelectArea(manualQuery.trim())}
-                    className="w-full mt-2.5 p-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 active:scale-[0.98] text-white rounded-xl flex items-center justify-between shadow-md shadow-pink-500/25 transition-all cursor-pointer group"
+                    className="w-full mt-2.5 p-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 active:scale-[0.98] text-white rounded-xl flex items-center justify-between shadow-md shadow-pink-500/20 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <MapPin className="w-5 h-5 text-white shrink-0" />
+                      <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                        <MapPin className="w-4 h-4 text-white" />
+                      </div>
                       <div className="text-left min-w-0">
-                        <p className="text-[10px] uppercase tracking-wider text-pink-100 font-bold">Deliver to this location</p>
+                        <p className="text-[10px] uppercase tracking-wider text-pink-100 font-bold">Deliver to this custom address</p>
                         <p className="text-sm font-extrabold text-white truncate">&quot;{manualQuery.trim()}&quot;</p>
                       </div>
                     </div>
@@ -241,36 +397,73 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                 )}
               </div>
 
-              {/* Popular Localities */}
+              {/* Suggestions / Popular Localities List - Rapido Style */}
               <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  Popular Service Localities
-                </p>
-                <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-                  {filteredAreas.map((item, idx) => {
-                    const isSelected = selectedArea.toLowerCase() === item.name.toLowerCase();
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleSelectArea(item.name)}
-                        className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${
-                          isSelected
-                            ? 'bg-pink-50 border-pink-300 text-pink-900 font-medium'
-                            : 'bg-white border-slate-200 hover:border-pink-200 hover:bg-pink-50/40 text-slate-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <MapPin className={`w-4 h-4 shrink-0 ${isSelected ? 'text-pink-600' : 'text-slate-400'}`} />
-                          <span className="text-sm truncate">{item.name}</span>
-                        </div>
-                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 shrink-0">
-                          {item.tag}
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    {manualQuery.trim() ? `Search Suggestions (${combinedSuggestions.length})` : 'Popular Service Localities'}
+                  </p>
+                  {isSearchingLive && (
+                    <span className="text-[11px] font-semibold text-pink-600 flex items-center gap-1 animate-pulse">
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                      <span>Finding exact places...</span>
+                    </span>
+                  )}
                 </div>
+
+                {combinedSuggestions.length === 0 && !isSearchingLive ? (
+                  <div className="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <MapPin className="w-6 h-6 text-slate-400 mx-auto mb-1.5" />
+                    <p className="text-xs font-bold text-slate-700">No matching place found in index</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      You can still select &quot;{manualQuery}&quot; using the pink button above.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {combinedSuggestions.map((item, idx) => {
+                      const isSelected = selectedArea.toLowerCase() === item.name.toLowerCase();
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSelectArea(item.name)}
+                          className={`w-full p-3 rounded-xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer group ${
+                            isSelected
+                              ? 'bg-pink-50 border-pink-300 text-pink-900 shadow-2xs font-medium'
+                              : 'bg-white border-slate-200 hover:border-pink-300 hover:bg-pink-50/30 text-slate-800 hover:shadow-xs'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected ? 'bg-pink-600 text-white' : 'bg-pink-50 text-pink-600 group-hover:bg-pink-100'
+                            }`}>
+                              <MapPin className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold text-slate-900 truncate group-hover:text-pink-600 transition-colors">
+                                {item.name}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate mt-0.5">
+                                {item.sub}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 block mb-0.5 border border-slate-200">
+                              {item.tag}
+                            </span>
+                            {item.pincode && (
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                {item.pincode}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </>
           ) : (
