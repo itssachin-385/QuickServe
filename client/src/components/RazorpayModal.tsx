@@ -9,11 +9,16 @@ import {
   Settings, 
   RefreshCw, 
   AlertCircle, 
+  AlertTriangle,
   Wallet,
   Sparkles,
   Lock,
   ArrowRight,
-  Clock
+  Clock,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Info
 } from 'lucide-react';
 import { createPaymentOrder, verifyPayment, fetchGatewayConfig, updateGatewayConfig } from '../api';
 
@@ -23,8 +28,9 @@ interface RazorpayModalProps {
   customerName?: string;
   customerPhone?: string;
   bookingId?: string;
-  onSuccess: (paymentId: string, utr?: string) => void;
+  onSuccess: (paymentId: string, utr?: string, paymentProofPhoto?: string) => void;
   onClose: () => void;
+  onSwitchToPayAfterService?: () => void;
 }
 
 export const RazorpayModal: React.FC<RazorpayModalProps> = ({
@@ -34,7 +40,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   customerPhone = '',
   bookingId,
   onSuccess,
-  onClose
+  onClose,
+  onSwitchToPayAfterService
 }) => {
   const [activeTab, setActiveTab] = useState<'upi_apps' | 'upi_qr' | 'settings'>('upi_apps');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,6 +53,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
   const [enteredUtr, setEnteredUtr] = useState('');
   const [utrError, setUtrError] = useState('');
+  const [paymentProofPhoto, setPaymentProofPhoto] = useState<string>('');
+  const [screenshotName, setScreenshotName] = useState<string>('');
 
   // Settings form state
   const [editFast2SmsKey, setEditFast2SmsKey] = useState('');
@@ -103,31 +112,85 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
     setTimeout(() => setCopiedPhone(false), 2000);
   };
 
+  const validateUtrInput = (utr: string): { valid: boolean; error?: string } => {
+    const clean = utr.replace(/\D/g, '').trim();
+    if (!clean || clean.length !== 12) {
+      return { 
+        valid: false, 
+        error: 'Kripya poora 12-digit UPI Reference (UTR) number enter karein.' 
+      };
+    }
+    const uniqueDigits = new Set(clean.split('')).size;
+    if (uniqueDigits < 4) {
+      return { 
+        valid: false, 
+        error: 'Invalid UTR: Fake ya repeated numbers (jaise 111111111111, 555555555555) allow nahi hain. Asli UPI payment reference enter karein.' 
+      };
+    }
+    const sequential = ['012345678901', '123456789012', '987654321098', '098765432109', '112233445566', '121212121212'];
+    if (sequential.includes(clean)) {
+      return { 
+        valid: false, 
+        error: 'Invalid UTR: Sequential / dummy number detect hua hai. Asli UTR enter karein.' 
+      };
+    }
+    return { valid: true };
+  };
+
+  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setUtrError('Payment screenshot size must be under 5MB');
+        return;
+      }
+      setScreenshotName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPaymentProofPhoto(reader.result as string);
+        if (utrError) setUtrError('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleConfirmUpiPayment = async () => {
     const cleanUtr = enteredUtr.replace(/\D/g, '').trim();
-    if (cleanUtr.length < 10) {
-      setUtrError('Payment verification: Please enter the 12-digit UPI Reference Number / UTR from your UPI payment app (GPay / PhonePe / Paytm).');
+    const validation = validateUtrInput(cleanUtr);
+    if (!validation.valid) {
+      setUtrError(validation.error || 'Invalid UTR');
       return;
     }
+
+    if (!paymentProofPhoto) {
+      setUtrError('Kripya UPI payment receipt ka screenshot (GPay / PhonePe / Paytm) upload karein taaki hum verify kar sakein.');
+      return;
+    }
+
     setUtrError('');
     setIsProcessing(true);
     const paymentId = `UTR-${cleanUtr}`;
+
     try {
-      await verifyPayment({
-        booking_id: bookingId || 'bk-direct',
-        payment_id: paymentId,
-        method: 'upi',
-        amount,
-        upi_utr: cleanUtr
-      });
-    } catch (e) {
-      console.warn('Payment verify sync:', e);
+      if (bookingId && bookingId !== 'bk-direct') {
+        await verifyPayment({
+          booking_id: bookingId,
+          payment_id: paymentId,
+          method: 'upi',
+          amount,
+          upi_utr: cleanUtr,
+          payment_proof_photo: paymentProofPhoto
+        });
+      }
+      setIsProcessing(false);
+      setIsSuccess(true);
+      setTimeout(() => {
+        onSuccess(paymentId, cleanUtr, paymentProofPhoto);
+      }, 1800);
+    } catch (err: any) {
+      setIsProcessing(false);
+      setUtrError(err.message || 'Payment verification failed. Kripya sahi UTR aur payment receipt upload karein.');
     }
-    setIsProcessing(false);
-    setIsSuccess(true);
-    setTimeout(() => {
-      onSuccess(paymentId, cleanUtr);
-    }, 1800);
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
@@ -146,6 +209,152 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
       alert('Failed to save gateway settings');
     }
   };
+
+  const renderUpiVerificationCard = () => (
+    <div className="space-y-3 pt-2">
+      {/* Anti-Fraud Security Notice Banner */}
+      <div className="p-3 bg-rose-50/90 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-left">
+        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+        <div className="text-[11px] text-rose-900 leading-snug">
+          <strong className="font-bold block text-rose-950">Security & Anti-Fraud Notice:</strong>
+          Fake ya dummy UTR submit karne par booking cancel hogi aur mobile number blacklist ho jayega. Har UPI payment bank account me credit check hota hai.
+        </div>
+      </div>
+
+      {/* 1. Mandatory UPI UTR Reference Card */}
+      <div className="bg-pink-50/70 p-3.5 rounded-2xl border border-pink-200 space-y-2 text-left shadow-xs">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-black text-pink-950 flex items-center gap-1.5">
+            <span>12-Digit UPI Ref / UTR Number</span>
+            <span className="text-rose-600 font-bold text-[10px] bg-rose-100 px-1.5 py-0.2 rounded-full">*Mandatory</span>
+          </label>
+          <span className="text-[10px] font-mono text-pink-700 font-bold">
+            {enteredUtr.replace(/\D/g, '').length}/12
+          </span>
+        </div>
+
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={12}
+          value={enteredUtr}
+          onChange={(e) => {
+            setEnteredUtr(e.target.value.replace(/\D/g, ''));
+            if (utrError) setUtrError('');
+          }}
+          placeholder="e.g. 4289 1234 5678"
+          className="w-full px-3.5 py-2.5 rounded-xl border border-pink-300 focus:border-pink-600 focus:ring-2 focus:ring-pink-200 font-mono text-sm tracking-wider font-extrabold text-slate-900 bg-white outline-none transition-all shadow-inner"
+        />
+
+        <p className="text-[10px] text-slate-600 leading-tight">
+          📌 Payment hone par apne Google Pay, PhonePe ya Paytm app ke <strong>Transaction Details</strong> se 12-digit UPI Ref/UTR No. yahan enter karein.
+        </p>
+      </div>
+
+      {/* 2. Mandatory Screenshot Proof Upload */}
+      <div className="bg-white p-3.5 rounded-2xl border-2 border-dashed border-pink-300 space-y-2 text-left">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+            <Upload className="w-3.5 h-3.5 text-pink-600" />
+            <span>Upload Payment Screenshot</span>
+            <span className="text-rose-600 font-bold text-[10px] bg-rose-100 px-1.5 py-0.2 rounded-full">*Proof</span>
+          </label>
+          {paymentProofPhoto && (
+            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              ✓ Attached
+            </span>
+          )}
+        </div>
+
+        {paymentProofPhoto ? (
+          <div className="flex items-center gap-3 p-2 bg-pink-50/50 rounded-xl border border-pink-200">
+            <img 
+              src={paymentProofPhoto} 
+              alt="Payment receipt preview" 
+              className="w-12 h-12 object-cover rounded-lg border border-pink-200 shadow-2xs"
+            />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-bold text-slate-800 truncate block">
+                {screenshotName || 'Payment_Receipt.jpg'}
+              </span>
+              <span className="text-[10px] text-emerald-600 font-medium">Ready for verification</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentProofPhoto('');
+                setScreenshotName('');
+              }}
+              className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+              title="Remove screenshot"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center p-3 border border-pink-100 rounded-xl bg-pink-50/40 hover:bg-pink-50 cursor-pointer transition-colors group">
+            <div className="flex items-center gap-2 text-pink-700 font-bold text-xs">
+              <ImageIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>Tap to attach GPay / PhonePe Receipt</span>
+            </div>
+            <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG or Screenshot up to 5MB</span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleScreenshotChange}
+              className="hidden"
+            />
+          </label>
+        )}
+      </div>
+
+      {/* Error Message */}
+      {utrError && (
+        <div className="p-2.5 bg-rose-50 border border-rose-300 rounded-xl flex items-start gap-2 text-xs text-rose-700 font-medium text-left">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+          <span>{utrError}</span>
+        </div>
+      )}
+
+      {/* Action Confirm Button */}
+      <button
+        disabled={isProcessing}
+        onClick={handleConfirmUpiPayment}
+        className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+      >
+        {isProcessing ? (
+          <>
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            <span>Verifying UTR & Screenshot...</span>
+          </>
+        ) : (
+          <>
+            <ShieldCheck className="w-4 h-4" />
+            <span>Submit UTR & Confirm Booking</span>
+          </>
+        )}
+      </button>
+
+      {/* Safe 1-Tap Alternative to Pay After Service */}
+      <div className="text-center pt-1">
+        <button
+          type="button"
+          onClick={() => {
+            if (onSwitchToPayAfterService) {
+              onSwitchToPayAfterService();
+            } else {
+              onClose();
+            }
+          }}
+          className="text-xs text-pink-700 hover:text-pink-800 font-bold py-1 px-3 rounded-full hover:bg-pink-50 transition-all cursor-pointer underline flex items-center justify-center gap-1 mx-auto"
+        >
+          <span>Abhi pay nahi kiya? Pay After Service (₹0 Advance) chunein</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
@@ -236,7 +445,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
               </div>
               <h3 className="text-lg font-extrabold text-slate-900">Order Placed • Verification Pending</h3>
               <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
-                Aapka 12-digit UTR <span className="font-mono font-black text-slate-900">({enteredUtr})</span> submit ho gaya hai. Humare professional visit se pehle bank credit verify karenge.
+                Aapka 12-digit UTR <span className="font-mono font-black text-slate-900">({enteredUtr})</span> aur payment receipt screenshot submit ho gaya hai. Humare professional visit se pehle bank credit verify karenge.
               </p>
               <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 inline-block font-mono text-amber-900 font-bold text-xs">
                 UTR: {enteredUtr} • Verification Pending ⏳
@@ -278,7 +487,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                         </div>
                         <button
                           onClick={handleCopyVpa}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-[11px] transition-colors flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
                           title="Copy UPI VPA"
                         >
                           {copiedVpa ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -293,7 +502,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                         </div>
                         <button
                           onClick={handleCopyPhone}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold text-[11px] transition-colors flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
                           title="Copy Phone Number"
                         >
                           {copiedPhone ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -303,72 +512,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Mandatory UPI UTR Reference Card */}
-                  <div className="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-200/90 space-y-2 text-left">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-black text-pink-950 flex items-center gap-1.5">
-                        <span>12-Digit UPI Ref / UTR Number</span>
-                        <span className="text-rose-600 font-bold text-[10px] bg-rose-100 px-1.5 py-0.2 rounded-full">*Mandatory</span>
-                      </label>
-                      <span className="text-[10px] font-mono text-pink-700 font-bold">
-                        {enteredUtr.replace(/\D/g, '').length}/12
-                      </span>
-                    </div>
-
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={12}
-                      value={enteredUtr}
-                      onChange={(e) => {
-                        setEnteredUtr(e.target.value.replace(/\D/g, ''));
-                        if (utrError) setUtrError('');
-                      }}
-                      placeholder="e.g. 4289 1234 5678"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-pink-300 focus:border-pink-600 focus:ring-2 focus:ring-pink-200 font-mono text-sm tracking-wider font-extrabold text-slate-900 bg-white outline-none transition-all shadow-inner"
-                    />
-
-                    <p className="text-[10px] text-slate-600 leading-tight">
-                      📌 Payment karne ke baad apne Google Pay, PhonePe ya Paytm app ke <strong>Transaction Details</strong> se 12-digit UPI Ref/UTR No. yahan enter karein.
-                    </p>
-
-                    {utrError && (
-                      <div className="p-2 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-1.5 text-[11px] text-rose-700 font-medium">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{utrError}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Confirm Button */}
-                  <button
-                    disabled={isProcessing}
-                    onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verifying UTR Reference...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>Submit UTR & Confirm Booking</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Safe fallback for customer */}
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="text-[11px] text-slate-500 hover:text-pink-600 font-semibold underline transition-colors"
-                    >
-                      Abhi pay nahi kiya? 'Pay After Service (Cash on Visit)' chunein
-                    </button>
-                  </div>
+                  {/* Render Shared Anti-Fraud UTR & Screenshot Verification Card */}
+                  {renderUpiVerificationCard()}
                 </div>
               )}
 
@@ -444,79 +589,15 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     </div>
                     <button
                       onClick={handleCopyVpa}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-[11px] transition-colors flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       {copiedVpa ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copiedVpa ? 'Copied' : 'Copy'}</span>
                     </button>
                   </div>
 
-                  {/* Mandatory UPI UTR Reference Card */}
-                  <div className="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-200/90 space-y-2 text-left">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-black text-pink-950 flex items-center gap-1.5">
-                        <span>12-Digit UPI Ref / UTR Number</span>
-                        <span className="text-rose-600 font-bold text-[10px] bg-rose-100 px-1.5 py-0.2 rounded-full">*Mandatory</span>
-                      </label>
-                      <span className="text-[10px] font-mono text-pink-700 font-bold">
-                        {enteredUtr.replace(/\D/g, '').length}/12
-                      </span>
-                    </div>
-
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={12}
-                      value={enteredUtr}
-                      onChange={(e) => {
-                        setEnteredUtr(e.target.value.replace(/\D/g, ''));
-                        if (utrError) setUtrError('');
-                      }}
-                      placeholder="e.g. 4289 1234 5678"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-pink-300 focus:border-pink-600 focus:ring-2 focus:ring-pink-200 font-mono text-sm tracking-wider font-extrabold text-slate-900 bg-white outline-none transition-all shadow-inner"
-                    />
-
-                    <p className="text-[10px] text-slate-600 leading-tight">
-                      📌 Payment hone par apne Google Pay, PhonePe ya Paytm app ke <strong>Transaction Details</strong> se 12-digit UPI Ref/UTR No. yahan enter karein.
-                    </p>
-
-                    {utrError && (
-                      <div className="p-2 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-1.5 text-[11px] text-rose-700 font-medium">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{utrError}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Confirm Button */}
-                  <button
-                    disabled={isProcessing}
-                    onClick={handleConfirmUpiPayment}
-                    className="w-full py-3.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 hover:from-pink-700 hover:to-rose-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-sm shadow-lg shadow-pink-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Verifying UTR Reference...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>Submit UTR & Confirm Booking</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Safe fallback for customer */}
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="text-[11px] text-slate-500 hover:text-pink-600 font-semibold underline transition-colors"
-                    >
-                      Abhi pay nahi kiya? 'Pay After Service (Cash on Visit)' chunein
-                    </button>
-                  </div>
+                  {/* Render Shared Anti-Fraud UTR & Screenshot Verification Card */}
+                  {renderUpiVerificationCard()}
                 </div>
               )}
 

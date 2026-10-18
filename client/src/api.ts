@@ -103,12 +103,18 @@ export async function createBooking(data: Partial<Booking>): Promise<{ success: 
       body: JSON.stringify(data),
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
     if (res.ok) {
       return await res.json();
+    } else {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error || errJson.message || 'Server rejected booking');
     }
-  } catch (err) {
-    console.warn('Backend server offline or slow, creating booking locally:', err);
+  } catch (err: any) {
+    if (err.name === 'AbortError' || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+      console.warn('Backend server offline or slow, creating booking locally:', err);
+    } else {
+      throw err;
+    }
   }
 
   const newBooking: Booking = {
@@ -631,14 +637,16 @@ export async function verifyPayment(data: {
   method?: string;
   amount?: number;
   upi_utr?: string;
+  payment_proof_photo?: string;
 }): Promise<any> {
   const res = await fetch(`${API_BASE}/payments/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error('Failed to verify payment');
-  return await res.json();
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Failed to verify payment');
+  return json;
 }
 
 export async function updateBookingPayment(id: string, data: {

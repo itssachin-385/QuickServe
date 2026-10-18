@@ -186,24 +186,27 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
 
   return (
-    <div className="min-h-screen bg-[#FFF7F9] flex flex-col justify-between max-w-md mx-auto relative overflow-hidden shadow-2xl">
+    <div className="min-h-screen min-h-[100dvh] bg-[#FFF7F9] flex flex-col justify-between max-w-md mx-auto relative overflow-y-auto selection:bg-pink-100">
       
-      {/* 1. TOP CURVED BRAND BANNER (Photo 1 Style) */}
-      <div className="relative bg-gradient-to-b from-pink-600 via-rose-600 to-pink-700 text-white pt-6 pb-8 px-5 rounded-b-[36px] shadow-lg shadow-pink-600/20">
+      {/* 1. TOP CURVED BRAND BANNER (Universal Safe-Area Clearance for Status Bar & Notch) */}
+      <div 
+        className="relative bg-gradient-to-b from-pink-600 via-rose-600 to-pink-700 text-white pb-6 sm:pb-8 px-5 rounded-b-[36px] shadow-lg shadow-pink-600/20 shrink-0"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 48px)' }}
+      >
         
-        {/* Skip login button in top right */}
-        <div className="flex justify-end mb-4">
+        {/* Skip login button in top right - safe from notch & status bar */}
+        <div className="flex justify-end mb-3 sm:mb-4">
           <button
             type="button"
             onClick={handleSkipLogin}
-            className="px-3.5 py-1 text-xs font-bold text-white bg-black/25 hover:bg-black/35 backdrop-blur-xs rounded-full border border-white/20 transition-all cursor-pointer"
+            className="px-3.5 py-1.5 text-xs font-bold text-white bg-black/25 hover:bg-black/35 active:scale-95 backdrop-blur-md rounded-full border border-white/20 transition-all cursor-pointer shadow-xs"
           >
             Skip login
           </button>
         </div>
 
         {/* Brand Logo & Name */}
-        <div className="flex items-center justify-center mb-3">
+        <div className="flex items-center justify-center mb-2.5 sm:mb-3">
           <BrandLogo size="lg" theme="dark" />
         </div>
 
@@ -214,7 +217,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
       </div>
 
       {/* 2. MIDDLE PHOTO COLLAGE (Photo 1 8-Tile Rounded Grid) */}
-      <div className="px-4 py-3 flex-1 flex flex-col justify-center">
+      <div className="px-4 py-2 sm:py-3 flex-1 flex flex-col justify-center my-auto min-h-0">
         <div className="grid grid-cols-4 gap-2">
           {collageImages.map((img, i) => (
             <div
@@ -236,8 +239,11 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
         </div>
       </div>
 
-      {/* 3. BOTTOM SHEET LOGIN / SIGNUP CARD (Photo 1 Layout) */}
-      <div className="bg-white rounded-t-[32px] p-6 sm:p-7 shadow-[0_-8px_30px_rgba(219,39,119,0.12)] border-t border-pink-100">
+      {/* 3. BOTTOM SHEET LOGIN / SIGNUP CARD (Universal Safe-Area Clearance for 3-Button Nav & Gesture Bars) */}
+      <div 
+        className="bg-white rounded-t-[32px] px-6 sm:px-7 pt-6 shadow-[0_-8px_30px_rgba(219,39,119,0.12)] border-t border-pink-100 shrink-0"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 64px)' }}
+      >
         
         {errorMessage && (
           <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-rose-700 text-xs">

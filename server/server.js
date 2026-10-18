@@ -589,14 +589,40 @@ app.post('/api/payments/create-order', (req, res) => {
 
 // Payments: Record UPI UTR & Mark Verification Pending
 app.post('/api/payments/verify', async (req, res) => {
-  const { booking_id, payment_id, order_id, method, amount, upi_utr } = req.body;
+  const { booking_id, payment_id, order_id, method, amount, upi_utr, payment_proof_photo } = req.body;
   
+  const cleanUtr = (upi_utr || (payment_id && payment_id.startsWith('UTR-') ? payment_id.replace('UTR-', '') : '')).replace(/\D/g, '').trim();
+
+  // 1. Strict Length: Must be 12 digits
+  if (!cleanUtr || cleanUtr.length !== 12) {
+    return res.status(400).json({ error: 'Kripya sahi 12-digit UPI Reference (UTR) number daalein. Yeh transaction details me milta hai.' });
+  }
+
+  // 2. Anti-Dummy & Repetition Check (e.g. 111111111111, 555555555555)
+  const uniqueDigits = new Set(cleanUtr.split('')).size;
+  if (uniqueDigits < 4) {
+    return res.status(400).json({ error: `Invalid UTR: Fake ya repeated numbers (jaise ${cleanUtr.slice(0, 4)}...) accept nahi kiye jaate. Asli transaction UTR enter karein.` });
+  }
+
+  // 3. Anti-Sequential Check (e.g. 123456789012, 987654321098)
+  const sequentialPatterns = ['012345678901', '123456789012', '987654321098', '098765432109'];
+  if (sequentialPatterns.includes(cleanUtr)) {
+    return res.status(400).json({ error: 'Invalid UTR: Sequential number detected. Asli UPI payment reference enter karein.' });
+  }
+
+  // 4. Duplicate Check: UTR cannot be reused across different bookings
+  const isDuplicate = bookings.some(b => b.upi_utr === cleanUtr && b.id !== booking_id);
+  if (isDuplicate) {
+    return res.status(400).json({ error: 'Yeh UPI UTR number pehle se ek doosre order me use ho chuka hai. Kripya naya payment reference enter karein.' });
+  }
+
   const booking = bookings.find(b => b.id === booking_id || b.booking_reference === booking_id);
   if (booking) {
     booking.payment_status = 'verification_pending';
     booking.payment_method = method || 'upi';
-    booking.payment_reference = payment_id || `UTR-${upi_utr || Date.now()}`;
-    booking.upi_utr = upi_utr || (payment_id && payment_id.startsWith('UTR-') ? payment_id.replace('UTR-', '') : null);
+    booking.payment_reference = payment_id || `UTR-${cleanUtr}`;
+    booking.upi_utr = cleanUtr;
+    if (payment_proof_photo) booking.payment_proof_photo = payment_proof_photo;
     db.updateBooking(booking.id, booking);
   }
 
@@ -1049,6 +1075,38 @@ app.post('/api/bookings', (req, res) => {
     payment_method, payment_status
   } = req.body;
 
+  // Strict UTR Validation if paying via UPI
+  let verifiedUtr = null;
+  if (payment_method === 'upi' || req.body.upi_utr || (req.body.payment_id && req.body.payment_id.startsWith('UTR-'))) {
+    const rawUtr = req.body.upi_utr || (req.body.payment_id && req.body.payment_id.startsWith('UTR-') ? req.body.payment_id.replace('UTR-', '') : '');
+    const cleanUtr = String(rawUtr).replace(/\D/g, '').trim();
+
+    // 1. Strict 12-digit length
+    if (!cleanUtr || cleanUtr.length !== 12) {
+      return res.status(400).json({ error: 'Kripya sahi 12-digit UPI Reference (UTR) number daalein.' });
+    }
+
+    // 2. Anti-Dummy & Repetition Check (e.g. 111111111111, 555555555555)
+    const uniqueDigits = new Set(cleanUtr.split('')).size;
+    if (uniqueDigits < 4) {
+      return res.status(400).json({ error: `Invalid UTR: Fake ya repeated numbers (jaise ${cleanUtr.slice(0, 4)}...) accept nahi kiye jaate. Asli transaction UTR enter karein.` });
+    }
+
+    // 3. Anti-Sequential Check (e.g. 123456789012, 987654321098)
+    const sequentialPatterns = ['012345678901', '123456789012', '987654321098', '098765432109', '112233445566', '121212121212'];
+    if (sequentialPatterns.includes(cleanUtr)) {
+      return res.status(400).json({ error: 'Invalid UTR: Sequential/dummy number detect hua hai. Asli UPI payment reference enter karein.' });
+    }
+
+    // 4. Duplicate Check: UTR cannot be reused across different bookings
+    const isDuplicate = bookings.some(b => b.upi_utr === cleanUtr);
+    if (isDuplicate) {
+      return res.status(400).json({ error: 'Yeh UPI UTR number pehle se ek doosre order me use ho chuka hai. Naya payment reference enter karein.' });
+    }
+
+    verifiedUtr = cleanUtr;
+  }
+
   const category = categories.find(c => c.id === service_id) || categories[0];
 
   let pro = professionals.find(p => p.id === professional_id);
@@ -1150,8 +1208,9 @@ app.post('/api/bookings', (req, res) => {
     total_amount: Number(req.body.total_amount) || totalAmount,
     payment_status: payment_status || (payment_method === 'pay_after_work' ? 'pending' : (payment_method === 'upi' ? 'verification_pending' : 'pending')),
     payment_method: payment_method || 'pay_after_work',
-    payment_id: req.body.payment_id || null,
-    upi_utr: req.body.upi_utr || (req.body.payment_id && req.body.payment_id.startsWith('UTR-') ? req.body.payment_id.replace('UTR-', '') : null),
+    payment_id: req.body.payment_id || (verifiedUtr ? `UTR-${verifiedUtr}` : null),
+    upi_utr: verifiedUtr,
+    payment_proof_photo: req.body.payment_proof_photo || '',
     customer_notes: customer_notes || '',
     customer_problem: req.body.customer_problem || customer_notes || '',
     customer_photo: req.body.customer_photo || '',

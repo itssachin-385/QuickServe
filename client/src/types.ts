@@ -199,6 +199,7 @@ export interface Booking {
   payment_method: 'upi' | 'card' | 'cash' | 'pay_after_work' | 'wallet' | string;
   payment_id?: string;
   upi_utr?: string;
+  payment_proof_photo?: string;
   customer_notes?: string;
   customer_problem?: string;
   customer_photo?: string;

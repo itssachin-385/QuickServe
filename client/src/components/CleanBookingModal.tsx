@@ -86,16 +86,17 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
     }
   };
 
-  const handleUpiPaymentSuccess = async (paymentId: string, utr?: string) => {
+  const handleUpiPaymentSuccess = async (paymentId: string, utr?: string, paymentProofPhoto?: string) => {
     setShowUpiModal(false);
-    await handleCreateBookingFinal('upi', 'verification_pending', paymentId, utr);
+    await handleCreateBookingFinal('upi', 'verification_pending', paymentId, utr, paymentProofPhoto);
   };
 
   const handleCreateBookingFinal = async (
     method: 'upi' | 'pay_after_work',
     pStatus: 'paid' | 'pending' | 'verification_pending',
     paymentId?: string,
-    utr?: string
+    utr?: string,
+    paymentProofPhoto?: string
   ) => {
     setErrorMsg('');
     setIsSubmitting(true);
@@ -116,6 +117,7 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
         payment_status: pStatus,
         payment_id: paymentId,
         upi_utr: utr,
+        payment_proof_photo: paymentProofPhoto,
         status: 'requested',
         booking_mode: 'instant',
         customer_notes: defaultProblem,
@@ -381,6 +383,11 @@ export const CleanBookingModal: React.FC<CleanBookingModalProps> = ({
           customerPhone={currentUser.phone}
           onSuccess={handleUpiPaymentSuccess}
           onClose={() => setShowUpiModal(false)}
+          onSwitchToPayAfterService={() => {
+            setShowUpiModal(false);
+            setPaymentMethod('pay_after_work');
+            handleCreateBookingFinal('pay_after_work', 'pending');
+          }}
         />
       )}
 

@@ -61,10 +61,13 @@
   background: #94a3b8;
 }
 
-/* Safe area insets for mobile */
+/* Safe area insets for mobile & all notch/navigation bar devices */
 .safe-area-top {
-  padding-top: max(10px, env(safe-area-inset-top, 0px));
+  padding-top: max(env(safe-area-inset-top, 0px), 48px);
 }
 .safe-area-bottom {
-  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 56px);
+}
+.safe-area-bottom-sheet {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 64px);
 }
