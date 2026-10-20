@@ -84,7 +84,7 @@ export interface Professional {
   experience_years: number;
   skills: string[];
   bio: string;
-  verification_state: 'pending' | 'under_review' | 'verified' | 'action_required' | 'suspended';
+  verification_state: 'pending' | 'under_review' | 'verified' | 'action_required' | 'rejected' | 'suspended';
   verifications: {
     aadhaar: boolean;
     police_clearance: boolean;
@@ -115,6 +115,14 @@ export interface Professional {
   aadhaar_back_doc?: string;
   selfie_doc?: string;
   locality?: string;
+  email?: string;
+  notifications?: Array<{
+    id: string;
+    title: string;
+    message: string;
+    type: string;
+    timestamp: string;
+  }>;
 }
 
 export type BookingStatus =
@@ -177,6 +185,7 @@ export interface Booking {
   zone_id: string;
   service_id: string;
   service_title: string;
+  service_name?: string;
   sub_service_selected: string;
   status: BookingStatus;
   booking_type: 'instant' | 'scheduled';

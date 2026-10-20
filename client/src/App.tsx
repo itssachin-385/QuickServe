@@ -3,6 +3,7 @@ import { CleanAuthScreen } from './components/CleanAuthScreen';
 import { CleanCustomerApp } from './components/CleanCustomerApp';
 import { CleanPartnerPortal } from './components/CleanPartnerPortal';
 import { AppSplashScreen } from './components/AppSplashScreen';
+import { InAppUpdateBanner } from './components/InAppUpdateBanner';
 import { CustomerUser, Booking, ServiceCategory } from './types';
 import { fetchCategories, fetchBookings } from './api';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -151,32 +152,38 @@ export function App() {
   // 2. SEPARATE PARTNER PORTAL / ADMIN DESK ROUTE
   if (appMode === 'partner') {
     return (
-      <CleanPartnerPortal
-        categories={categories}
-        onBackToCustomer={() => {
-          setOpenAdminDirect(false);
-          setAppMode('customer');
-        }}
-        initialShowAdminDesk={openAdminDirect}
-      />
+      <div className="flex flex-col min-h-screen">
+        <InAppUpdateBanner />
+        <CleanPartnerPortal
+          categories={categories}
+          onBackToCustomer={() => {
+            setOpenAdminDirect(false);
+            setAppMode('customer');
+          }}
+          initialShowAdminDesk={openAdminDirect}
+        />
+      </div>
     );
   }
 
   // 3. CLEAN CUSTOMER APP (Default Experience)
   return (
-    <CleanCustomerApp
-      currentUser={currentUser}
-      categories={categories}
-      bookings={bookings}
-      onRefreshBookings={loadData}
-      onLogout={handleLogout}
-      activeCityZone={activeCityZone}
-      onSelectZone={handleSelectZone}
-      onSwitchToPartnerPortal={(directAdmin) => {
-        setOpenAdminDirect(Boolean(directAdmin));
-        setAppMode('partner');
-      }}
-    />
+    <div className="flex flex-col min-h-screen">
+      <InAppUpdateBanner />
+      <CleanCustomerApp
+        currentUser={currentUser}
+        categories={categories}
+        bookings={bookings}
+        onRefreshBookings={loadData}
+        onLogout={handleLogout}
+        activeCityZone={activeCityZone}
+        onSelectZone={handleSelectZone}
+        onSwitchToPartnerPortal={(directAdmin) => {
+          setOpenAdminDirect(Boolean(directAdmin));
+          setAppMode('partner');
+        }}
+      />
+    </div>
   );
 }
 

@@ -136,16 +136,35 @@ app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
 
 // Direct APK Download Endpoint with no-cache headers to prevent mobile browser caching
-app.get(['/download-apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
-  const apkPath = path.resolve(__dirname, 'public/QuickServe_v2.apk');
-  if (fs.existsSync(apkPath)) {
+app.get(['/download-apk', '/QuickServe_Latest.apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
+  // Try QuickServe_Latest.apk first, fallback to QuickServe_v2.apk
+  const latestPath = path.resolve(__dirname, 'public/QuickServe_Latest.apk');
+  const fallbackPath = path.resolve(__dirname, 'public/QuickServe_v2.apk');
+  const targetPath = fs.existsSync(latestPath) ? latestPath : (fs.existsSync(fallbackPath) ? fallbackPath : null);
+
+  if (targetPath) {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Content-Type', 'application/vnd.android.package-archive');
-    return res.sendFile(apkPath);
+    res.setHeader('Content-Disposition', 'attachment; filename="QuickServe_Latest.apk"');
+    return res.sendFile(targetPath);
   }
   res.status(404).send('APK not found on server');
+});
+
+// App Version & In-App Auto-Update Endpoint
+app.get('/api/app-version', (req, res) => {
+  res.json({
+    version: '4.4',
+    versionCode: 32,
+    minVersionCode: 32,
+    apkUrl: '/QuickServe_Latest.apk',
+    downloadUrl: 'https://quickserve-3lhk.onrender.com/QuickServe_Latest.apk',
+    releaseNotes: 'Clean Admin Tables, Partner Notifications, Live Partner Tracking & In-App Auto-Updater',
+    forceUpdate: false,
+    updatedAt: new Date().toISOString()
+  });
 });
 
 // Persistent Database Collections (Auto-saved to disk and survived across restarts)
@@ -990,6 +1009,8 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
   const pro = professionals.find(p => p.id === req.params.id);
   if (!pro) return res.status(404).json({ error: 'Professional not found' });
 
+  if (!pro.notifications) pro.notifications = [];
+
   if (action === 'approve') {
     pro.verification_state = 'verified';
     pro.is_available = true;
@@ -997,6 +1018,15 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
     pro.verifications.police_clearance = true;
     pro.verifications.skill_trade_test = true;
     pro.admin_notes = notes || 'Profile and documents approved by Admin.';
+
+    // Push in-app congratulations notification
+    pro.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: '🎉 Badhai Ho! Verification Approved',
+      message: notes ? `Congratulations ${pro.name}! ${notes}` : `Congratulations ${pro.name}! Aapka QuickServe Partner account verified & active ho gaya hai. Ab aap app me customer bookings accept kar sakte hain.`,
+      type: 'congratulations',
+      timestamp: new Date().toISOString()
+    });
 
     // Send Fast2SMS Confirmation to partner
     if (gatewayConfig.fast2smsApiKey && pro.phone) {
@@ -1009,15 +1039,156 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
     pro.verification_state = 'action_required';
     pro.is_available = false;
     pro.admin_action_reason = notes || 'Additional identity documentation required.';
+
+    pro.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: '⚠️ Action Required: Re-upload Documents',
+      message: notes || 'Documents verification verify nahi ho payi. Kripya valid documents dubara upload karein.',
+      type: 'rejection',
+      timestamp: new Date().toISOString()
+    });
   } else if (action === 'reject') {
-    pro.verification_state = 'action_required';
+    pro.verification_state = 'rejected';
     pro.is_available = false;
     pro.admin_action_reason = notes || 'Application did not meet quality requirements.';
+
+    // Push in-app rejection notification
+    pro.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: '❌ Application Rejected',
+      message: notes || 'Aapka partner application reject kiya gaya hai. Kripya sahi Aadhaar aur Selfie photo upload karein.',
+      type: 'rejection',
+      timestamp: new Date().toISOString()
+    });
+
+    // Send Fast2SMS Rejection to partner
+    if (gatewayConfig.fast2smsApiKey && pro.phone) {
+      const cleanPhone = pro.phone.replace(/\D/g, '').slice(-10);
+      try {
+        fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(`QuickServe Alert: Namaste ${pro.name}, aapka partner application reject kiya gaya hai: ${notes || 'Documents re-upload required'}. Kripya app me details check karein.`)}&language=english&flash=0&numbers=${cleanPhone}`).catch(() => {});
+      } catch (e) {}
+    }
   }
 
   try { db.saveProfessionals(professionals); } catch (e) {}
 
   res.json({ success: true, professional: pro });
+});
+
+// Partner In-App Notifications Endpoint
+app.get('/api/professionals/:id/notifications', (req, res) => {
+  const pro = professionals.find(p => p.id === req.params.id);
+  if (!pro) return res.status(404).json({ error: 'Professional not found' });
+  res.json({ notifications: pro.notifications || [] });
+});
+
+// Admin Personal Work Assignment: Create and direct assign work to an official
+app.post('/api/admin/assign-work', verifyAdminPin, (req, res) => {
+  const { 
+    professional_id, 
+    customer_name, 
+    customer_phone, 
+    service_name, 
+    locality, 
+    address, 
+    total_amount, 
+    notes, 
+    scheduled_time 
+  } = req.body;
+
+  const pro = professionals.find(p => p.id === professional_id);
+  if (!pro) {
+    return res.status(404).json({ error: 'Selected official/partner not found.' });
+  }
+
+  const newBooking = {
+    id: `book-adm-${Date.now()}`,
+    booking_reference: `QS-ADM-${Math.floor(1000 + Math.random() * 9000)}`,
+    service_id: pro.service_id || 'cat-plumber',
+    service_name: service_name || pro.service_name || 'Doorstep Service',
+    category_id: pro.service_id || 'cat-plumber',
+    customer_name: customer_name || 'Admin Assigned Customer',
+    customer_phone: customer_phone || '+91 95701 51834',
+    customer_address: address || locality || pro.locality || 'Greater Noida',
+    locality: locality || pro.locality || 'Greater Noida',
+    scheduled_time: scheduled_time || 'Immediate Dispatch',
+    status: 'partner_assigned',
+    total_amount: Number(total_amount) || 299,
+    base_charge: Number(total_amount) || 299,
+    platform_fee: 0,
+    company_commission: 0,
+    payment_method: 'cash',
+    payment_status: 'pending',
+    professional_id: pro.id,
+    professional_name: pro.name,
+    professional_phone: pro.phone,
+    notes: notes || 'Direct Work Assignment by QuickServe Admin',
+    created_at: new Date().toISOString(),
+    start_otp: String(Math.floor(1000 + Math.random() * 9000))
+  };
+
+  bookings.unshift(newBooking);
+  try { db.saveBookings(bookings); } catch (e) {}
+
+  // Push work assignment alert to partner
+  if (!pro.notifications) pro.notifications = [];
+  pro.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    title: 'New Work Assigned by Admin! 🛠️',
+    message: `Admin assigned a new job: ${newBooking.service_name} at ${newBooking.customer_address}. Amount: ₹${newBooking.total_amount}.`,
+    booking_id: newBooking.id,
+    type: 'work_assignment',
+    timestamp: new Date().toISOString()
+  });
+  try { db.saveProfessionals(professionals); } catch (e) {}
+
+  // Send Fast2SMS Work Assignment SMS to partner
+  if (gatewayConfig.fast2smsApiKey && pro.phone) {
+    const cleanPhone = pro.phone.replace(/\D/g, '').slice(-10);
+    try {
+      fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(`QuickServe Task: Namaste ${pro.name}, Admin ne aapko naya kaam assign kiya hai: ${newBooking.service_name} (${newBooking.customer_address}). OTP: ${newBooking.start_otp}. Kripya app me job accept karein.`)}&language=english&flash=0&numbers=${cleanPhone}`).catch(() => {});
+    } catch (e) {}
+  }
+
+  res.json({ 
+    success: true, 
+    booking: newBooking, 
+    message: `Work successfully assigned directly to ${pro.name}!` 
+  });
+});
+
+// Admin Personal Work Assignment: Assign existing customer booking to official
+app.post('/api/admin/assign-booking', verifyAdminPin, (req, res) => {
+  const { booking_id, professional_id } = req.body;
+  const booking = bookings.find(b => b.id === booking_id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found.' });
+
+  const pro = professionals.find(p => p.id === professional_id);
+  if (!pro) return res.status(404).json({ error: 'Official/partner not found.' });
+
+  booking.professional_id = pro.id;
+  booking.professional_name = pro.name;
+  booking.professional_phone = pro.phone;
+  booking.status = 'partner_assigned';
+
+  try { db.saveBookings(bookings); } catch (e) {}
+
+  if (!pro.notifications) pro.notifications = [];
+  pro.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    title: 'Customer Job Assigned! 🛠️',
+    message: `Admin assigned customer booking #${booking.booking_reference}: ${booking.service_name} at ${booking.customer_address || booking.locality}.`,
+    booking_id: booking.id,
+    type: 'work_assignment',
+    timestamp: new Date().toISOString()
+  });
+  try { db.saveProfessionals(professionals); } catch (e) {}
+
+  res.json({ 
+    success: true, 
+    booking, 
+    message: `Booking #${booking.booking_reference} assigned to ${pro.name}!` 
+  });
 });
 
 // Partner Commission Dues Settlement via UPI (Ola/Rapido Model)

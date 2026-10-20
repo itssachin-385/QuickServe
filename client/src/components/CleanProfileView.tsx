@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CustomerUser } from '../types';
-import { User, Phone, MapPin, ShieldCheck, HelpCircle, LogOut, MessageSquare, Headphones, Wrench, ChevronRight } from 'lucide-react';
+import { User, Phone, MapPin, ShieldCheck, HelpCircle, LogOut, MessageSquare, Headphones, Wrench, ChevronRight, DownloadCloud, Lock, Sparkles } from 'lucide-react';
+import { API_BASE } from '../api';
 
 interface CleanProfileViewProps {
   currentUser: CustomerUser;
@@ -150,19 +151,70 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
         </div>
       )}
 
-      {/* Partner Onboarding Link */}
-      <div className="bg-pink-50/70 border border-pink-200 rounded-2xl p-5 mb-5 flex items-center justify-between">
-        <div>
-          <h4 className="text-sm font-bold text-[#1F121C]">Are you a Service Professional?</h4>
-          <p className="text-xs text-[#705869] mt-0.5">Register your trade and start getting local service bookings.</p>
+      {/* Partner Onboarding & Admin Link */}
+      <div className="bg-pink-50/70 border border-pink-200 rounded-2xl p-5 mb-5 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-bold text-[#1F121C]">Are you a Service Professional?</h4>
+            <p className="text-xs text-[#705869] mt-0.5">Register your trade and start getting local service bookings.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onSwitchToPartnerPortal}
+            className="px-3.5 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors shrink-0 flex items-center gap-1.5 active:scale-95"
+          >
+            <Wrench className="w-3.5 h-3.5" />
+            <span>Partner Portal</span>
+          </button>
         </div>
+
+        {onOpenAdminDesk && (
+          <div className="pt-2 border-t border-pink-200/60 flex items-center justify-between text-xs">
+            <span className="text-slate-600 font-medium flex items-center gap-1">
+              <Lock className="w-3.5 h-3.5 text-pink-600" />
+              <span>Admin Operations Desk (PIN Protected)</span>
+            </span>
+            <button
+              type="button"
+              onClick={onOpenAdminDesk}
+              className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[11px] font-bold active:scale-95 cursor-pointer"
+            >
+              Open Admin
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* App Version & In-App Auto-Update Card */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-5 shadow-2xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center border border-pink-100 shrink-0">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <span>QuickServe v4.4</span>
+              <span className="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[10px] font-bold">
+                Latest (Code 32)
+              </span>
+            </h4>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Direct In-App Auto-Update enabled. No uninstall needed.
+            </p>
+          </div>
+        </div>
+
         <button
           type="button"
-          onClick={onSwitchToPartnerPortal}
-          className="px-3.5 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors shrink-0 flex items-center gap-1.5"
+          onClick={() => {
+            const base = API_BASE.replace(/\/api\/?$/, '');
+            window.location.href = `${base}/QuickServe_Latest.apk`;
+          }}
+          className="px-3 py-1.5 bg-slate-100 hover:bg-pink-50 hover:text-pink-700 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer"
+          title="Direct APK Download"
         >
-          <Wrench className="w-3.5 h-3.5" />
-          <span>Partner Portal</span>
+          <DownloadCloud className="w-3.5 h-3.5" />
+          <span>Update App</span>
         </button>
       </div>
 
