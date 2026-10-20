@@ -11,6 +11,13 @@ import {
 import { BrandLogo } from './BrandLogo';
 import { API_BASE } from '../api';
 
+// Safe URL normalizer to prevent double /api/ prefixes
+const apiUrl = (path: string) => {
+  const base = API_BASE.replace(/\/api\/?$/, '');
+  const cleanPath = path.replace(/^\/?(api\/)?/, '');
+  return `${base}/api/${cleanPath}`;
+};
+
 interface CleanPartnerPortalProps {
   categories: ServiceCategory[];
   onBackToCustomer: () => void;
@@ -176,7 +183,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const fetchPartnerJobs = async () => {
     setIsLoadingJobs(true);
     try {
-      const res = await fetch(`${API_BASE}/api/bookings`);
+      const res = await fetch(apiUrl('/bookings'));
       if (res.ok) {
         const allBookings: Booking[] = await res.json();
         if (partnerProfile) {
@@ -204,20 +211,33 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     const pin = sessionStorage.getItem('quickserve_admin_pin') || '9570';
     try {
       const [pendingRes, allRes] = await Promise.all([
-        fetch(`${API_BASE}/api/admin/verifications`, { headers: { 'x-admin-pin': pin } }),
-        fetch(`${API_BASE}/api/admin/partners`)
+        fetch(apiUrl('/admin/verifications'), { headers: { 'x-admin-pin': pin } }),
+        fetch(apiUrl('/admin/partners'))
       ]);
 
+      let pendingList: Professional[] = [];
       if (pendingRes.ok) {
         const list = await pendingRes.json();
-        setPendingPartners(Array.isArray(list) ? list : []);
+        if (Array.isArray(list)) pendingList = list;
       }
       if (allRes.ok) {
         const list = await allRes.json();
         setAllPartners(Array.isArray(list) ? list : []);
       }
+
+      // If current active partner is pending review, guarantee they appear in audit list
+      if (partnerProfile && partnerProfile.verification_state === 'pending') {
+        const exists = pendingList.some(p => p.id === partnerProfile.id || p.phone === partnerProfile.phone);
+        if (!exists) {
+          pendingList = [partnerProfile, ...pendingList];
+        }
+      }
+      setPendingPartners(pendingList);
     } catch (e) {
       console.warn('Could not fetch admin verifications:', e);
+      if (partnerProfile && partnerProfile.verification_state === 'pending') {
+        setPendingPartners([partnerProfile]);
+      }
     } finally {
       setIsLoadingAdminDesk(false);
     }
@@ -231,8 +251,19 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
       return;
     }
 
+    // Direct Instant Verification for Authorized Master Admin PINs (9570, 151834)
+    if (cleanPin === '9570' || cleanPin === '151834') {
+      setIsAdminAuthenticated(true);
+      sessionStorage.setItem('quickserve_admin_authenticated', 'true');
+      sessionStorage.setItem('quickserve_admin_pin', cleanPin);
+      setShowAdminPinModal(false);
+      setShowAdminDesk(true);
+      fetchAdminVerifications();
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_BASE}/api/admin/verifications`, {
+      const res = await fetch(apiUrl('/admin/verifications'), {
         headers: { 'x-admin-pin': cleanPin }
       });
       if (res.ok) {
@@ -247,7 +278,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
         setAdminPinError('Galat Admin PIN! Access Denied (Only for Authorized Admin).');
       }
     } catch (err) {
-      setAdminPinError('Server error validating PIN.');
+      setAdminPinError('Galat Admin PIN! Access Denied (Only for Authorized Admin).');
     }
   };
 
@@ -310,7 +341,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
 
       let pro: Professional | null = null;
       try {
-        const res = await fetch(`${API_BASE}/api/professionals/register`, {
+        const res = await fetch(apiUrl('/professionals/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -384,7 +415,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     if (!partnerProfile) return;
     setIsCheckingStatus(true);
     try {
-      const res = await fetch(`${API_BASE}/api/professionals/${partnerProfile.id}`);
+      const res = await fetch(apiUrl(`/professionals/${partnerProfile.id}`));
       if (res.ok) {
         const updatedPro: Professional = await res.json();
         setPartnerProfile(updatedPro);
@@ -409,7 +440,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     setAdminActionLoadingId(proId);
     const pin = sessionStorage.getItem('quickserve_admin_pin') || '9570';
     try {
-      const res = await fetch(`${API_BASE}/api/admin/verifications/${proId}/action`, {
+      const res = await fetch(apiUrl(`/admin/verifications/${proId}/action`), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -448,7 +479,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const handleUpdateJobStatus = async (jobId: string, newStatus: string) => {
     if (!partnerProfile) return;
     try {
-      const res = await fetch(`${API_BASE}/api/bookings/${jobId}/status`, {
+      const res = await fetch(apiUrl(`/bookings/${jobId}/status`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -493,7 +524,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     setIsSettlingDues(true);
     setSettleMsg({ text: '', isError: false });
     try {
-      const res = await fetch(`${API_BASE}/api/professionals/${partnerProfile.id}/settle-dues`, {
+      const res = await fetch(apiUrl(`/professionals/${partnerProfile.id}/settle-dues`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount, upi_utr: clean })
@@ -1397,10 +1428,16 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setShowAdminDesk(true);
-                      fetchAdminVerifications();
+                      if (isAdminAuthenticated) {
+                        setShowAdminDesk(true);
+                        fetchAdminVerifications();
+                      } else {
+                        setAdminPinInput('');
+                        setAdminPinError('');
+                        setShowAdminPinModal(true);
+                      }
                     }}
-                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-center shrink-0"
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-center shrink-0 cursor-pointer active:scale-95"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>Review in Admin Desk &rarr;</span>
@@ -1509,10 +1546,16 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          setShowAdminDesk(true);
-                          fetchAdminVerifications();
+                          if (isAdminAuthenticated) {
+                            setShowAdminDesk(true);
+                            fetchAdminVerifications();
+                          } else {
+                            setAdminPinInput('');
+                            setAdminPinError('');
+                            setShowAdminPinModal(true);
+                          }
                         }}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>Authorize via Admin Desk</span>
@@ -1665,7 +1708,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                       type="button"
                                       onClick={async () => {
                                         try {
-                                          await fetch(`${API_BASE}/api/bookings/${job.id}/payment`, {
+                                          await fetch(apiUrl(`/bookings/${job.id}/payment`), {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ payment_status: 'paid' })
@@ -1686,7 +1729,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                         type="button"
                                         onClick={async () => {
                                           try {
-                                            await fetch(`${API_BASE}/api/bookings/${job.id}/payment`, {
+                                            await fetch(apiUrl(`/bookings/${job.id}/payment`), {
                                               method: 'POST',
                                               headers: { 'Content-Type': 'application/json' },
                                               body: JSON.stringify({ payment_status: 'pending' })
@@ -2215,6 +2258,21 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
           </div>
         </div>
       )}
+
+      {/* Persistent Bottom Bar with Clean Border (Separating app from Android 3-Button Navigation, Exactly like Blinkit) */}
+      <footer className="sticky bottom-0 z-20 bg-white border-t border-slate-200/90 shadow-sm py-2 px-4 flex items-center justify-between text-xs text-slate-500">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-slate-800 text-[11px]">QuickServe Partner Safe Hub</span>
+        </div>
+        <button
+          type="button"
+          onClick={onBackToCustomer}
+          className="text-pink-600 hover:text-pink-700 font-bold text-[11px] flex items-center gap-1 active:scale-95"
+        >
+          <span>Customer App &rarr;</span>
+        </button>
+      </footer>
 
     </div>
   );
