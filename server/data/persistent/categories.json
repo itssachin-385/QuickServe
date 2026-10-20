@@ -124,19 +124,25 @@
     "is_active": true,
     "is_mvp_launch": true,
     "display_order": 3,
-    "starting_price": 349,
+    "starting_price": 149,
     "sub_services": [
+      {
+        "id": "sub-m0",
+        "name": "Express 30-Min Chores (Any 1: Bartan / Jhadu-Pocha / Quick Dusting)",
+        "price": 149,
+        "duration": "30 mins"
+      },
       {
         "id": "sub-m1",
         "name": "Floor sweeping & mopping (2BHK/3BHK)",
-        "price": 349,
+        "price": 249,
         "duration": "60 mins"
       },
       {
         "id": "sub-m2",
         "name": "Utensil washing & kitchen sink clearing",
-        "price": 299,
-        "duration": "45 mins"
+        "price": 149,
+        "duration": "30 mins"
       },
       {
         "id": "sub-m3",

@@ -93,6 +93,39 @@ export const professionalHomeServices: HomeServiceCard[] = [
     ]
   },
   {
+    id: 's-utensils',
+    title: 'Utensil Dishwashing & Sink Clean',
+    title_hi: 'बर्तन धुलाई और सिंक सफाई',
+    categorySlug: 'maid-helper',
+    categoryId: 'cat-maid',
+    subServiceName: 'Utensil washing & kitchen sink clearing',
+    image: 'https://images.unsplash.com/photo-1585837575652-267c041d77d4?w=600&auto=format&fit=crop&q=80',
+    startingPrice: 149,
+    duration_mins: 30,
+    tagline: 'Dish scrub, foam rinse, drying rack & sink hygiene',
+    filterGroup: 'kitchen',
+    isPopular: true,
+    includedTasks: [
+      'Scrubbing and washing all dirty utensils, pans & plates',
+      'Rinsing with clean water and neatly stacking in dish rack',
+      'Scrubbing kitchen sink basin, tap & drain food trap',
+      'Wiping water splash from sink platform'
+    ],
+    excludedTasks: [
+      'Chimney filter deep chemical degreasing (book Kitchen Deep Clean)',
+      'Washing more than 40 heavy industrial catering utensils'
+    ],
+    includedTasks_hi: [
+      'बर्तनों की साबुन व स्क्रबर से अच्छी धुलाई',
+      'पानी से धोकर बर्तनों को रैक में लगाना',
+      'सिंक और जाली की पूरी सफाई'
+    ],
+    excludedTasks_hi: [
+      'चिमनी की केमिकल सफाई'
+    ],
+    materialsNote: 'Customer to provide dishwash bar/liquid, scrubber and clean water.'
+  },
+  {
     id: 's-sweeping',
     title: 'Floor Sweeping & Mopping',
     title_hi: 'झाड़ू और पोछा सेवा',
