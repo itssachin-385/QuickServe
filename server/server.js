@@ -1004,6 +1004,50 @@ app.post('/api/admin/verifications/:id/action', (req, res) => {
   res.json({ success: true, professional: pro });
 });
 
+// Partner Commission Dues Settlement via UPI (Ola/Rapido Model)
+app.post('/api/professionals/:id/settle-dues', (req, res) => {
+  const { amount, upi_utr } = req.body;
+  const pro = professionals.find(p => p.id === req.params.id);
+  if (!pro) return res.status(404).json({ error: 'Professional not found' });
+
+  const numAmount = Number(amount);
+  if (!numAmount || numAmount <= 0) {
+    return res.status(400).json({ error: 'Valid settlement amount required' });
+  }
+
+  // Validate 12-digit UTR
+  const cleanUtr = String(upi_utr || '').replace(/\D/g, '').trim();
+  if (cleanUtr.length !== 12) {
+    return res.status(400).json({ error: 'Kripya sahi 12-digit UPI Transaction UTR daalein.' });
+  }
+
+  // Anti-dummy check on UTR
+  const uniqueDigits = new Set(cleanUtr.split('')).size;
+  if (uniqueDigits < 4) {
+    return res.status(400).json({ error: 'Invalid UTR: Repeated ya fake numbers allow nahi hain.' });
+  }
+
+  // Credit partner wallet balance
+  pro.available_balance = (pro.available_balance || 0) + numAmount;
+  if (!pro.wallet_history) pro.wallet_history = [];
+  pro.wallet_history.unshift({
+    id: `tx-settle-${Date.now()}`,
+    type: 'due_settlement',
+    amount: numAmount,
+    upi_utr: cleanUtr,
+    note: `QuickServe Commission Dues settled via UPI UTR: ${cleanUtr}`,
+    created_at: new Date().toISOString()
+  });
+
+  try { db.saveProfessionals(professionals); } catch (e) {}
+
+  res.json({
+    success: true,
+    message: `₹${numAmount} successfully credited! Aapka wallet balance ab ₹${pro.available_balance} hai.`,
+    professional: pro
+  });
+});
+
 // Admin All Partners Roster
 app.get('/api/admin/partners', (req, res) => {
   res.json(professionals);
@@ -1238,6 +1282,36 @@ app.post('/api/bookings', (req, res) => {
     }
   }
 
+  // Instant Auto-Dispatch Fallback (25-30 Seconds)
+  // If no partner manually accepts within 25 seconds, automatically assign nearest verified pro with healthy wallet
+  if (newBooking.booking_type === 'instant' && newBooking.status === 'requested' && !newBooking.professional_id) {
+    setTimeout(() => {
+      try {
+        const current = bookings.find(b => b.id === newBooking.id);
+        if (current && (current.status === 'requested' || current.status === 'searching')) {
+          const matchedPro = professionals.find(p => 
+            p.service_id === current.service_id && 
+            p.verification_state === 'verified' && 
+            (p.available_balance === undefined || p.available_balance >= -300)
+          ) || professionals.find(p => p.verification_state === 'verified' && (p.available_balance === undefined || p.available_balance >= -300)) || professionals[0];
+
+          if (matchedPro) {
+            current.status = 'partner_assigned';
+            current.professional_id = matchedPro.id;
+            current.professional_name = matchedPro.name;
+            current.professional_phone = matchedPro.phone;
+            current.professional_rating = matchedPro.rating || 4.9;
+            current.professional_avatar = matchedPro.avatar;
+            db.updateBooking(current.id, current);
+            console.log(`[Auto-Dispatch] Assigned ${matchedPro.name} (${matchedPro.phone}) to Order ${current.booking_reference}`);
+          }
+        }
+      } catch (err) {
+        console.warn('Auto-dispatch error:', err);
+      }
+    }, 25000);
+  }
+
   res.status(201).json({ success: true, booking: newBooking });
 });
 
@@ -1256,6 +1330,20 @@ app.post('/api/bookings/:id/status', (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
 
+  // Ola/Rapido Negative Balance Blocker Check when assigning partner
+  if (status === 'partner_assigned' || status === 'professional_assigned') {
+    const candidateProId = req.body.professional_id || booking.professional_id;
+    if (candidateProId) {
+      const pro = professionals.find(p => p.id === candidateProId);
+      const minBal = (commissionSettings && commissionSettings.partnerMaxNegativeBalance !== undefined) ? commissionSettings.partnerMaxNegativeBalance : -300;
+      if (pro && pro.available_balance !== undefined && pro.available_balance < minBal) {
+        return res.status(400).json({ 
+          error: `Negative wallet limit reached (-₹${Math.abs(pro.available_balance)}). QuickServe commission dues clear karein taaki naye jobs accept ho sakein.` 
+        });
+      }
+    }
+  }
+
   booking.status = status;
   if (req.body.professional_id) booking.professional_id = req.body.professional_id;
   if (req.body.professional_name) booking.professional_name = req.body.professional_name;
@@ -1267,12 +1355,45 @@ app.post('/api/bookings/:id/status', (req, res) => {
   }
   if (status === 'completed') {
     booking.completed_at = new Date().toISOString();
-    // credit professional
-    const pro = professionals.find(p => p.id === booking.professional_id);
+    const pro = professionals.find(p => p.id === (booking.professional_id || req.body.professional_id));
     if (pro) {
-      pro.completed_jobs_count += 1;
-      pro.today_earnings = (pro.today_earnings || 0) + booking.base_charge;
-      pro.available_balance = (pro.available_balance || 0) + booking.base_charge;
+      pro.completed_jobs_count = (pro.completed_jobs_count || 0) + 1;
+
+      const totalAmount = Number(booking.total_amount) || (Number(booking.base_charge || 0) + Number(booking.platform_fee || 29));
+      const companyCut = Number(booking.company_total_cut) || (Number(booking.company_commission || Math.round(totalAmount * 0.15)) + Number(booking.platform_fee || 29));
+      const partnerEarnings = Math.max(totalAmount - companyCut, 0);
+
+      // Ola/Rapido Settlement Logic:
+      // If customer paid directly to partner (Cash / Doorstep UPI):
+      // Partner holds 100% of money in hand. Company commission cut is debited from partner wallet!
+      if (booking.payment_method === 'pay_after_work' || booking.payment_method === 'cash') {
+        pro.available_balance = (pro.available_balance || 0) - companyCut;
+        pro.today_earnings = (pro.today_earnings || 0) + partnerEarnings;
+        if (!pro.wallet_history) pro.wallet_history = [];
+        pro.wallet_history.unshift({
+          id: `tx-${Date.now()}`,
+          type: 'commission_debit',
+          booking_id: booking.id,
+          booking_ref: booking.booking_reference,
+          amount: -companyCut,
+          note: `QuickServe commission cut for cash order #${booking.booking_reference}`,
+          created_at: new Date().toISOString()
+        });
+      } else {
+        // Prepaid Online: QuickServe platform owes partner their net earning
+        pro.available_balance = (pro.available_balance || 0) + partnerEarnings;
+        pro.today_earnings = (pro.today_earnings || 0) + partnerEarnings;
+        if (!pro.wallet_history) pro.wallet_history = [];
+        pro.wallet_history.unshift({
+          id: `tx-${Date.now()}`,
+          type: 'online_payout_credit',
+          booking_id: booking.id,
+          booking_ref: booking.booking_reference,
+          amount: partnerEarnings,
+          note: `Earnings credit for prepaid order #${booking.booking_reference}`,
+          created_at: new Date().toISOString()
+        });
+      }
       db.updateProfessional(pro.id, pro);
     }
   }

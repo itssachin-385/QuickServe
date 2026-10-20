@@ -576,11 +576,33 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                     </div>
                   )}
 
-                  {/* Partner Details Card if assigned + WhatsApp Connect */}
+                  {/* Matching Nearest Partner State (30-60 Seconds Live Dispatch) */}
+                  {!b.professional_name && !isCancelled && !isCompleted && (
+                    <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl flex items-center justify-between gap-3 text-xs shadow-2xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
+                          <Clock className="w-4 h-4 animate-spin" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-bold text-amber-950 text-xs">Matching Nearest Verified Partner...</p>
+                            <span className="px-1.5 py-0.2 bg-amber-200 text-amber-900 text-[9px] font-bold rounded">
+                              ETA 30–60s
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-amber-800 truncate mt-0.5">
+                            Alert broadcast to {b.locality || 'Greater Noida Micro-Hub'}. Partner details will appear here.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Partner Details Card if assigned + Direct Calling + WhatsApp */}
                   {b.professional_name && !isCancelled && (
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-600 to-rose-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-600 to-rose-700 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
                           {b.professional_name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
@@ -591,6 +613,12 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                             </span>
                           </div>
                           <p className="text-[11px] text-[#705869]">Assigned Service Professional • {b.professional_rating || 4.9} ★</p>
+                          {b.professional_phone && (
+                            <p className="text-[11px] font-mono font-bold text-slate-800 flex items-center gap-1 mt-0.5">
+                              <Phone className="w-3 h-3 text-pink-600" />
+                              <span>{b.professional_phone}</span>
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -609,15 +637,15 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                           </a>
                         )}
 
-                        {/* Call Partner Button */}
+                        {/* Direct Call Button */}
                         {b.professional_phone && (
                           <a
                             href={`tel:${b.professional_phone}`}
-                            className="px-3 py-1.5 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
-                            title="Call Partner"
+                            className="px-3.5 py-1.5 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+                            title="Call Partner Directly"
                           >
                             <Phone className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Call</span>
+                            <span>Call</span>
                           </a>
                         )}
                       </div>
@@ -631,7 +659,9 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
                         <ShieldCheck className="w-4 h-4 text-pink-600 shrink-0" />
                         <div>
                           <span className="font-bold text-[#1F121C]">Doorstep Start OTP: </span>
-                          <span className="text-[#705869]">Share with helper upon arrival</span>
+                          <span className="text-[#705869]">
+                            {b.professional_name ? `Share with ${b.professional_name} upon arrival` : 'Share with helper upon arrival'}
+                          </span>
                         </div>
                       </div>
                       <span className="px-3 py-1 bg-white border border-pink-200 rounded-lg font-mono font-extrabold text-pink-600 text-sm tracking-wider shadow-2xs">

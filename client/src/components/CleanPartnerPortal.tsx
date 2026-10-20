@@ -5,7 +5,8 @@ import {
   Wallet, ShieldCheck, AlertCircle, ArrowLeft, ArrowRight,
   Calendar, RefreshCw, UserCheck, Briefcase, 
   FileText, Camera, UploadCloud, Eye, X, 
-  Lock, ShieldAlert, Sparkles, Check, Banknote
+  Lock, ShieldAlert, Sparkles, Check, Banknote,
+  AlertTriangle, QrCode, Copy
 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 
@@ -48,6 +49,11 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const [isLoadingJobs, setIsLoadingJobs] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+
+  // Ola/Rapido Negative Balance Settlement State
+  const [settleUtr, setSettleUtr] = useState('');
+  const [isSettlingDues, setIsSettlingDues] = useState(false);
+  const [settleMsg, setSettleMsg] = useState({ text: '', isError: false });
 
   // Admin Verification Desk State
   const [showAdminDesk, setShowAdminDesk] = useState(initialShowAdminDesk);
@@ -327,6 +333,41 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
       }
     } catch (e) {
       console.warn('Status update failed:', e);
+    }
+  };
+
+  // Ola/Rapido Dues Settlement Handler
+  const handleSettleDues = async (amount: number) => {
+    if (!partnerProfile) return;
+    const clean = settleUtr.replace(/\D/g, '').trim();
+    if (clean.length !== 12) {
+      setSettleMsg({ text: 'Kripya 12-digit UPI Transaction UTR number daalein.', isError: true });
+      return;
+    }
+
+    setIsSettlingDues(true);
+    setSettleMsg({ text: '', isError: false });
+    try {
+      const res = await fetch(`/api/professionals/${partnerProfile.id}/settle-dues`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, upi_utr: clean })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to settle dues');
+      }
+
+      setPartnerProfile(data.professional);
+      localStorage.setItem('quickserve_active_partner', JSON.stringify(data.professional));
+      setSettleUtr('');
+      setSettleMsg({ text: `🎉 Dues settled! ₹${amount} credited. Account unlocked!`, isError: false });
+      setTimeout(() => setSettleMsg({ text: '', isError: false }), 4500);
+      fetchPartnerJobs();
+    } catch (err: any) {
+      setSettleMsg({ text: err.message || 'Error settling dues', isError: true });
+    } finally {
+      setIsSettlingDues(false);
     }
   };
 
@@ -1167,6 +1208,30 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                       </button>
                     </div>
 
+                    {/* Ola/Rapido Negative Balance Blocker Banner */}
+                    {(partnerProfile.available_balance || 0) < -300 && (
+                      <div className="p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shrink-0">
+                            <AlertTriangle className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-rose-950 text-xs sm:text-sm">Account Paused: Wallet Limit (-₹300) Reached</p>
+                            <p className="text-rose-700 text-[11px] mt-0.5">
+                              Aapne customer se direct cash collect kiya hai. QuickServe platform cut due hai: ₹{Math.abs(partnerProfile.available_balance || 0)}. Naye orders lene ke liye commission settle karein.
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('earnings')}
+                          className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shrink-0 shadow-xs cursor-pointer"
+                        >
+                          Settle Dues via UPI &rarr;
+                        </button>
+                      </div>
+                    )}
+
                     {jobs.length === 0 ? (
                       <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
                         <Clock className="w-10 h-10 text-slate-300 mx-auto mb-2" />
@@ -1175,8 +1240,9 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                       </div>
                     ) : (
                       jobs.map((job) => {
+                        const isNegativeLocked = (partnerProfile?.available_balance || 0) < -300;
                         const isMyJob = job.professional_id === partnerProfile.id;
-                        const canAccept = (job.status === 'requested' || job.status === 'confirmed') && !job.professional_id;
+                        const canAccept = (job.status === 'requested' || job.status === 'confirmed') && !job.professional_id && !isNegativeLocked;
                         const canStart = isMyJob && (job.status === 'partner_assigned' || job.status === 'confirmed');
                         const canComplete = isMyJob && (job.status === 'in_progress' || job.status === 'started');
 
@@ -1329,6 +1395,18 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                 </button>
                               )}
 
+                              {isNegativeLocked && (job.status === 'requested' || job.status === 'confirmed') && !job.professional_id && (
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveTab('earnings')}
+                                  className="px-3.5 py-2 bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+                                  title="Wallet limit reached (-₹300). Settle commission to unlock orders."
+                                >
+                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                  <span>Locked (-₹{Math.abs(partnerProfile.available_balance || 0)}) • Settle Dues</span>
+                                </button>
+                              )}
+
                               {canStart && (
                                 <button
                                   type="button"
@@ -1374,20 +1452,37 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
             )}
 
             {/* ======================================================== */}
-            {/* TAB 2: EARNINGS & WALLET                                 */}
+            {/* TAB 2: EARNINGS & WALLET (Ola / Rapido Model)            */}
             {/* ======================================================== */}
             {activeTab === 'earnings' && (
               <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-                <h3 className="text-sm font-bold text-slate-900">Partner Earnings & Wallet</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-900">Partner Earnings & Wallet</h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                    Ola / Rapido Model
+                  </span>
+                </div>
                 
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                     <p className="text-[11px] text-slate-500">Today&apos;s Earnings</p>
                     <p className="text-lg font-bold text-slate-900 mt-0.5">₹{partnerProfile.today_earnings || 0}</p>
                   </div>
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                    <p className="text-[11px] text-emerald-800">Wallet Balance</p>
-                    <p className="text-lg font-bold text-emerald-900 mt-0.5">₹{partnerProfile.available_balance || 0}</p>
+                  <div className={`p-3 border rounded-xl ${
+                    (partnerProfile.available_balance || 0) < 0
+                      ? 'bg-rose-50 border-rose-200 text-rose-900'
+                      : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  }`}>
+                    <p className={`text-[11px] font-semibold ${
+                      (partnerProfile.available_balance || 0) < 0 ? 'text-rose-700' : 'text-emerald-800'
+                    }`}>
+                      {(partnerProfile.available_balance || 0) < 0 ? 'Dues Pending' : 'Wallet Balance'}
+                    </p>
+                    <p className="text-lg font-bold mt-0.5">
+                      {(partnerProfile.available_balance || 0) < 0
+                        ? `-₹${Math.abs(partnerProfile.available_balance || 0)}`
+                        : `₹${partnerProfile.available_balance || 0}`}
+                    </p>
                   </div>
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                     <p className="text-[11px] text-slate-500">Completed Jobs</p>
@@ -1395,20 +1490,128 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   </div>
                 </div>
 
-                <div className="p-4 bg-slate-50 rounded-xl flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">Direct Bank / UPI Payout</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Linked to {partnerProfile.upi_id || `${partnerProfile.phone}@upi`}</p>
+                {/* Explanation Box */}
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                    <Banknote className="w-4 h-4 text-emerald-600" />
+                    <span>How Cash & Commission Work (Ola / Rapido Style):</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => alert(`Payout request of ₹${partnerProfile.available_balance || 0} initiated to ${partnerProfile.upi_id}`)}
-                    disabled={(partnerProfile.available_balance || 0) <= 0}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-xs font-semibold rounded-xl transition-colors"
-                  >
-                    Withdraw to UPI
-                  </button>
+                  <p className="text-[11px] text-slate-600">
+                    • <strong>100% Cash Pocketed:</strong> Customer se jo cash ya direct UPI milta hai, wo seedha aapke paas rehta hai.
+                  </p>
+                  <p className="text-[11px] text-slate-600">
+                    • <strong>Platform Commission:</strong> QuickServe ka platform commission (15%) aapke wallet se auto-deduct hota hai.
+                  </p>
+                  <p className="text-[11px] text-slate-600">
+                    • <strong>Negative Cap (-₹300):</strong> Jab tak balance -₹300 tak rehta hai, aap orders accept kar sakte hain. Uske baad naye orders lene ke liye commission UPI se settle karna zaroori hai.
+                  </p>
                 </div>
+
+                {/* SETTLEMENT CARD (When Dues are Pending) */}
+                {(partnerProfile.available_balance || 0) < 0 && (
+                  <div className="p-4 bg-rose-50/70 border-2 border-rose-200 rounded-2xl space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4 text-rose-600" />
+                          <h4 className="text-xs font-bold text-rose-950">QuickServe Commission Settlement</h4>
+                        </div>
+                        <p className="text-[11px] text-rose-700 mt-0.5">
+                          Aapke wallet par ₹{Math.abs(partnerProfile.available_balance || 0)} ka commission due hai. Pay karke 12-digit UTR enter karein.
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-1 bg-rose-600 text-white font-black text-xs rounded-xl shadow-xs shrink-0">
+                        ₹{Math.abs(partnerProfile.available_balance || 0)} Due
+                      </span>
+                    </div>
+
+                    {/* QR Code & UPI Details */}
+                    <div className="p-3 bg-white border border-rose-200 rounded-xl flex flex-col sm:flex-row items-center gap-4">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`upi://pay?pa=sachinsb68741@nyes&pn=Sachin%20Kumar%20QuickServe&am=${Math.abs(partnerProfile.available_balance || 0)}&cu=INR`)}`}
+                        alt="QuickServe UPI QR"
+                        className="w-24 h-24 rounded-lg border border-slate-200 shrink-0"
+                      />
+                      <div className="space-y-1.5 text-xs w-full">
+                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded-lg border border-slate-200">
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase font-bold">UPI ID (VPA)</span>
+                            <p className="font-mono font-bold text-slate-900 text-xs">sachinsb68741@nyes</p>
+                            <p className="text-[10px] text-slate-500">Sachin Kumar • QuickServe Official</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText('sachinsb68741@nyes');
+                              setActionSuccessMsg('UPI ID copied to clipboard!');
+                              setTimeout(() => setActionSuccessMsg(''), 2500);
+                            }}
+                            className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </button>
+                        </div>
+
+                        <a
+                          href={`upi://pay?pa=sachinsb68741@nyes&pn=QuickServe&am=${Math.abs(partnerProfile.available_balance || 0)}&cu=INR`}
+                          className="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                        >
+                          <Banknote className="w-3.5 h-3.5" />
+                          <span>Pay ₹{Math.abs(partnerProfile.available_balance || 0)} via UPI App</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* UTR Input Form */}
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-700 block">
+                        Enter 12-Digit UPI UTR / Transaction Reference:
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          maxLength={12}
+                          value={settleUtr}
+                          onChange={(e) => setSettleUtr(e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 509823451234"
+                          className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-rose-500"
+                        />
+                        <button
+                          type="button"
+                          disabled={isSettlingDues || settleUtr.length !== 12}
+                          onClick={() => handleSettleDues(Math.abs(partnerProfile.available_balance || 0))}
+                          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0"
+                        >
+                          {isSettlingDues ? 'Verifying...' : 'Clear Dues'}
+                        </button>
+                      </div>
+
+                      {settleMsg.text && (
+                        <p className={`text-[11px] font-bold ${settleMsg.isError ? 'text-rose-600' : 'text-emerald-700'}`}>
+                          {settleMsg.text}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Direct Bank / UPI Payout (When balance is positive) */}
+                {(partnerProfile.available_balance || 0) > 0 && (
+                  <div className="p-4 bg-slate-50 rounded-xl flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Direct Bank / UPI Payout</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Linked to {partnerProfile.upi_id || `${partnerProfile.phone}@upi`}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => alert(`Payout request of ₹${partnerProfile.available_balance || 0} initiated to ${partnerProfile.upi_id}`)}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors"
+                    >
+                      Withdraw to UPI
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
