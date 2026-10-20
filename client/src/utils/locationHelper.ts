@@ -35,6 +35,33 @@ interface SectorZone {
  */
 const NCR_SECTOR_ZONES: SectorZone[] = [
   // --- SOUTH DELHI PRECISION LOCALITIES ---
+  // 0. JNU Campus (Jawaharlal Nehru University - covers entire 1000-acre university area)
+  {
+    name: 'JNU Campus',
+    city: 'New Delhi',
+    minLat: 28.5300, maxLat: 28.5495,
+    minLon: 77.1520, maxLon: 77.1765,
+    defaultGali: 'JNU Ring Road / North Gate',
+    defaultLandmark: 'Near Ganga Dhabha / Convention Centre, JNU'
+  },
+  // 0B. Qutab Institutional Area (near Katwaria Sarai)
+  {
+    name: 'Qutab Institutional Area',
+    city: 'New Delhi',
+    minLat: 28.5340, maxLat: 28.5440,
+    minLon: 77.1760, maxLon: 77.1890,
+    defaultGali: 'Shaheed Jeet Singh Marg',
+    defaultLandmark: 'Near IMI & Fore School of Management'
+  },
+  // 0C. IIT Delhi Campus
+  {
+    name: 'IIT Delhi Campus',
+    city: 'New Delhi',
+    minLat: 28.5400, maxLat: 28.5485,
+    minLon: 77.1850, maxLon: 77.1970,
+    defaultGali: 'Hauz Khas / IIT Gate No. 1',
+    defaultLandmark: 'Near SDA Market & IIT Flyover'
+  },
   // A. Ber Sarai (distinct from Munirka, famous student hub next to IIT Delhi & JNU)
   {
     name: 'Ber Sarai',
@@ -332,6 +359,45 @@ export function resolveNoidaOrGreaterNoida(
   // =========================================================================
   // 2. PRECISION TEXT MATCHING FOR DELHI URBAN VILLAGES / LOCALITIES
   // =========================================================================
+  // JNU Campus (Jawaharlal Nehru University)
+  if (
+    fullText.includes('jnu') || 
+    fullText.includes('jawaharlal nehru') || 
+    fullText.includes('j.n.u') ||
+    fullText.includes('jnu ring') ||
+    fullText.includes('ganga dhabha') ||
+    fullText.includes('parthasarathy') ||
+    fullText.includes('110067')
+  ) {
+    if (fullText.includes('munirka village') || fullText.includes('munirka dda') || fullText.includes('rama market')) {
+      return {
+        city: 'New Delhi',
+        locality: 'Munirka',
+        formattedArea: 'Munirka, New Delhi',
+        suggestedGali: 'Munirka Village Road',
+        suggestedLandmark: 'Near Munirka Metro Station / Nelson Mandela Marg'
+      };
+    }
+    return {
+      city: 'New Delhi',
+      locality: 'JNU Campus',
+      formattedArea: 'JNU Campus, New Delhi',
+      suggestedGali: 'JNU Ring Road / North Gate',
+      suggestedLandmark: 'Near Ganga Dhabha / Convention Centre, JNU'
+    };
+  }
+
+  // IIT Delhi
+  if (fullText.includes('iit delhi') || fullText.includes('iit campus') || fullText.includes('sda market')) {
+    return {
+      city: 'New Delhi',
+      locality: 'IIT Delhi Campus',
+      formattedArea: 'IIT Delhi Campus, New Delhi',
+      suggestedGali: 'Hauz Khas / IIT Gate No. 1',
+      suggestedLandmark: 'Near SDA Market & IIT Flyover'
+    };
+  }
+
   // Distinct Ber Sarai vs Munirka separation
   if (fullText.includes('ber sarai') || fullText.includes('bersarai') || fullText.includes('vedant desika')) {
     return {
@@ -507,11 +573,22 @@ export function resolveNoidaOrGreaterNoida(
   }
 
   // =========================================================================
-  // 4. PAN-INDIA GENERAL LOCATION RESOLUTION (NEVER FALLBACK TO "INDIA")
+  // 4. PAN-INDIA GENERAL LOCATION RESOLUTION (NEVER FALLBACK TO "INDIA" OR BARE CITY)
   // =========================================================================
   const rawCity = addr.city || addr.town || addr.municipality || addr.district || addr.county || addr.state_district || '';
   const rawState = addr.state || '';
-  const rawLocality = addr.neighbourhood || addr.suburb || addr.village || addr.residential || addr.hamlet || addr.road || '';
+  const rawLocality = 
+    addr.neighbourhood || 
+    addr.suburb || 
+    addr.residential || 
+    addr.village || 
+    addr.hamlet || 
+    addr.amenity || 
+    addr.university || 
+    addr.college || 
+    addr.building || 
+    addr.road || 
+    '';
 
   // Clean City name - NEVER return "India"
   let cleanCity = rawCity;
@@ -527,25 +604,48 @@ export function resolveNoidaOrGreaterNoida(
     } else if (rawState && rawState.toLowerCase() !== 'india') {
       cleanCity = cleanIndianCityName(rawState);
     } else {
-      cleanCity = '';
+      cleanCity = 'New Delhi';
     }
   }
 
-  // Clean Locality name
+  // Clean Locality name - Extract specific sublocality/road/poi
   let cleanLocality = rawLocality;
   if (!cleanLocality || cleanLocality.toLowerCase() === cleanCity.toLowerCase() || cleanLocality.toLowerCase() === 'india') {
-    cleanLocality = addr.road || cleanCity;
+    // Try road or amenity first
+    cleanLocality = addr.road || addr.amenity || addr.university || addr.building || '';
   }
 
-  // Construct standard formattedArea
-  let formattedArea = '';
-  if (cleanLocality && cleanLocality.toLowerCase() !== cleanCity.toLowerCase() && cleanLocality.toLowerCase() !== 'india') {
-    formattedArea = `${cleanLocality}, ${cleanCity}`;
-  } else {
-    formattedArea = cleanCity;
+  // If still empty or equals city, parse first specific chunk from display_name
+  if (!cleanLocality || cleanLocality.toLowerCase() === cleanCity.toLowerCase()) {
+    const rawDisplay = addr.display_name || fallbackText || '';
+    if (rawDisplay) {
+      const parts = rawDisplay.split(',').map((s: string) => s.trim()).filter(Boolean);
+      const specific = parts.find((p: string) => 
+        !/india|delhi|uttar pradesh|haryana|bihar|maharashtra|\b\d{6}\b/i.test(p) &&
+        p.toLowerCase() !== cleanCity.toLowerCase()
+      );
+      if (specific) cleanLocality = specific;
+    }
   }
-  if (!formattedArea || formattedArea.toLowerCase() === 'india') {
-    formattedArea = cleanCity || 'New Delhi';
+
+  // Special JNU & South Delhi fallback
+  if (
+    (addr.postcode === '110067' || fullText.includes('jnu') || fullText.includes('jawaharlal nehru')) &&
+    !cleanLocality.toLowerCase().includes('munirka')
+  ) {
+    cleanLocality = 'JNU Campus';
+    cleanCity = 'New Delhi';
+  }
+
+  // If still equal to city, use suburb or district to avoid bare city
+  if (!cleanLocality || cleanLocality.toLowerCase() === cleanCity.toLowerCase() || cleanLocality.toLowerCase() === 'india') {
+    cleanLocality = addr.suburb || addr.city_district || addr.county || 'Central Sector';
+  }
+
+  // Construct standard formattedArea: ALWAYS "{Locality}, {City}" (e.g. "JNU Campus, New Delhi")
+  let formattedArea = `${cleanLocality}, ${cleanCity}`;
+  if (cleanLocality.toLowerCase() === cleanCity.toLowerCase()) {
+    formattedArea = `${addr.suburb || addr.road || 'Sector'}, ${cleanCity}`;
   }
 
   const suggestedGali = addr.road || (cleanLocality ? `${cleanLocality} Road` : '');

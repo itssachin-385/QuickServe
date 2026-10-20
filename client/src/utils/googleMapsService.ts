@@ -60,7 +60,24 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
   let sectorOrArea = '';
   let city = '';
 
-  if (combinedText.includes('ber sarai') || combinedText.includes('bersarai')) {
+  if (
+    combinedText.includes('jnu') || 
+    combinedText.includes('jawaharlal nehru') || 
+    combinedText.includes('jnu ring') || 
+    combinedText.includes('ganga dhabha') ||
+    combinedText.includes('110067')
+  ) {
+    if (combinedText.includes('munirka village') || combinedText.includes('munirka dda')) {
+      sectorOrArea = 'Munirka';
+      city = 'New Delhi';
+    } else {
+      sectorOrArea = 'JNU Campus';
+      city = 'New Delhi';
+    }
+  } else if (combinedText.includes('iit delhi') || combinedText.includes('iit campus')) {
+    sectorOrArea = 'IIT Delhi Campus';
+    city = 'New Delhi';
+  } else if (combinedText.includes('ber sarai') || combinedText.includes('bersarai')) {
     sectorOrArea = 'Ber Sarai';
     city = 'New Delhi';
   } else if (combinedText.includes('katwaria sarai')) {
@@ -245,10 +262,11 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
     landmark = `Near ${sectorOrArea} Market`;
   }
 
-  // Formatted Area / City (e.g. "Ansal Golf Links 1, Greater Noida" or "Ber Sarai, New Delhi")
+  // Formatted Area / City (e.g. "Ansal Golf Links 1, Greater Noida" or "JNU Campus, New Delhi")
   let areaCity = `${sectorOrArea || resolvedDisplayTitle}, ${city}`;
-  if (sectorOrArea && sectorOrArea.toLowerCase() === city.toLowerCase()) {
-    areaCity = city;
+  if (!sectorOrArea || sectorOrArea.toLowerCase() === city.toLowerCase()) {
+    const specificChunk = sublocality2 || sublocality1 || neighborhood || route || displayName || 'Central Area';
+    areaCity = `${specificChunk}, ${city}`;
   }
 
   return {
@@ -382,6 +400,11 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
         addr.suburb || 
         addr.residential || 
         addr.village || 
+        addr.amenity || 
+        addr.university || 
+        addr.college || 
+        addr.building || 
+        addr.road || 
         addr.hamlet || 
         addr.quarter || 
         addr.subdistrict || 
@@ -425,13 +448,23 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     }
   }
 
-  // If local NCR bounding box matched (e.g. Ber Sarai / Munirka / Pari Chowk / Omega 1), prioritize it:
+  // If local NCR bounding box matched (e.g. JNU Campus / Ber Sarai / Munirka / Pari Chowk / Omega 1), prioritize it:
   if (localExact && localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'New Delhi') {
     finalLocality = localExact.locality;
     finalCity = localExact.city;
   }
 
-  // Absolute safety fallbacks: NEVER return "New Delhi" unless actually in NCR!
+  // JNU & South Delhi Precision override from display_name or postcode
+  const fullLower = fullDisplayName.toLowerCase();
+  if (
+    (osmPincode === '110067' || fullLower.includes('jnu') || fullLower.includes('jawaharlal nehru')) &&
+    !fullLower.includes('munirka')
+  ) {
+    finalLocality = 'JNU Campus';
+    finalCity = 'New Delhi';
+  }
+
+  // Absolute safety fallbacks: NEVER return "New Delhi" alone without locality!
   if (!finalCity || finalCity.toLowerCase() === 'india') {
     if (isNCR) {
       finalCity = 'New Delhi';
@@ -442,13 +475,18 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     }
   }
 
-  if (!finalLocality || finalLocality.toLowerCase() === 'india') {
-    finalLocality = finalCity;
+  if (!finalLocality || finalLocality.toLowerCase() === 'india' || finalLocality.toLowerCase() === finalCity.toLowerCase()) {
+    const parts = fullDisplayName.split(',').map((s: string) => s.trim()).filter(Boolean);
+    const specificPart = parts.find((p: string) => 
+      !/india|delhi|uttar pradesh|haryana|bihar|maharashtra|\b\d{6}\b/i.test(p) &&
+      p.toLowerCase() !== finalCity.toLowerCase()
+    );
+    finalLocality = specificPart || osmRoad || addr.suburb || 'Central Area';
   }
 
   let areaCity = `${finalLocality}, ${finalCity}`;
   if (finalLocality.toLowerCase() === finalCity.toLowerCase()) {
-    areaCity = finalCity;
+    areaCity = `${osmRoad || addr.suburb || 'Sector'}, ${finalCity}`;
   }
 
   return {
