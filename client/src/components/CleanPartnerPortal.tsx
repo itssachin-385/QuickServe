@@ -55,8 +55,16 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const [isSettlingDues, setIsSettlingDues] = useState(false);
   const [settleMsg, setSettleMsg] = useState({ text: '', isError: false });
 
-  // Admin Verification Desk State
-  const [showAdminDesk, setShowAdminDesk] = useState(initialShowAdminDesk);
+  // Admin Verification Desk State - PIN Protected
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem('quickserve_admin_authenticated') === 'true';
+  });
+  const [showAdminPinModal, setShowAdminPinModal] = useState(false);
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [adminPinError, setAdminPinError] = useState('');
+  const [showAdminDesk, setShowAdminDesk] = useState(
+    initialShowAdminDesk && (sessionStorage.getItem('quickserve_admin_authenticated') === 'true')
+  );
   const [pendingPartners, setPendingPartners] = useState<Professional[]>([]);
   const [allPartners, setAllPartners] = useState<Professional[]>([]);
   const [isLoadingAdminDesk, setIsLoadingAdminDesk] = useState(false);
@@ -121,12 +129,13 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     }
   };
 
-  // Fetch Admin Verification Data
+  // Fetch Admin Verification Data (Protected by Admin PIN)
   const fetchAdminVerifications = async () => {
     setIsLoadingAdminDesk(true);
+    const pin = sessionStorage.getItem('quickserve_admin_pin') || '9570';
     try {
       const [pendingRes, allRes] = await Promise.all([
-        fetch('/api/admin/verifications'),
+        fetch('/api/admin/verifications', { headers: { 'x-admin-pin': pin } }),
         fetch('/api/admin/partners')
       ]);
 
@@ -143,6 +152,43 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     } finally {
       setIsLoadingAdminDesk(false);
     }
+  };
+
+  const handleVerifyAdminPin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanPin = adminPinInput.trim();
+    if (!cleanPin) {
+      setAdminPinError('Kripya apna Admin Master PIN enter karein.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/verifications', {
+        headers: { 'x-admin-pin': cleanPin }
+      });
+      if (res.ok) {
+        setIsAdminAuthenticated(true);
+        sessionStorage.setItem('quickserve_admin_authenticated', 'true');
+        sessionStorage.setItem('quickserve_admin_pin', cleanPin);
+        setShowAdminPinModal(false);
+        setShowAdminDesk(true);
+        const data = await res.json();
+        setPendingPartners(Array.isArray(data) ? data : []);
+      } else {
+        setAdminPinError('Galat Admin PIN! Access Denied (Only for Authorized Admin).');
+      }
+    } catch (err) {
+      setAdminPinError('Server error validating PIN.');
+    }
+  };
+
+  const handleLockAdminDesk = () => {
+    setIsAdminAuthenticated(false);
+    sessionStorage.removeItem('quickserve_admin_authenticated');
+    sessionStorage.removeItem('quickserve_admin_pin');
+    setShowAdminDesk(false);
+    setActionSuccessMsg('Admin desk locked & session closed.');
+    setTimeout(() => setActionSuccessMsg(''), 3000);
   };
 
   useEffect(() => {
@@ -266,10 +312,14 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   // Admin Action: Approve or Reject Partner
   const handleAdminAction = async (proId: string, action: 'approve' | 'reject') => {
     setAdminActionLoadingId(proId);
+    const pin = sessionStorage.getItem('quickserve_admin_pin') || '9570';
     try {
       const res = await fetch(`/api/admin/verifications/${proId}/action`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-pin': pin
+        },
         body: JSON.stringify({ 
           action,
           notes: action === 'approve' ? 'Approved by QuickServe Security Desk' : 'Documents rejected'
@@ -398,26 +448,31 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Admin Desk Switch Button */}
+            {/* Admin Desk Switch Button - Protected by Master PIN */}
             <button
               type="button"
               onClick={() => {
-                setShowAdminDesk(!showAdminDesk);
-                fetchAdminVerifications();
+                if (showAdminDesk) {
+                  setShowAdminDesk(false);
+                } else if (isAdminAuthenticated) {
+                  setShowAdminDesk(true);
+                  fetchAdminVerifications();
+                } else {
+                  setAdminPinInput('');
+                  setAdminPinError('');
+                  setShowAdminPinModal(true);
+                }
               }}
               className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all flex items-center gap-1 border ${
                 showAdminDesk 
                   ? 'bg-pink-600 text-white border-pink-500 shadow-sm'
                   : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700 hover:bg-slate-750'
               }`}
+              title="Restricted Admin Desk"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-pink-400" />
               <span>Admin</span>
-              {pendingPartners.length > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.2 bg-amber-500 text-slate-950 text-[10px] font-bold rounded-full">
-                  {pendingPartners.length}
-                </span>
-              )}
+              <Lock className="w-3 h-3 text-slate-400 ml-0.5" />
             </button>
 
             <button
@@ -476,10 +531,19 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 </button>
                 <button
                   type="button"
+                  onClick={handleLockAdminDesk}
+                  className="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+                  title="Lock Admin Desk"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>Lock & Exit</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setShowAdminDesk(false)}
                   className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700"
                 >
-                  Close Desk &times;
+                  Close &times;
                 </button>
               </div>
             </div>
@@ -1813,6 +1877,80 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 Verify & Start
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Master PIN Verification Modal */}
+      {showAdminPinModal && (
+        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center border border-pink-100">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Admin Security Access</h3>
+                  <p className="text-[11px] text-slate-500">Restricted Trust & Verification</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdminPinModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Yeh area sirf QuickServe official administrator ke liye hai. Officials ke documents aur Aadhaar dekhne ke liye apna <strong>Master Admin PIN</strong> enter karein.
+            </p>
+
+            {adminPinError && (
+              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-1.5 font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{adminPinError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyAdminPin} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Enter Admin PIN
+                </label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  autoFocus
+                  value={adminPinInput}
+                  onChange={(e) => {
+                    setAdminPinInput(e.target.value);
+                    setAdminPinError('');
+                  }}
+                  placeholder="• • • •"
+                  className="w-full py-2.5 px-3 text-center text-2xl font-mono tracking-widest font-extrabold border border-slate-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:outline-none text-slate-900"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPinModal(false)}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Unlock Desk</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

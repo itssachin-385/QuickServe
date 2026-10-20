@@ -963,13 +963,24 @@ app.post('/api/admin/field-onboard', (req, res) => {
   });
 });
 
-// Admin Verification Desk (Section 14)
-app.get('/api/admin/verifications', (req, res) => {
+// Master Admin PIN Protection for Trust & Security Verification Desk
+const MASTER_ADMIN_PINS = ['9570', '151834', '1518', '2026', 'admin'];
+
+function verifyAdminPin(req, res, next) {
+  const pin = req.headers['x-admin-pin'] || req.query.admin_pin || req.body?.admin_pin;
+  if (!pin || !MASTER_ADMIN_PINS.includes(String(pin).trim())) {
+    return res.status(403).json({ error: 'Access Denied: QuickServe Master Admin PIN required.' });
+  }
+  next();
+}
+
+// Admin Verification Desk (Section 14) - Protected by Master Admin PIN
+app.get('/api/admin/verifications', verifyAdminPin, (req, res) => {
   const pendingOrUnderReview = professionals.filter(p => p.verification_state !== 'verified');
   res.json(pendingOrUnderReview);
 });
 
-app.post('/api/admin/verifications/:id/action', (req, res) => {
+app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
   const { action, notes } = req.body; // 'approve', 'reject', 'action_required'
   const pro = professionals.find(p => p.id === req.params.id);
   if (!pro) return res.status(404).json({ error: 'Professional not found' });
