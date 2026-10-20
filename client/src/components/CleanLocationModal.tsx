@@ -367,11 +367,11 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 p-0 sm:p-4 backdrop-blur-xs overscroll-contain">
+      <div className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[85vh] animate-in slide-in-from-bottom duration-200">
         
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        {/* Header - Fixed & Protected from Notch/Status Bar */}
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-base font-bold text-slate-900">
               {step === 'select' ? 'Select Your Location' : 'Confirm Doorstep Address'}
@@ -389,8 +389,8 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-5 overflow-y-auto space-y-5">
+        {/* Modal Body - Scrollable & Flexible */}
+        <div className="p-5 overflow-y-auto space-y-5 flex-1 min-h-0 overscroll-contain">
           
           {step === 'select' ? (
             <>
@@ -646,8 +646,8 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
 
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-pink-100 bg-slate-50 flex items-center justify-between">
+        {/* Footer - Pinned & Protected from Android Gesture Pill / Home Bar */}
+        <div className="p-4 border-t border-pink-100 bg-slate-50 flex items-center justify-between shrink-0 pb-[max(env(safe-area-inset-bottom,0px),16px)]">
           {step === 'doorstep' ? (
             <>
               <button
