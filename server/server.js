@@ -837,7 +837,7 @@ app.post('/api/professionals/register', (req, res) => {
   const { 
     name, phone, service_id, primary_zone_id, experience_years, 
     skills, bio, non_medical_declaration, emergency_contact, aadhaar_number,
-    locality, aadhaar_doc, selfie_doc
+    locality, aadhaar_doc, aadhaar_front_doc, aadhaar_back_doc, selfie_doc
   } = req.body;
 
   if (!name || !phone || !service_id) {
@@ -853,7 +853,10 @@ app.post('/api/professionals/register', (req, res) => {
   const isAadhaarChecksumValid = validateAadhaarNumber(cleanAadhaar);
 
   // Persist documents as real image files on disk in server/public/uploads
-  const savedAadhaarDoc = saveBase64Image(aadhaar_doc, `aadhaar_${cleanPhone}`);
+  const frontDoc = aadhaar_front_doc || aadhaar_doc;
+  const backDoc = aadhaar_back_doc;
+  const savedAadhaarFrontDoc = saveBase64Image(frontDoc, `aadhaar_front_${cleanPhone}`);
+  const savedAadhaarBackDoc = saveBase64Image(backDoc, `aadhaar_back_${cleanPhone}`);
   const savedSelfieDoc = saveBase64Image(selfie_doc, `selfie_${cleanPhone}`);
 
   const newPro = {
@@ -871,7 +874,9 @@ app.post('/api/professionals/register', (req, res) => {
     bio: bio || 'Certified local professional registered on QuickServe.',
     verification_state: 'pending', // 🟡 Pending initial review
     aadhaar_number: cleanAadhaar,
-    aadhaar_doc: savedAadhaarDoc || '',
+    aadhaar_doc: savedAadhaarFrontDoc || '',
+    aadhaar_front_doc: savedAadhaarFrontDoc || '',
+    aadhaar_back_doc: savedAadhaarBackDoc || '',
     selfie_doc: savedSelfieDoc || '',
     verifications: {
       aadhaar: isAadhaarValid,

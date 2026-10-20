@@ -1,8 +1,8 @@
 // API Client for QuickServe with live Express integration and safe fallback
 import { ServiceCategory, ServiceZone, Professional, Booking, SupportTicket, SupplyDemandItem, AdminStats, MicroHub, CustomerUser, SavedAddress } from './types';
-const RENDER_CLOUD_URL = 'https://quickserve-3lhk.onrender.com';
+export const RENDER_CLOUD_URL = 'https://quickserve-3lhk.onrender.com';
 
-const getApiBase = () => {
+export const getApiBase = () => {
   if ((import.meta as any).env?.VITE_API_URL) return (import.meta as any).env.VITE_API_URL;
   if (typeof window !== 'undefined') {
     // If running inside Capacitor Native Mobile App (where origin is https://localhost or capacitor://localhost)
@@ -33,7 +33,7 @@ const getApiBase = () => {
   return 'http://localhost:5000/api';
 };
 
-const API_BASE = getApiBase();
+export const API_BASE = getApiBase();
 export async function fetchCategories(includeAll = false): Promise<{ categories: ServiceCategory[]; active_count: number }> {
   try {
     const res = await fetch(`${API_BASE}/categories${includeAll ? '?all=true' : ''}`);

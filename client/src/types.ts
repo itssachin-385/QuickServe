@@ -111,6 +111,8 @@ export interface Professional {
   non_medical_declaration?: boolean;
   aadhaar_number?: string;
   aadhaar_doc?: string;
+  aadhaar_front_doc?: string;
+  aadhaar_back_doc?: string;
   selfie_doc?: string;
   locality?: string;
 }

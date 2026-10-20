@@ -102,23 +102,34 @@ export function App() {
     }
   };
 
-  // Capacitor Android Hardware Back Button Listener
+  // Capacitor Android Hardware Back Button Listener (Supports 3-button navigation < back)
   useEffect(() => {
     let backListener: any;
+    const handleBackAction = () => {
+      if (appMode === 'partner') {
+        setAppMode('customer');
+        setOpenAdminDirect(false);
+      } else {
+        try {
+          CapacitorApp.minimizeApp();
+        } catch (e) {}
+      }
+    };
+
     const initBackButton = async () => {
       try {
-        backListener = await CapacitorApp.addListener('backButton', () => {
-          if (appMode === 'partner') {
-            setAppMode('customer');
-          }
-        });
+        backListener = await CapacitorApp.addListener('backButton', handleBackAction);
       } catch (err) {
         // Not native platform
       }
     };
     initBackButton();
+
+    window.addEventListener('hardwareBackButton', handleBackAction);
+
     return () => {
       if (backListener?.remove) backListener.remove();
+      window.removeEventListener('hardwareBackButton', handleBackAction);
     };
   }, [appMode]);
 
