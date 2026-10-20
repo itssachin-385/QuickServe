@@ -147,125 +147,96 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
     city = 'Greater Noida';
   }
 
-  // 2. Hierarchical fallback if not matched in specific dictionary
+  // 2. UNIVERSAL DYNAMIC PAN-INDIA RESOLUTION (VILLAGES, GALIS, MOHALLAS & CITIES)
+  const rawLocality = getComp('locality');
+  const admin3 = cleanIndianCityName(getComp('administrative_area_level_3'));
+  const admin2 = cleanIndianCityName(getComp('administrative_area_level_2'));
+  const rawLocalityClean = cleanIndianCityName(rawLocality);
+
   if (!sectorOrArea) {
-    if (route && /sector|block|phase|pocket|colony|enclave/i.test(route)) {
+    // Case A: Urban Mohalla / Colony / Sector / Layout
+    if (sublocality1 || sublocality2 || neighborhood) {
+      if (sublocality2 && sublocality1 && !sublocality1.toLowerCase().includes(sublocality2.toLowerCase())) {
+        sectorOrArea = `${sublocality2}, ${sublocality1}`;
+      } else {
+        sectorOrArea = sublocality1 || sublocality2 || neighborhood;
+      }
+      city = cleanIndianCityName(rawLocality || admin3 || admin2 || state);
+    }
+    // Case B: Rural Village (Gaon / Gram) or Small Town (locality is the village, admin3/admin2 is district)
+    else if (rawLocalityClean) {
+      sectorOrArea = rawLocalityClean;
+      city = (admin3 && admin3.toLowerCase() !== rawLocalityClean.toLowerCase())
+        ? admin3
+        : (admin2 && admin2.toLowerCase() !== rawLocalityClean.toLowerCase() ? admin2 : cleanIndianCityName(state));
+    }
+    // Case C: Gali / Road / Marg
+    else if (route) {
       sectorOrArea = route;
-    } else if (neighborhood) {
-      sectorOrArea = neighborhood;
-    } else if (sublocality2 && !/district|division/i.test(sublocality2)) {
-      sectorOrArea = sublocality2;
-    } else if (sublocality1 && !/district|division/i.test(sublocality1)) {
-      sectorOrArea = sublocality1;
-    } else if (route) {
-      sectorOrArea = route;
+      city = admin3 || admin2 || cleanIndianCityName(state);
+    }
+    // Case D: Verified Landmark / Chowk / Temple / Dhabha
+    else if (displayName) {
+      sectorOrArea = displayName;
+      city = admin3 || admin2 || cleanIndianCityName(state);
     } else {
-      sectorOrArea = locality || 'Central Area';
+      sectorOrArea = 'Main Area';
+      city = admin3 || admin2 || cleanIndianCityName(state);
     }
   }
 
-  // 3. City resolution - NEVER "India"
-  if (!city) {
-    if (/greater noida/i.test(fullAddress) || /greater noida/i.test(locality)) {
-      city = 'Greater Noida';
-    } else if (/noida/i.test(fullAddress) || /noida/i.test(locality)) {
-      city = 'Noida';
-    } else if (/delhi/i.test(fullAddress) || /delhi/i.test(locality) || /delhi/i.test(state)) {
-      city = 'New Delhi';
-    } else if (/gurugram|gurgaon/i.test(fullAddress) || /gurugram|gurgaon/i.test(locality)) {
-      city = 'Gurugram';
-    } else if (/ghaziabad/i.test(fullAddress) || /ghaziabad/i.test(locality)) {
-      city = 'Ghaziabad';
-    } else if (/faridabad/i.test(fullAddress) || /faridabad/i.test(locality)) {
-      city = 'Faridabad';
-    } else if (/bengaluru|bangalore/i.test(fullAddress) || /bengaluru|bangalore/i.test(locality)) {
-      city = 'Bengaluru';
-    } else if (/mumbai/i.test(fullAddress) || /mumbai/i.test(locality)) {
-      city = 'Mumbai';
-    } else if (/pune/i.test(fullAddress) || /pune/i.test(locality)) {
-      city = 'Pune';
-    } else if (/hyderabad/i.test(fullAddress) || /hyderabad/i.test(locality)) {
-      city = 'Hyderabad';
-    } else if (/kolkata/i.test(fullAddress) || /kolkata/i.test(locality)) {
-      city = 'Kolkata';
-    } else if (/chennai/i.test(fullAddress) || /chennai/i.test(locality)) {
-      city = 'Chennai';
-    } else if (/patna/i.test(fullAddress) || /patna/i.test(locality)) {
-      city = 'Patna';
-    } else if (/lucknow/i.test(fullAddress) || /lucknow/i.test(locality)) {
-      city = 'Lucknow';
-    } else if (/jaipur/i.test(fullAddress) || /jaipur/i.test(locality)) {
-      city = 'Jaipur';
-    } else if (/ahmedabad/i.test(fullAddress) || /ahmedabad/i.test(locality)) {
-      city = 'Ahmedabad';
-    } else if (/chandigarh/i.test(fullAddress) || /chandigarh/i.test(locality)) {
-      city = 'Chandigarh';
-    } else {
-      const candidates = [locality, getComp('administrative_area_level_2'), getComp('administrative_area_level_3'), state];
-      for (const cand of candidates) {
-        const cleaned = cleanIndianCityName(cand);
-        if (cleaned && cleaned.toLowerCase() !== 'india') {
-          city = cleaned;
-          break;
-        }
-      }
-      if (!city || city.toLowerCase() === 'india') city = 'New Delhi';
+  // 3. Ensure valid City (never bare "India")
+  if (!city || city.toLowerCase() === 'india') {
+    city = admin3 || admin2 || cleanIndianCityName(state) || 'New Delhi';
+  }
+
+  // Deduplication: sectorOrArea and city MUST NOT be identical word
+  if (sectorOrArea.toLowerCase() === city.toLowerCase()) {
+    if (admin2 && admin2.toLowerCase() !== city.toLowerCase()) {
+      city = admin2;
+    } else if (route && route.toLowerCase() !== city.toLowerCase()) {
+      sectorOrArea = route;
+    } else if (displayName && displayName.toLowerCase() !== city.toLowerCase()) {
+      sectorOrArea = displayName;
+    } else if (state && cleanIndianCityName(state).toLowerCase() !== city.toLowerCase()) {
+      city = cleanIndianCityName(state);
     }
   }
 
   // 4. Construct street/gali
   const streetParts = [
+    premise,
+    route,
     sublocality2 && sublocality2 !== sectorOrArea ? sublocality2 : '',
-    sublocality1 && sublocality1 !== sectorOrArea ? sublocality1 : '',
-    route && route !== sectorOrArea ? route : ''
+    sublocality1 && sublocality1 !== sectorOrArea && !sublocality2 ? sublocality1 : ''
   ].filter(Boolean);
 
   let streetGali = streetParts.join(', ');
   if (!streetGali && displayName) {
     streetGali = displayName;
   }
-
-  const placeTypes = place.types || [];
-  const isHousing = placeTypes.includes('housing_complex') || placeTypes.includes('residential');
-  const isCommercialOrPrivate = 
-    placeTypes.includes('liquor_store') || placeTypes.includes('store') || 
-    placeTypes.includes('restaurant') || placeTypes.includes('food') || 
-    placeTypes.includes('health') || placeTypes.includes('doctor') || 
-    placeTypes.includes('dentist') || placeTypes.includes('bank') || 
-    placeTypes.includes('finance') || placeTypes.includes('school');
+  if (!streetGali) {
+    streetGali = `${sectorOrArea} Main Gali / Road`;
+  }
 
   // Resolved display title (like Google Maps)
-  let resolvedDisplayTitle = '';
-  if (sectorOrArea) {
-    if (sublocality2 && !sectorOrArea.toLowerCase().includes(sublocality2.toLowerCase())) {
-      resolvedDisplayTitle = `${sublocality2}, ${sectorOrArea}`;
-    } else {
-      resolvedDisplayTitle = sectorOrArea;
-    }
-  } else if (sublocality1) {
-    resolvedDisplayTitle = sublocality2 ? `${sublocality2}, ${sublocality1}` : sublocality1;
-  } else if (isHousing && displayName) {
-    resolvedDisplayTitle = displayName;
-  } else if (neighborhood) {
-    resolvedDisplayTitle = neighborhood;
-  } else if (displayName && !isCommercialOrPrivate) {
-    resolvedDisplayTitle = displayName;
-  } else {
-    resolvedDisplayTitle = city || 'Service Area';
+  let resolvedDisplayTitle = displayName || sectorOrArea;
+  if (!resolvedDisplayTitle || resolvedDisplayTitle.toLowerCase() === city.toLowerCase()) {
+    resolvedDisplayTitle = sectorOrArea;
   }
 
   // Construct landmark: store POIs in landmark so they don't overwrite locality name
   let landmark = landmarkComp;
-  if (!landmark && displayName && displayName !== resolvedDisplayTitle) {
+  if (!landmark && displayName && displayName !== sectorOrArea) {
     landmark = `Near ${displayName}`;
   } else if (!landmark && sectorOrArea) {
-    landmark = `Near ${sectorOrArea} Market`;
+    landmark = `Near ${sectorOrArea} Main Chowk`;
   }
 
-  // Formatted Area / City (e.g. "Ansal Golf Links 1, Greater Noida" or "JNU Campus, New Delhi")
-  let areaCity = `${sectorOrArea || resolvedDisplayTitle}, ${city}`;
-  if (!sectorOrArea || sectorOrArea.toLowerCase() === city.toLowerCase()) {
-    const specificChunk = sublocality2 || sublocality1 || neighborhood || route || displayName || 'Central Area';
+  // Formatted Area / City (e.g. "Khajurahat, Ayodhya" or "Tripura Bhairwi, Varanasi" or "JNU Campus, New Delhi")
+  let areaCity = `${sectorOrArea}, ${city}`;
+  if (sectorOrArea.toLowerCase() === city.toLowerCase()) {
+    const specificChunk = sublocality2 || sublocality1 || neighborhood || route || displayName || 'Main Area';
     areaCity = `${specificChunk}, ${city}`;
   }
 
@@ -311,7 +282,7 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
         locationRestriction: {
           circle: {
             center: { latitude: lat, longitude: lon },
-            radius: 200.0
+            radius: 1000.0
           }
         }
       })
@@ -393,59 +364,62 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
       fullDisplayName = osmData.display_name || '';
       osmState = addr.state || '';
       osmPincode = addr.postcode || '';
-      osmRoad = addr.road || addr.pedestrian || addr.footway || '';
-
-      osmLocality = 
-        addr.neighbourhood || 
-        addr.suburb || 
-        addr.residential || 
-        addr.village || 
-        addr.amenity || 
-        addr.university || 
-        addr.college || 
-        addr.building || 
-        addr.road || 
-        addr.hamlet || 
-        addr.quarter || 
-        addr.subdistrict || 
-        '';
-
-      const rawCity = addr.city || addr.town || addr.municipality || addr.state_district || addr.county || '';
-      osmCity = cleanIndianCityName(rawCity);
+      osmRoad = addr.road || addr.pedestrian || addr.footway || addr.path || addr.street || '';
     }
   } catch (e) {
     console.warn('OSM reverse geocode error:', e);
   }
 
-  // 4. PAN-INDIA CITY & LOCALITY RESOLUTION FROM NOMINATIM DISPLAY_NAME
-  let finalCity = osmCity;
-  let finalLocality = osmLocality;
+  // 4. FULL INDIAN CADASTRAL HIERARCHY EXTRACTION (Gaon, Gali, Mohalla, Zila)
+  const village = addr.village || addr.hamlet || addr.isolated_dwelling || '';
+  const mohalla = addr.neighbourhood || addr.suburb || addr.residential || addr.quarter || addr.subdivision || '';
+  const landmarkPoi = addr.amenity || addr.building || addr.tourism || addr.historic || addr.leisure || addr.shop || '';
 
-  // If city or locality is missing, extract accurately from fullDisplayName
-  if ((!finalCity || !finalLocality) && fullDisplayName) {
+  const rawCityDist = 
+    addr.city || 
+    addr.town || 
+    addr.municipality || 
+    addr.state_district || 
+    addr.county || 
+    addr.district || 
+    '';
+
+  let finalCity = cleanIndianCityName(rawCityDist);
+  let finalLocality = '';
+
+  // Case A: Rural Village (Gaon / Dehat / Tola / Gram Panchayat)
+  if (village) {
+    finalLocality = (addr.hamlet && addr.village && addr.hamlet.toLowerCase() !== addr.village.toLowerCase())
+      ? `${addr.hamlet}, ${addr.village}`
+      : village;
+    if (addr.state_district && cleanIndianCityName(addr.state_district).toLowerCase() !== finalLocality.toLowerCase()) {
+      finalCity = cleanIndianCityName(addr.state_district);
+    }
+  }
+  // Case B: Urban Mohalla / Ward / Colony / Nagar
+  else if (mohalla) {
+    finalLocality = mohalla;
+  }
+  // Case C: Gali / Road / Marg / Path
+  else if (osmRoad) {
+    finalLocality = osmRoad;
+  }
+  // Case D: Landmark (Mandir, College, Hospital, Dhabha)
+  else if (landmarkPoi) {
+    finalLocality = landmarkPoi;
+  }
+  // Case E: Extract from display_name tokens
+  else if (fullDisplayName) {
     const parts = fullDisplayName.split(',').map((s: string) => s.trim()).filter(Boolean);
     const nonIndia = parts.filter((p: string) => !/^india$/i.test(p));
-
-    // Pop state from right if present
     if (nonIndia.length > 0) {
-      const last = nonIndia[nonIndia.length - 1].replace(/\b\d{6}\b/g, '').trim().toLowerCase();
-      if (INDIAN_STATES.has(last)) {
-        nonIndia.pop();
-      }
+      finalLocality = nonIndia[0];
     }
+  }
 
-    // Next from right is the city
-    if (!finalCity && nonIndia.length > 0) {
-      finalCity = cleanIndianCityName(nonIndia.pop() || '');
-    }
-
-    // Remaining right-most element is the locality (e.g. Mithapur, Koramangala, etc.)
-    if (!finalLocality && nonIndia.length > 0) {
-      const cand = nonIndia[nonIndia.length - 1];
-      if (!cand.toLowerCase().includes(finalCity.toLowerCase())) {
-        finalLocality = cand;
-      }
-    }
+  // City Fallback
+  if (!finalCity || finalCity.toLowerCase() === 'india') {
+    finalCity = cleanIndianCityName(addr.state_district || addr.county || osmState || (isNCR ? 'New Delhi' : 'Service Location'));
   }
 
   // If local NCR bounding box matched (e.g. JNU Campus / Ber Sarai / Munirka / Pari Chowk / Omega 1), prioritize it:
@@ -464,37 +438,57 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     finalCity = 'New Delhi';
   }
 
-  // Absolute safety fallbacks: NEVER return "New Delhi" alone without locality!
-  if (!finalCity || finalCity.toLowerCase() === 'india') {
-    if (isNCR) {
-      finalCity = 'New Delhi';
-    } else if (osmState) {
-      finalCity = cleanIndianCityName(osmState);
-    } else {
-      finalCity = 'Service Location';
+  // Deduplication: Locality and City MUST NOT be the same word
+  if (finalLocality.toLowerCase() === finalCity.toLowerCase()) {
+    if (osmRoad && osmRoad.toLowerCase() !== finalCity.toLowerCase()) {
+      finalLocality = osmRoad;
+    } else if (landmarkPoi) {
+      finalLocality = landmarkPoi;
+    } else if (addr.state_district && cleanIndianCityName(addr.state_district).toLowerCase() !== finalCity.toLowerCase()) {
+      finalCity = cleanIndianCityName(addr.state_district);
+    } else if (addr.county && cleanIndianCityName(addr.county).toLowerCase() !== finalLocality.toLowerCase()) {
+      finalCity = cleanIndianCityName(addr.county);
     }
   }
 
-  if (!finalLocality || finalLocality.toLowerCase() === 'india' || finalLocality.toLowerCase() === finalCity.toLowerCase()) {
-    const parts = fullDisplayName.split(',').map((s: string) => s.trim()).filter(Boolean);
-    const specificPart = parts.find((p: string) => 
-      !/india|delhi|uttar pradesh|haryana|bihar|maharashtra|\b\d{6}\b/i.test(p) &&
-      p.toLowerCase() !== finalCity.toLowerCase()
-    );
-    finalLocality = specificPart || osmRoad || addr.suburb || 'Central Area';
-  }
-
+  // Formatted Area: ALWAYS guaranteed "<Locality / Village / Mohalla>, <City / District>"
   let areaCity = `${finalLocality}, ${finalCity}`;
   if (finalLocality.toLowerCase() === finalCity.toLowerCase()) {
-    areaCity = `${osmRoad || addr.suburb || 'Sector'}, ${finalCity}`;
+    areaCity = `${village ? village + ' Village' : (osmRoad || 'Main Sector')}, ${finalCity}`;
+  }
+
+  // Accurate Gali / Rasta
+  let streetGali = '';
+  if (osmRoad) {
+    streetGali = mohalla && !osmRoad.toLowerCase().includes(mohalla.toLowerCase())
+      ? `${osmRoad}, ${mohalla}`
+      : osmRoad;
+  } else if (mohalla) {
+    streetGali = `${mohalla} Main Gali / Road`;
+  } else if (village) {
+    streetGali = `${village} Main Rasta / Ward No.`;
+  } else {
+    streetGali = `${finalLocality} Road`;
+  }
+
+  // Accurate Landmark
+  let landmark = '';
+  if (landmarkPoi) {
+    landmark = `Near ${landmarkPoi}`;
+  } else if (village) {
+    landmark = `Near ${village} Panchayat Bhavan / Main Chowk`;
+  } else if (finalLocality) {
+    landmark = `Near ${finalLocality} Main Chowk`;
+  } else {
+    landmark = `Near ${finalCity}`;
   }
 
   return {
-    displayName: finalLocality,
+    displayName: landmarkPoi || finalLocality,
     formattedAddress: fullDisplayName || areaCity,
     houseNo: addr.house_number || '',
-    streetGali: osmRoad || `${finalLocality} Main Road`,
-    landmark: addr.amenity || addr.building || `Near ${finalLocality}`,
+    streetGali: streetGali,
+    landmark: landmark,
     areaCity: areaCity,
     city: finalCity,
     state: osmState,

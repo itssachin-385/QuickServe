@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, Search, Check, X, Home, Building2, Landmark, RefreshCw } from 'lucide-react';
-import { reverseGeocodeGoogle } from '../utils/googleMapsService';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
+import { reverseGeocodeGoogle, searchPlacesGoogle, getPlaceDetailsGoogle } from '../utils/googleMapsService';
 
 interface CleanLocationModalProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ interface LocalityItem {
   sub: string;
   tag: string;
   pincode?: string;
+  placeId?: string;
 }
 
 const CURATED_LOCALITIES: LocalityItem[] = [
@@ -119,7 +122,7 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
   const [liveSuggestions, setLiveSuggestions] = useState<LocalityItem[]>([]);
   const [isSearchingLive, setIsSearchingLive] = useState(false);
 
-  // Debounced live geocoding API lookup (OpenStreetMap Nominatim for exact Indian streets & localities)
+  // Debounced live geocoding API lookup: Parallel Google Places Autocomplete + OSM Nominatim
   useEffect(() => {
     const q = manualQuery.trim();
     if (q.length < 2) {
@@ -131,45 +134,63 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
     setIsSearchingLive(true);
     const timeout = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&addressdetails=1&limit=8`,
-          {
-            headers: { 'Accept-Language': 'en' }
-          }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const items: LocalityItem[] = (data || []).map((item: any) => {
+        const [googleRes, osmRes] = await Promise.allSettled([
+          searchPlacesGoogle(q),
+          fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=in&addressdetails=1&limit=8`,
+            { headers: { 'Accept-Language': 'en' } }
+          ).then(r => r.ok ? r.json() : [])
+        ]);
+
+        const items: LocalityItem[] = [];
+
+        // 1. Add Google Places Autocomplete Suggestions (High Precision POIs, Galis, Chowks)
+        if (googleRes.status === 'fulfilled' && Array.isArray(googleRes.value)) {
+          googleRes.value.forEach((s) => {
+            items.push({
+              name: s.mainText,
+              sub: s.secondaryText || s.fullText,
+              tag: 'Google Verified',
+              placeId: s.placeId
+            });
+          });
+        }
+
+        // 2. Add OpenStreetMap Nominatim Suggestions (Gaon, Dehat, Hamlets, Wards)
+        if (osmRes.status === 'fulfilled' && Array.isArray(osmRes.value)) {
+          osmRes.value.forEach((item: any) => {
             const addr = item.address || {};
-            const mainName =
-              addr.suburb ||
-              addr.neighbourhood ||
-              addr.road ||
-              addr.village ||
-              addr.city_district ||
-              addr.town ||
-              addr.city ||
-              item.display_name.split(',')[0];
+            const villageName = addr.village || addr.hamlet || '';
+            const mohallaName = addr.neighbourhood || addr.suburb || addr.residential || addr.quarter || '';
+            const roadName = addr.road || '';
+            const mainName = villageName || mohallaName || roadName || addr.city_district || addr.town || addr.city || item.display_name.split(',')[0];
             const city = addr.city || addr.town || addr.district || addr.state_district || '';
             const state = addr.state || '';
             const postcode = addr.postcode || '';
             const sub = [city, state, postcode].filter(Boolean).join(', ') || item.display_name;
+            const tag = villageName ? 'Gaon / Village' : (mohallaName ? 'Mohalla' : (state ? state.slice(0, 10) : 'India'));
 
-            return {
-              name: mainName ? `${mainName}, ${city || state}` : item.display_name.split(',').slice(0, 2).join(', '),
-              sub: sub,
-              tag: state ? state.slice(0, 10) : 'India',
-              pincode: postcode
-            };
+            const formattedTitle = mainName ? `${mainName}, ${city || state}` : item.display_name.split(',').slice(0, 2).join(', ');
+
+            // Avoid exact duplicates from Google
+            if (!items.some(i => i.name.toLowerCase() === formattedTitle.toLowerCase() || i.sub.toLowerCase() === sub.toLowerCase())) {
+              items.push({
+                name: formattedTitle,
+                sub: sub,
+                tag: tag,
+                pincode: postcode
+              });
+            }
           });
-          setLiveSuggestions(items);
         }
+
+        setLiveSuggestions(items);
       } catch (e) {
         // Fallback to local curated results
       } finally {
         setIsSearchingLive(false);
       }
-    }, 300);
+    }, 280);
 
     return () => clearTimeout(timeout);
   }, [manualQuery]);
@@ -201,44 +222,100 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleUseCurrentLocation = () => {
+  // Hyperlocal Pinpoint GPS Geolocation with Native Android Capacitor support
+  const handleUseCurrentLocation = async () => {
     setGpsError('');
-    if (!navigator.geolocation) {
-      setGpsError('Geolocation is not supported by your browser. Please enter your location manually.');
-      return;
-    }
-
     setIsDetectingGps(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+
+    try {
+      let lat: number | null = null;
+      let lon: number | null = null;
+
+      // Stage 1: Try Native Hardware GPS on Android/iOS via Capacitor Geolocation
+      if (Capacitor.isNativePlatform()) {
         try {
-          const { latitude, longitude } = pos.coords;
-          const result = await reverseGeocodeGoogle(latitude, longitude);
-          const detectedZone = result.areaCity || `${result.city}, ${result.state}`;
-          setSelectedArea(detectedZone);
-          if (result.houseNo && !houseNo) setHouseNo(result.houseNo);
-          if (result.streetGali && !streetBuilding) setStreetBuilding(result.streetGali);
-          if (result.landmark && !landmark) setLandmark(result.landmark);
-          setStep('doorstep');
-        } catch (err: any) {
-          setGpsError('Could not resolve GPS location. Please choose from popular areas or enter manually.');
-        } finally {
+          const perm = await Geolocation.checkPermissions();
+          if (perm.location !== 'granted') {
+            await Geolocation.requestPermissions();
+          }
+          const pos = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 9000,
+            maximumAge: 10000
+          });
+          if (pos?.coords) {
+            lat = pos.coords.latitude;
+            lon = pos.coords.longitude;
+          }
+        } catch (capErr) {
+          console.warn('Capacitor native GPS attempt warning, using fallback:', capErr);
+        }
+      }
+
+      // Stage 2: Browser Navigator Geolocation (Desktop & Mobile Web fallback)
+      if (lat === null || lon === null) {
+        if (!navigator.geolocation) {
+          setGpsError('Geolocation is not supported by your device. Please select or search your area.');
           setIsDetectingGps(false);
+          return;
         }
-      },
-      (err) => {
+
+        const browserCoords = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+            (err) => {
+              console.warn('Browser GPS error:', err);
+              resolve(null);
+            },
+            { timeout: 9000, maximumAge: 30000, enableHighAccuracy: true }
+          );
+        });
+
+        if (browserCoords) {
+          lat = browserCoords.lat;
+          lon = browserCoords.lon;
+        }
+      }
+
+      if (lat === null || lon === null) {
+        setGpsError('GPS signal weak or location permission not granted. Please search your village, street or area.');
         setIsDetectingGps(false);
-        if (err.code === 1) {
-          setGpsError('Location permission denied. Please enter your address or sector manually below.');
-        } else {
-          setGpsError('GPS signal weak. You can select your area manually.');
-        }
-      },
-      { timeout: 9000, maximumAge: 60000, enableHighAccuracy: true }
-    );
+        return;
+      }
+
+      // Stage 3: Universal Reverse Geocode (Google Places + OSM Cadastral Hierarchy)
+      const result = await reverseGeocodeGoogle(lat, lon);
+      const detectedZone = result.areaCity || `${result.city}, ${result.state}`;
+      setSelectedArea(detectedZone);
+      if (result.houseNo) setHouseNo(result.houseNo);
+      if (result.streetGali) setStreetBuilding(result.streetGali);
+      if (result.landmark) setLandmark(result.landmark);
+      setStep('doorstep');
+    } catch (err: any) {
+      setGpsError('Could not resolve GPS location. Please select from popular areas or enter manually.');
+    } finally {
+      setIsDetectingGps(false);
+    }
   };
 
-  const handleSelectArea = (area: string) => {
+  const handleSelectArea = async (area: string, item?: LocalityItem) => {
+    // If clicked item has Google Place ID, resolve full place details instantly
+    if (item?.placeId) {
+      try {
+        const details = await getPlaceDetailsGoogle(item.placeId);
+        if (details) {
+          setSelectedArea(details.areaCity);
+          if (details.houseNo) setHouseNo(details.houseNo);
+          if (details.streetGali) setStreetBuilding(details.streetGali);
+          if (details.landmark) setLandmark(details.landmark);
+          setStep('doorstep');
+          return;
+        }
+      } catch (err) {
+        console.warn('Place details error, using plain area:', err);
+      }
+    }
+
     setSelectedArea(area);
     setStep('doorstep');
   };
@@ -433,7 +510,7 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                         <button
                           key={idx}
                           type="button"
-                          onClick={() => handleSelectArea(item.name)}
+                          onClick={() => handleSelectArea(item.name, item)}
                           className={`w-full p-3 rounded-xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer group ${
                             isSelected
                               ? 'bg-pink-50 border-pink-300 text-pink-900 shadow-2xs font-medium'
@@ -456,12 +533,20 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 block mb-0.5 border border-slate-200">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md block mb-0.5 border ${
+                              item.tag.includes('Google')
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : item.tag.includes('Gaon') || item.tag.includes('Village')
+                                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                : item.tag.includes('Mohalla')
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                : 'bg-slate-100 text-slate-600 border-slate-200'
+                            }`}>
                               {item.tag}
                             </span>
                             {item.pincode && (
                               <span className="text-[10px] text-slate-400 font-mono">
-                                {item.pincode}
+                                PIN {item.pincode}
                               </span>
                             )}
                           </div>

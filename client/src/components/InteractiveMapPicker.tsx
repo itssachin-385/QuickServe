@@ -54,9 +54,9 @@ const getFastPosition = async (
         await Geolocation.requestPermissions();
       }
       const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: false,
-        timeout: 4000,
-        maximumAge: 60000
+        enableHighAccuracy: true,
+        timeout: 7000,
+        maximumAge: 15000
       });
       if (pos?.coords) {
         const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
