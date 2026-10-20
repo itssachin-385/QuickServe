@@ -203,20 +203,41 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
     }
   }
 
-  // 4. Construct street/gali
+  // 4. Construct street/gali (Premise, Route, Society/Apartment building name)
+  // CRITICAL: NEVER inject sublocality1 or sublocality2 (e.g. Munirka, Hauz Khas) into streetGali.
+  // In India, sublocalities are municipal wards/areas, NOT street addresses or societies!
   const streetParts = [
     premise,
-    route,
-    sublocality2 && sublocality2 !== sectorOrArea ? sublocality2 : '',
-    sublocality1 && sublocality1 !== sectorOrArea && !sublocality2 ? sublocality1 : ''
+    route
   ].filter(Boolean);
 
   let streetGali = streetParts.join(', ');
   if (!streetGali && displayName) {
-    streetGali = displayName;
+    const isGenericOrLocality = 
+      displayName.toLowerCase() === sectorOrArea.toLowerCase() ||
+      displayName.toLowerCase() === city.toLowerCase() ||
+      displayName.toLowerCase().includes('new delhi') ||
+      displayName.toLowerCase().includes('noida') ||
+      displayName.toLowerCase().includes('greater noida');
+      
+    if (!isGenericOrLocality) {
+      streetGali = displayName;
+    }
   }
-  if (!streetGali) {
-    streetGali = `${sectorOrArea} Main Gali / Road`;
+
+  // Filter out any neighboring locality names that might have leaked into streetGali
+  if (streetGali) {
+    const knownConflictingLocs = [
+      'munirka', 'ber sarai', 'jia sarai', 'katwaria sarai', 'hauz khas', 
+      'green park', 'safdarjung', 'malviya nagar', 'vasant kunj', 'saket', 
+      'ansal golf', 'pari chowk', 'surajpur', 'omega'
+    ];
+    for (const loc of knownConflictingLocs) {
+      if (streetGali.toLowerCase() === loc && !sectorOrArea.toLowerCase().includes(loc)) {
+        streetGali = '';
+        break;
+      }
+    }
   }
 
   // Resolved display title (like Google Maps)
@@ -334,7 +355,19 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
         if (localExact && localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'Sector 18') {
           parsed.areaCity = localExact.formattedArea;
           parsed.city = localExact.city;
-          if (!parsed.streetGali) parsed.streetGali = localExact.suggestedGali || '';
+
+          // Check if parsed.streetGali contains any conflicting neighboring locality (e.g. Munirka in Ber Sarai)
+          const conflictsWithLocality = [
+            'munirka', 'ber sarai', 'jia sarai', 'katwaria sarai', 'hauz khas', 
+            'green park', 'safdarjung', 'malviya nagar', 'vasant kunj', 'saket'
+          ].some(loc => parsed.streetGali.toLowerCase().includes(loc) && !localExact.locality.toLowerCase().includes(loc));
+
+          if (!parsed.streetGali || parsed.streetGali.includes('Main Gali') || conflictsWithLocality) {
+            parsed.streetGali = localExact.suggestedGali || '';
+          }
+          if (localExact.suggestedLandmark && (!parsed.landmark || conflictsWithLocality || (parsed.landmark.toLowerCase().includes('munirka') && !localExact.locality.toLowerCase().includes('munirka')))) {
+            parsed.landmark = localExact.suggestedLandmark;
+          }
         }
 
         return parsed;
@@ -459,7 +492,9 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
 
   // Accurate Gali / Rasta
   let streetGali = '';
-  if (osmRoad) {
+  if (localExact && localExact.suggestedGali) {
+    streetGali = localExact.suggestedGali;
+  } else if (osmRoad) {
     streetGali = mohalla && !osmRoad.toLowerCase().includes(mohalla.toLowerCase())
       ? `${osmRoad}, ${mohalla}`
       : osmRoad;
@@ -473,7 +508,9 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
 
   // Accurate Landmark
   let landmark = '';
-  if (landmarkPoi) {
+  if (localExact && localExact.suggestedLandmark) {
+    landmark = localExact.suggestedLandmark;
+  } else if (landmarkPoi) {
     landmark = `Near ${landmarkPoi}`;
   } else if (village) {
     landmark = `Near ${village} Panchayat Bhavan / Main Chowk`;
