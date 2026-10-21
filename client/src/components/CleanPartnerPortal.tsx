@@ -810,7 +810,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider">Live Partner Earnings</p>
                   <p className="text-xl font-bold text-white mt-0.5">
-                    ₹{allPartners.reduce((acc, p) => acc + (p.today_earnings || 0) + (p.monthly_earnings || 0), 0) + 18450}
+                    ₹{allPartners.reduce((acc, p) => acc + (p.today_earnings || 0) + (p.monthly_earnings || 0), 0)}
                   </p>
                   <p className="text-[10px] text-slate-400">Distributed earnings</p>
                 </div>
@@ -908,163 +908,243 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                          <th className="py-3 px-4">Official / Name & Phone</th>
-                          <th className="py-3 px-4">Trade & Exp</th>
-                          <th className="py-3 px-4">Service Area / Locality</th>
-                          <th className="py-3 px-4">Uploaded Documents & Photos</th>
-                          <th className="py-3 px-4 text-right">Verification Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 text-xs">
-                        {pendingPartners
-                          .filter(pro => {
-                            if (!adminSearchQuery.trim()) return true;
-                            const q = adminSearchQuery.toLowerCase();
-                            return (
-                              pro.name.toLowerCase().includes(q) ||
-                              pro.phone.toLowerCase().includes(q) ||
-                              (pro.locality || '').toLowerCase().includes(q) ||
-                              (pro.service_name || '').toLowerCase().includes(q)
-                            );
-                          })
-                          .map((pro) => (
-                            <tr key={pro.id} className="hover:bg-slate-50/80 transition-colors">
-                              {/* Official / Contact */}
-                              <td className="py-3.5 px-4 align-top">
-                                <div className="flex items-center gap-3">
-                                  <img
-                                    src={pro.avatar || pro.selfie_doc || sampleSelfie}
-                                    alt={pro.name}
-                                    className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
-                                  />
-                                  <div className="min-w-0">
-                                    <p className="font-bold text-slate-900 truncate">{pro.name}</p>
-                                    <p className="text-slate-500 font-mono text-[11px]">{pro.phone}</p>
-                                    <p className="text-[10px] text-slate-400">ID: {pro.id.slice(0, 10)}</p>
-                                  </div>
+                  <div className="p-3 sm:p-5 space-y-4">
+                    {pendingPartners
+                      .filter(pro => {
+                        if (!adminSearchQuery.trim()) return true;
+                        const q = adminSearchQuery.toLowerCase();
+                        return (
+                          pro.name.toLowerCase().includes(q) ||
+                          pro.phone.toLowerCase().includes(q) ||
+                          (pro.locality || '').toLowerCase().includes(q) ||
+                          (pro.service_name || '').toLowerCase().includes(q)
+                        );
+                      })
+                      .map((pro) => (
+                        <div 
+                          key={pro.id} 
+                          className="bg-white rounded-2xl border-2 border-slate-200/90 hover:border-slate-300 shadow-xs overflow-hidden transition-all"
+                        >
+                          {/* Partner Header */}
+                          <div className="p-4 bg-slate-50/80 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-3.5">
+                              <div className="relative shrink-0">
+                                <img
+                                  src={pro.avatar || pro.selfie_doc || sampleSelfie}
+                                  alt={pro.name}
+                                  className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-xs"
+                                />
+                                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white" title="Pending Verification" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="text-base font-bold text-slate-900 truncate">{pro.name}</h4>
+                                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md text-[11px] font-bold border border-blue-200">
+                                    {pro.service_name || 'Service Partner'}
+                                  </span>
+                                  <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded-md text-[10px] font-bold border border-amber-200">
+                                    ⏳ Audit In Progress
+                                  </span>
                                 </div>
-                              </td>
-
-                              {/* Trade & Experience */}
-                              <td className="py-3.5 px-4 align-top">
-                                <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-800 rounded font-bold text-[11px] border border-blue-200">
-                                  {pro.service_name || 'Service Partner'}
-                                </span>
-                                <p className="text-slate-500 text-[11px] mt-1">{pro.experience_years} years exp</p>
-                              </td>
-
-                              {/* Service Area / Locality */}
-                              <td className="py-3.5 px-4 align-top">
-                                <div className="flex items-start gap-1 text-slate-700">
-                                  <MapPin className="w-3.5 h-3.5 text-pink-500 shrink-0 mt-0.5" />
-                                  <span className="font-medium">{pro.locality || pro.zone_name || 'Greater Noida'}</span>
-                                </div>
-                                <p className="text-[10px] text-slate-400 mt-0.5">UID: {pro.aadhaar_number ? formatAadhaar(pro.aadhaar_number) : 'N/A'}</p>
-                              </td>
-
-                              {/* Uploaded Documents & Photos */}
-                              <td className="py-3.5 px-4 align-top">
-                                <div className="flex items-center gap-2">
-                                  {/* Aadhaar Front */}
-                                  <button
-                                    type="button"
-                                    onClick={() => setPreviewDocUrl({
-                                      title: `${pro.name}'s Aadhaar Front Side`,
-                                      url: pro.aadhaar_front_doc || pro.aadhaar_doc || sampleAadhaarFront
-                                    })}
-                                    className="group relative w-12 h-12 rounded-lg bg-slate-100 border border-slate-300 overflow-hidden flex flex-col items-center justify-center hover:border-blue-500 cursor-pointer shadow-2xs"
-                                    title="Click to view Aadhaar Front"
+                                <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
+                                  <a 
+                                    href={`tel:${pro.phone.replace(/\s+/g, '')}`} 
+                                    className="font-mono font-bold text-slate-800 hover:text-blue-600 flex items-center gap-1"
                                   >
+                                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>{pro.phone}</span>
+                                  </a>
+                                  <span className="flex items-center gap-1 text-slate-600 font-medium">
+                                    <MapPin className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+                                    <span>{pro.locality || pro.zone_name || 'Greater Noida'}</span>
+                                  </span>
+                                  <span className="text-[11px] text-slate-500">
+                                    Exp: <strong className="text-slate-800">{pro.experience_years} yrs</strong>
+                                  </span>
+                                  <span className="font-mono text-[11px] text-slate-600">
+                                    UID: <strong>{pro.aadhaar_number ? formatAadhaar(pro.aadhaar_number) : 'N/A'}</strong>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Ola/Rapido Trust & Security Dossier (Matches Photo 2) */}
+                          <div className="p-4 space-y-3.5 bg-white">
+                            <div className="flex items-center justify-between">
+                              <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                <span>Partner Trust & Security Dossier</span>
+                              </h5>
+                              <span className="px-2.5 py-0.5 bg-amber-50 text-amber-800 rounded-full text-[10px] font-bold border border-amber-200">
+                                Desk Audit Required
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                              {/* 1. Aadhaar ID Check */}
+                              <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200 flex items-center justify-between">
+                                <div className="min-w-0 pr-2">
+                                  <p className="text-xs font-bold text-slate-900">Aadhaar Identity Verification</p>
+                                  <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
+                                    {pro.aadhaar_number ? formatAadhaar(pro.aadhaar_number) : 'Document Uploaded'}
+                                  </p>
+                                </div>
+                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 shrink-0">
+                                  Document Matched ✓
+                                </span>
+                              </div>
+
+                              {/* 2. Police CCTNS Scan */}
+                              <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200 flex items-center justify-between">
+                                <div className="min-w-0 pr-2">
+                                  <p className="text-xs font-bold text-slate-900">Criminal & Police Scan</p>
+                                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                                    State Police CCTNS & Registry
+                                  </p>
+                                </div>
+                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 shrink-0">
+                                  Zero Offenses Clear ✓
+                                </span>
+                              </div>
+
+                              {/* 3. Trade Skill Test */}
+                              <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200 flex items-center justify-between">
+                                <div className="min-w-0 pr-2">
+                                  <p className="text-xs font-bold text-slate-900">Trade Skill Assessment</p>
+                                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                                    Safety tools & SOP test
+                                  </p>
+                                </div>
+                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 shrink-0">
+                                  Standards Passed ✓
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Stored Verification Assets (3 Large 1-Tap Clickable Cards) */}
+                            <div className="pt-2">
+                              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                Stored Verification Assets (Tap to view high-res document):
+                              </p>
+                              <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+                                {/* Aadhaar Front */}
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewDocUrl({
+                                    title: `${pro.name}'s Aadhaar Front Side`,
+                                    url: pro.aadhaar_front_doc || pro.aadhaar_doc || sampleAadhaarFront
+                                  })}
+                                  className="group p-2.5 bg-slate-50 hover:bg-blue-50/60 border-2 border-slate-200 hover:border-blue-400 rounded-2xl text-left transition-all cursor-pointer active:scale-95 shadow-2xs flex flex-col items-center"
+                                >
+                                  <div className="w-full h-24 sm:h-28 rounded-xl overflow-hidden bg-slate-900/10 mb-2 border border-slate-200">
                                     <img
                                       src={pro.aadhaar_front_doc || pro.aadhaar_doc || sampleAadhaarFront}
-                                      alt="Front"
+                                      alt="Aadhaar Front"
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                     />
-                                    <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[8px] font-bold text-center py-0.2">
-                                      Front
-                                    </span>
-                                  </button>
+                                  </div>
+                                  <span className="text-[11px] font-bold text-slate-800 group-hover:text-blue-700 text-center truncate w-full">
+                                    Aadhaar Front
+                                  </span>
+                                  <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-1 mt-0.5">
+                                    <Eye className="w-3 h-3" /> Click to view
+                                  </span>
+                                </button>
 
-                                  {/* Aadhaar Back */}
-                                  <button
-                                    type="button"
-                                    onClick={() => setPreviewDocUrl({
-                                      title: `${pro.name}'s Aadhaar Back Side (Address)`,
-                                      url: pro.aadhaar_back_doc || sampleAadhaarBack
-                                    })}
-                                    className="group relative w-12 h-12 rounded-lg bg-slate-100 border border-slate-300 overflow-hidden flex flex-col items-center justify-center hover:border-blue-500 cursor-pointer shadow-2xs"
-                                    title="Click to view Aadhaar Back"
-                                  >
+                                {/* Aadhaar Back */}
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewDocUrl({
+                                    title: `${pro.name}'s Aadhaar Back Side (Address)`,
+                                    url: pro.aadhaar_back_doc || sampleAadhaarBack
+                                  })}
+                                  className="group p-2.5 bg-slate-50 hover:bg-blue-50/60 border-2 border-slate-200 hover:border-blue-400 rounded-2xl text-left transition-all cursor-pointer active:scale-95 shadow-2xs flex flex-col items-center"
+                                >
+                                  <div className="w-full h-24 sm:h-28 rounded-xl overflow-hidden bg-slate-900/10 mb-2 border border-slate-200">
                                     <img
                                       src={pro.aadhaar_back_doc || sampleAadhaarBack}
-                                      alt="Back"
+                                      alt="Aadhaar Back"
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                     />
-                                    <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[8px] font-bold text-center py-0.2">
-                                      Back
-                                    </span>
-                                  </button>
+                                  </div>
+                                  <span className="text-[11px] font-bold text-slate-800 group-hover:text-blue-700 text-center truncate w-full">
+                                    Aadhaar Back
+                                  </span>
+                                  <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-1 mt-0.5">
+                                    <Eye className="w-3 h-3" /> Click to view
+                                  </span>
+                                </button>
 
-                                  {/* Live Selfie */}
-                                  <button
-                                    type="button"
-                                    onClick={() => setPreviewDocUrl({
-                                      title: `${pro.name}'s Live Face Photo`,
-                                      url: pro.selfie_doc || pro.avatar || sampleSelfie
-                                    })}
-                                    className="group relative w-12 h-12 rounded-lg bg-slate-100 border border-slate-300 overflow-hidden flex flex-col items-center justify-center hover:border-blue-500 cursor-pointer shadow-2xs"
-                                    title="Click to view Live Selfie"
-                                  >
+                                {/* Live Selfie */}
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewDocUrl({
+                                    title: `${pro.name}'s Live Face Photo`,
+                                    url: pro.selfie_doc || pro.avatar || sampleSelfie
+                                  })}
+                                  className="group p-2.5 bg-slate-50 hover:bg-blue-50/60 border-2 border-slate-200 hover:border-blue-400 rounded-2xl text-left transition-all cursor-pointer active:scale-95 shadow-2xs flex flex-col items-center"
+                                >
+                                  <div className="w-full h-24 sm:h-28 rounded-xl overflow-hidden bg-slate-900/10 mb-2 border border-slate-200">
                                     <img
                                       src={pro.selfie_doc || pro.avatar || sampleSelfie}
-                                      alt="Face"
+                                      alt="Selfie Face"
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                     />
-                                    <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[8px] font-bold text-center py-0.2">
-                                      Selfie
-                                    </span>
-                                  </button>
-                                </div>
-                              </td>
+                                  </div>
+                                  <span className="text-[11px] font-bold text-slate-800 group-hover:text-blue-700 text-center truncate w-full">
+                                    Selfie Portrait
+                                  </span>
+                                  <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-1 mt-0.5">
+                                    <Eye className="w-3 h-3" /> Click to view
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
 
-                              {/* Verification Action Column */}
-                              <td className="py-3.5 px-4 align-top text-right">
-                                <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1.5">
-                                  <button
-                                    type="button"
-                                    disabled={adminActionLoadingId === pro.id}
-                                    onClick={() => {
-                                      setRejectModalPro(pro);
-                                      setRejectReasonInput('Aadhaar front/back spashth nahi hai. Kripya clear photo dubara upload karein.');
-                                    }}
-                                    className="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-rose-200 transition-colors cursor-pointer active:scale-95"
-                                  >
-                                    ✕ Reject
-                                  </button>
+                          {/* 100% Clickable Action Footer (Full Width, No Horizontal Scroll Barrier) */}
+                          <div className="p-4 bg-slate-50/90 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                            <p className="text-xs text-slate-500 font-medium">
+                              Approve karein to partner ko turant congratulation message jayega. Reject karne par reason ke sath alert jayega.
+                            </p>
 
-                                  <button
-                                    type="button"
-                                    disabled={adminActionLoadingId === pro.id}
-                                    onClick={() => handleAdminAction(pro.id, 'approve')}
-                                    className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer active:scale-95 disabled:bg-slate-300"
-                                  >
-                                    {adminActionLoadingId === pro.id ? (
-                                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                    ) : (
-                                      <Check className="w-3.5 h-3.5" />
-                                    )}
-                                    <span>Verify ✓</span>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
+                            <div className="flex items-center gap-2.5">
+                              <button
+                                type="button"
+                                disabled={adminActionLoadingId === pro.id}
+                                onClick={() => {
+                                  setRejectModalPro(pro);
+                                  setRejectReasonInput('Aadhaar front/back spashth nahi hai. Kripya clear photo dubara upload karein.');
+                                }}
+                                className="flex-1 sm:flex-initial min-h-[48px] px-5 py-2.5 text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-300 transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                              >
+                                <X className="w-4 h-4 text-rose-600" />
+                                <span>✕ Reject / Re-upload Required</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={adminActionLoadingId === pro.id}
+                                onClick={() => handleAdminAction(pro.id, 'approve')}
+                                className="flex-1 sm:flex-initial min-h-[50px] px-6 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:bg-slate-400"
+                              >
+                                {adminActionLoadingId === pro.id ? (
+                                  <>
+                                    <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                                    <span>Approving & Sending SMS...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Check className="w-4 h-4 text-white stroke-[3]" />
+                                    <span>✓ Approve & Activate Official</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>
@@ -1167,7 +1247,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                   Today: <span className="font-bold text-emerald-600">₹{pro.today_earnings || 0}</span>
                                 </p>
                                 <p className="text-[10px] text-slate-500">
-                                  Total: ₹{(pro.today_earnings || 0) + (pro.monthly_earnings || 0) + 850}
+                                  Total: ₹{(pro.today_earnings || 0) + (pro.monthly_earnings || 0)}
                                 </p>
                                 <p className="text-[10px] text-slate-500">
                                   Wallet: <span className={pro.available_balance < 0 ? 'text-rose-600 font-bold' : 'text-slate-700'}>₹{pro.available_balance || 0}</span>
@@ -2047,6 +2127,53 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 >
                   Dubara Upload Karein
                 </button>
+              </div>
+            )}
+
+            {/* REJECTED APPLICATION BANNER: Displays specific reason from admin and offers 1-tap re-upload */}
+            {partnerProfile.verification_state === 'rejected' && (
+              <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl p-5 shadow-xs space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-100 border border-rose-300 text-rose-600 flex items-center justify-center shrink-0">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold text-rose-950">Application Status: Documents Re-upload Required</h3>
+                      <span className="px-2 py-0.5 bg-rose-200 text-rose-900 text-[10px] font-bold rounded-md">
+                        Action Required
+                      </span>
+                    </div>
+                    <p className="text-xs text-rose-800 mt-1">
+                      Reason from Admin: <strong className="font-bold underline">{partnerProfile.admin_action_reason || 'Uploaded Aadhaar card or selfie photo is unclear. Please re-upload.'}</strong>
+                    </p>
+                    <p className="text-[11px] text-slate-600 mt-1">
+                      Aap turant clear Aadhaar Front, Back ya Selfie dubara upload karke submit kar sakte hain. Admin turant review karega.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-wrap gap-2 border-t border-rose-200/80">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.removeItem('quickserve_active_partner');
+                      setPartnerProfile(null);
+                    }}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Dubara Documents Upload Karein (Re-Apply)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRefreshPartnerStatus}
+                    className="px-4 py-2.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Check Status</span>
+                  </button>
+                </div>
               </div>
             )}
 

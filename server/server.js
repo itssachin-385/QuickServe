@@ -156,12 +156,12 @@ app.get(['/download-apk', '/QuickServe_Latest.apk', '/QuickServe.apk', '/QuickSe
 // App Version & In-App Auto-Update Endpoint
 app.get('/api/app-version', (req, res) => {
   res.json({
-    version: '4.4',
-    versionCode: 32,
-    minVersionCode: 32,
+    version: '4.5',
+    versionCode: 33,
+    minVersionCode: 33,
     apkUrl: '/QuickServe_Latest.apk',
     downloadUrl: 'https://quickserve-3lhk.onrender.com/QuickServe_Latest.apk',
-    releaseNotes: 'Clean Admin Tables, Partner Notifications, Live Partner Tracking & In-App Auto-Updater',
+    releaseNotes: 'Ola/Rapido Partner Verification Dossiers, 1-Tap Clickable Approvals & Hyperlocal GPS Accuracy (Rama Krishna Puram)',
     forceUpdate: false,
     updatedAt: new Date().toISOString()
   });

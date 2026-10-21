@@ -73,6 +73,8 @@ const CURATED_LOCALITIES: LocalityItem[] = [
   { name: 'Sector 76, Noida', sub: '7x Sectors, Noida, UP', tag: 'Noida', pincode: '201301' },
   { name: 'Sector 137, Noida', sub: 'Noida-Greater Noida Expressway, UP', tag: 'Noida', pincode: '201305' },
   { name: 'Connaught Place, New Delhi', sub: 'Inner & Outer Circle, Central Delhi', tag: 'Delhi', pincode: '110001' },
+  { name: 'Sector 5, Rama Krishna Puram, New Delhi', sub: 'Sewa Bhawan & Tamil Sangam Marg, South Delhi', tag: 'Delhi', pincode: '110022' },
+  { name: 'Rama Krishna Puram, New Delhi', sub: 'R.K. Puram Sectors 1-12, South Delhi', tag: 'Delhi', pincode: '110022' },
   { name: 'JNU Campus, New Delhi', sub: 'Jawaharlal Nehru University, South West Delhi', tag: 'Delhi', pincode: '110067' },
   { name: 'Munirka, New Delhi', sub: 'Munirka Village & DDA Flats, South Delhi', tag: 'Delhi', pincode: '110067' },
   { name: 'Ber Sarai, New Delhi', sub: 'Near IIT & JNU, South Delhi', tag: 'Delhi', pincode: '110016' },
@@ -290,6 +292,11 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
       if (result.houseNo) setHouseNo(result.houseNo);
       if (result.streetGali) setStreetBuilding(result.streetGali);
       if (result.landmark) setLandmark(result.landmark);
+      // Synchronize immediately with global app bar so background doesn't show old location
+      try {
+        localStorage.setItem('quickserve_active_zone', detectedZone);
+        onSelectZone(detectedZone);
+      } catch (e) {}
       setStep('doorstep');
     } catch (err: any) {
       setGpsError('Could not resolve GPS location. Please select from popular areas or enter manually.');

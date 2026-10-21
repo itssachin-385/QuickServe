@@ -71,14 +71,32 @@ const NCR_SECTOR_ZONES: SectorZone[] = [
     defaultGali: 'Ber Sarai Main Market',
     defaultLandmark: 'Near Ber Sarai Market / Vedant Desika Mandir'
   },
-  // B. Munirka (distinct locality north of Ber Sarai)
+  // B. Munirka (distinct locality north of Ber Sarai, south of RK Puram)
   {
     name: 'Munirka',
     city: 'New Delhi',
-    minLat: 28.5536, maxLat: 28.5660,
-    minLon: 77.1660, maxLon: 77.1780,
+    minLat: 28.5536, maxLat: 28.5630,
+    minLon: 77.1660, maxLon: 77.1760,
     defaultGali: 'Munirka Village Road',
     defaultLandmark: 'Near Munirka Metro Station / Nelson Mandela Marg'
+  },
+  // B1. Sector 5, Rama Krishna Puram (Sewa Bhawan / Tamil Sangam Marg / Mohan Singh Market)
+  {
+    name: 'Sector 5, Rama Krishna Puram',
+    city: 'New Delhi',
+    minLat: 28.5631, maxLat: 28.5750,
+    minLon: 77.1720, maxLon: 77.1850,
+    defaultGali: 'Tamil Sangam Marg / Sector 5',
+    defaultLandmark: 'Near Sewa Bhawan / Mohan Singh Market'
+  },
+  // B2. Rama Krishna Puram (General R.K. Puram Hub)
+  {
+    name: 'Rama Krishna Puram',
+    city: 'New Delhi',
+    minLat: 28.5600, maxLat: 28.5780,
+    minLon: 77.1680, maxLon: 77.1920,
+    defaultGali: 'Outer Ring Road / Sector Road',
+    defaultLandmark: 'Near R.K. Puram Sector 1 to 5'
   },
   // C. Jia Sarai (opposite IIT Delhi Main Gate)
   {
@@ -409,7 +427,28 @@ export function resolveNoidaOrGreaterNoida(
     };
   }
 
-  if (fullText.includes('munirka') && !fullText.includes('ber sarai')) {
+  // Rama Krishna Puram / Sector 5 / Sewa Bhawan (Distinct from Munirka)
+  if (
+    fullText.includes('sewa bhawan') || 
+    fullText.includes('ramakrishna puram') || 
+    fullText.includes('rama krishna puram') || 
+    fullText.includes('rk puram') || 
+    fullText.includes('r.k. puram') ||
+    fullText.includes('tamil sangam') ||
+    fullText.includes('mohan singh market') ||
+    fullText.includes('110022')
+  ) {
+    const isSec5 = fullText.includes('sector 5') || fullText.includes('sec 5') || fullText.includes('sewa bhawan') || fullText.includes('tamil sangam');
+    return {
+      city: 'New Delhi',
+      locality: isSec5 ? 'Sector 5, Rama Krishna Puram' : 'Rama Krishna Puram',
+      formattedArea: isSec5 ? 'Sector 5, Rama Krishna Puram, New Delhi' : 'Rama Krishna Puram, New Delhi',
+      suggestedGali: isSec5 ? 'Tamil Sangam Marg / Sector 5' : 'Outer Ring Road / Sector Road',
+      suggestedLandmark: 'Near Sewa Bhawan / Mohan Singh Market'
+    };
+  }
+
+  if (fullText.includes('munirka') && !fullText.includes('ber sarai') && !fullText.includes('sewa bhawan') && !fullText.includes('ramakrishna')) {
     return {
       city: 'New Delhi',
       locality: 'Munirka',
@@ -639,10 +678,20 @@ export function resolveNoidaOrGreaterNoida(
     }
   }
 
-  // Special JNU & South Delhi precision override
+  // Special Rama Krishna Puram / Sewa Bhawan precision override
   if (
+    addr.postcode === '110022' ||
+    fullText.includes('sewa bhawan') ||
+    fullText.includes('ramakrishna puram') ||
+    fullText.includes('rama krishna puram') ||
+    fullText.includes('tamil sangam')
+  ) {
+    cleanLocality = (fullText.includes('sector 5') || fullText.includes('sewa bhawan')) ? 'Sector 5, Rama Krishna Puram' : 'Rama Krishna Puram';
+    cleanCity = 'New Delhi';
+  } else if (
     (addr.postcode === '110067' || fullText.includes('jnu') || fullText.includes('jawaharlal nehru')) &&
-    !cleanLocality.toLowerCase().includes('munirka')
+    !cleanLocality.toLowerCase().includes('munirka') &&
+    !cleanLocality.toLowerCase().includes('ramakrishna')
   ) {
     cleanLocality = 'JNU Campus';
     cleanCity = 'New Delhi';

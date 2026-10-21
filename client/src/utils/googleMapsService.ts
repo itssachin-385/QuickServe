@@ -110,8 +110,18 @@ export function parseGooglePlace(place: any, fallbackLat?: number, fallbackLon?:
   } else if (combinedText.includes('saket')) {
     sectorOrArea = 'Saket';
     city = 'New Delhi';
-  } else if (combinedText.includes('r.k. puram') || combinedText.includes('rk puram')) {
-    sectorOrArea = 'R.K. Puram';
+  } else if (
+    combinedText.includes('r.k. puram') || 
+    combinedText.includes('rk puram') || 
+    combinedText.includes('ramakrishna puram') || 
+    combinedText.includes('rama krishna puram') || 
+    combinedText.includes('sewa bhawan') || 
+    combinedText.includes('tamil sangam') ||
+    combinedText.includes('110022')
+  ) {
+    sectorOrArea = (combinedText.includes('sector 5') || combinedText.includes('sec 5') || combinedText.includes('sewa bhawan'))
+      ? 'Sector 5, Rama Krishna Puram'
+      : 'Rama Krishna Puram';
     city = 'New Delhi';
   } else if (
     combinedText.includes('ansal golf') || 
@@ -455,17 +465,29 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     finalCity = cleanIndianCityName(addr.state_district || addr.county || osmState || (isNCR ? 'New Delhi' : 'Service Location'));
   }
 
-  // If local NCR bounding box matched (e.g. JNU Campus / Ber Sarai / Munirka / Pari Chowk / Omega 1), prioritize it:
+  // If local NCR bounding box matched (e.g. Rama Krishna Puram / Ber Sarai / Munirka / Pari Chowk), prioritize it:
   if (localExact && localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'New Delhi') {
     finalLocality = localExact.locality;
     finalCity = localExact.city;
   }
 
-  // JNU & South Delhi Precision override from display_name or postcode
+  // Precision override from display_name or postcode for RK Puram / Sewa Bhawan
   const fullLower = fullDisplayName.toLowerCase();
   if (
+    osmPincode === '110022' || 
+    fullLower.includes('sewa bhawan') || 
+    fullLower.includes('ramakrishna puram') || 
+    fullLower.includes('rama krishna puram') || 
+    fullLower.includes('tamil sangam')
+  ) {
+    finalLocality = (fullLower.includes('sector 5') || fullLower.includes('sewa bhawan') || fullLower.includes('tamil sangam')) 
+      ? 'Sector 5, Rama Krishna Puram' 
+      : 'Rama Krishna Puram';
+    finalCity = 'New Delhi';
+  } else if (
     (osmPincode === '110067' || fullLower.includes('jnu') || fullLower.includes('jawaharlal nehru')) &&
-    !fullLower.includes('munirka')
+    !fullLower.includes('munirka') &&
+    !fullLower.includes('ramakrishna')
   ) {
     finalLocality = 'JNU Campus';
     finalCity = 'New Delhi';

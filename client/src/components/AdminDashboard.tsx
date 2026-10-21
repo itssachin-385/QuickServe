@@ -73,8 +73,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     pendingVerifications: professionals.filter(p => p.verification_state !== 'verified').length,
     todayBookingsCount: bookings.length + 14,
     completedBookings: bookings.filter(b => b.status === 'completed').length,
-    grossRevenue: bookings.reduce((sum, b) => sum + b.total_amount, 0) + 18450,
-    platformCommission: Math.round((bookings.reduce((sum, b) => sum + b.total_amount, 0) + 18450) * 0.10),
+    grossRevenue: bookings.reduce((sum, b) => sum + b.total_amount, 0),
+    platformCommission: Math.round(bookings.reduce((sum, b) => sum + b.total_amount, 0) * 0.10),
     openDisputes: 1,
     activeEmergencies: 0,
     launch_city: 'Greater Noida & Delhi-NCR (Operational Hubs)'
