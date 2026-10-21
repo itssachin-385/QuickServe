@@ -413,9 +413,30 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     console.warn('OSM reverse geocode error:', e);
   }
 
+  // Multi-tier Fallback: BigDataCloud Reverse Geocoding if OSM didn't return suburb or village
+  if (!addr.suburb && !addr.village && !addr.neighbourhood && !addr.road) {
+    try {
+      const bdcRes = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+      );
+      if (bdcRes.ok) {
+        const bdcData = await bdcRes.json();
+        if (bdcData) {
+          if (!addr.city && bdcData.city) addr.city = bdcData.city;
+          if (!addr.suburb && bdcData.locality) addr.suburb = bdcData.locality;
+          if (!addr.state && bdcData.principalSubdivision) addr.state = bdcData.principalSubdivision;
+        }
+      }
+    } catch (e) {
+      console.warn('BDC fallback notice:', e);
+    }
+  }
+
   // 4. FULL INDIAN CADASTRAL HIERARCHY EXTRACTION (Gaon, Gali, Mohalla, Zila)
   const village = addr.village || addr.hamlet || addr.isolated_dwelling || '';
-  const mohalla = addr.neighbourhood || addr.suburb || addr.residential || addr.quarter || addr.subdivision || '';
+  const suburb = addr.suburb || '';
+  const neighbourhood = addr.neighbourhood || addr.residential || addr.quarter || addr.subdivision || '';
+  const mohalla = suburb || neighbourhood;
   const landmarkPoi = addr.amenity || addr.building || addr.tourism || addr.historic || addr.leisure || addr.shop || '';
 
   const rawCityDist = 
@@ -439,22 +460,30 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
       finalCity = cleanIndianCityName(addr.state_district);
     }
   }
-  // Case B: Urban Mohalla / Ward / Colony / Nagar
-  else if (mohalla) {
-    finalLocality = mohalla;
+  // Case B: Urban Suburb / Locality (e.g. Ramakrishna Puram, Connaught Place, Lajpat Nagar, Sector 62, Bandra)
+  else if (suburb) {
+    if (neighbourhood && !suburb.toLowerCase().includes(neighbourhood.toLowerCase()) && !/west block|east block|block\s*$/i.test(neighbourhood)) {
+      finalLocality = `${neighbourhood}, ${suburb}`;
+    } else {
+      finalLocality = suburb;
+    }
   }
-  // Case C: Gali / Road / Marg / Path
+  // Case C: Urban Mohalla / Ward / Colony
+  else if (neighbourhood) {
+    finalLocality = neighbourhood;
+  }
+  // Case D: Gali / Road / Marg / Path
   else if (osmRoad) {
     finalLocality = osmRoad;
   }
-  // Case D: Landmark (Mandir, College, Hospital, Dhabha)
+  // Case E: Landmark (Mandir, College, Hospital, Dhabha)
   else if (landmarkPoi) {
     finalLocality = landmarkPoi;
   }
-  // Case E: Extract from display_name tokens
+  // Case F: Extract from display_name tokens
   else if (fullDisplayName) {
     const parts = fullDisplayName.split(',').map((s: string) => s.trim()).filter(Boolean);
-    const nonIndia = parts.filter((p: string) => !/^india$/i.test(p));
+    const nonIndia = parts.filter((p: string) => !/^india|delhi|uttar pradesh|haryana$/i.test(p));
     if (nonIndia.length > 0) {
       finalLocality = nonIndia[0];
     }
@@ -465,14 +494,16 @@ export async function reverseGeocodeGoogle(lat: number, lon: number): Promise<Go
     finalCity = cleanIndianCityName(addr.state_district || addr.county || osmState || (isNCR ? 'New Delhi' : 'Service Location'));
   }
 
-  // If local NCR bounding box matched (e.g. Rama Krishna Puram / Ber Sarai / Munirka / Pari Chowk), prioritize it:
-  if (localExact && localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'New Delhi') {
-    finalLocality = localExact.locality;
-    finalCity = localExact.city;
+  // If finalLocality is still empty or generic, use local exact bounding box
+  if (!finalLocality || finalLocality.toLowerCase() === 'delhi' || finalLocality.toLowerCase() === 'main sector') {
+    if (localExact && localExact.locality && localExact.locality !== 'Central' && localExact.locality !== 'New Delhi') {
+      finalLocality = localExact.locality;
+      finalCity = localExact.city;
+    }
   }
 
   // Precision override from display_name or postcode for RK Puram / Sewa Bhawan
-  const fullLower = fullDisplayName.toLowerCase();
+  const fullLower = `${fullDisplayName} ${finalLocality} ${osmRoad}`.toLowerCase();
   if (
     osmPincode === '110022' || 
     fullLower.includes('sewa bhawan') || 

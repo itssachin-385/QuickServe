@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { DownloadCloud, Sparkles, X, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { API_BASE } from '../api';
 
-export const CURRENT_APP_VERSION = '4.5';
-export const CURRENT_VERSION_CODE = 33;
+export const CURRENT_APP_VERSION = '4.6';
+export const CURRENT_VERSION_CODE = 34;
 
 export interface AppVersionInfo {
   version: string;

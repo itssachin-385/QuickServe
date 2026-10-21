@@ -156,12 +156,12 @@ app.get(['/download-apk', '/QuickServe_Latest.apk', '/QuickServe.apk', '/QuickSe
 // App Version & In-App Auto-Update Endpoint
 app.get('/api/app-version', (req, res) => {
   res.json({
-    version: '4.5',
-    versionCode: 33,
-    minVersionCode: 33,
+    version: '4.6',
+    versionCode: 34,
+    minVersionCode: 34,
     apkUrl: '/QuickServe_Latest.apk',
     downloadUrl: 'https://quickserve-3lhk.onrender.com/QuickServe_Latest.apk',
-    releaseNotes: 'Ola/Rapido Partner Verification Dossiers, 1-Tap Clickable Approvals & Hyperlocal GPS Accuracy (Rama Krishna Puram)',
+    releaseNotes: 'Live Dual-Tier GPS Engine outdoors, Auto-Detection on App Open, & 1-Tap GPS Refresh Bar',
     forceUpdate: false,
     updatedAt: new Date().toISOString()
   });

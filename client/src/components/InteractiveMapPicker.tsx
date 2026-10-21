@@ -53,10 +53,11 @@ const getFastPosition = async (
       if (perm.location !== 'granted') {
         await Geolocation.requestPermissions();
       }
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 7000,
-        maximumAge: 15000
+      const pos = await Promise.race([
+        Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+      ]).catch(() => {
+        return Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 4000, maximumAge: 0 });
       });
       if (pos?.coords) {
         const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };

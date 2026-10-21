@@ -240,11 +240,16 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
           if (perm.location !== 'granted') {
             await Geolocation.requestPermissions();
           }
-          const pos = await Geolocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 9000,
-            maximumAge: 10000
+
+          // Two-Tier Live Hardware Fetch:
+          // Try High-Accuracy GPS first with a 6s race. If slow or indoors, immediately fallback to Cell Tower / WiFi trilateration
+          const pos = await Promise.race([
+            Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }),
+            new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]).catch(() => {
+            return Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 5000, maximumAge: 0 });
           });
+
           if (pos?.coords) {
             lat = pos.coords.latitude;
             lon = pos.coords.longitude;
@@ -254,7 +259,7 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
         }
       }
 
-      // Stage 2: Browser Navigator Geolocation (Desktop & Mobile Web fallback)
+      // Stage 2: Browser Navigator Geolocation (Two-tier fallback: High Accuracy -> Fast Cell Network)
       if (lat === null || lon === null) {
         if (!navigator.geolocation) {
           setGpsError('Geolocation is not supported by your device. Please select or search your area.');
@@ -265,11 +270,15 @@ export const CleanLocationModal: React.FC<CleanLocationModalProps> = ({
         const browserCoords = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
           navigator.geolocation.getCurrentPosition(
             (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-            (err) => {
-              console.warn('Browser GPS error:', err);
-              resolve(null);
+            () => {
+              // High accuracy failed or timed out, immediately try fast network position
+              navigator.geolocation.getCurrentPosition(
+                (pos2) => resolve({ lat: pos2.coords.latitude, lon: pos2.coords.longitude }),
+                () => resolve(null),
+                { enableHighAccuracy: false, timeout: 6000, maximumAge: 0 }
+              );
             },
-            { timeout: 9000, maximumAge: 30000, enableHighAccuracy: true }
+            { timeout: 5000, maximumAge: 0, enableHighAccuracy: true }
           );
         });
 

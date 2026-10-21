@@ -9,6 +9,9 @@ import { fetchCategories, fetchBookings } from './api';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
+import { reverseGeocodeGoogle } from './utils/googleMapsService';
 
 export function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -82,6 +85,85 @@ export function App() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Automatic Live GPS Detection on App Launch & Resume
+  useEffect(() => {
+    let isCancelled = false;
+
+    const detectLiveLocationOnStart = async () => {
+      try {
+        let lat: number | null = null;
+        let lon: number | null = null;
+
+        // Stage 1: Try Native Hardware GPS with Fast Network Fallback
+        if (Capacitor.isNativePlatform()) {
+          try {
+            const perm = await Geolocation.checkPermissions();
+            if (perm.location === 'granted') {
+              const pos = await Promise.race([
+                Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }),
+                new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+              ]).catch(() => {
+                return Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 4000, maximumAge: 0 });
+              });
+
+              if (pos?.coords) {
+                lat = pos.coords.latitude;
+                lon = pos.coords.longitude;
+              }
+            }
+          } catch (e) {}
+        }
+
+        // Stage 2: Browser Navigator Geolocation Fallback
+        if (lat === null || lon === null) {
+          if (navigator.geolocation) {
+            const browserPos = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+              navigator.geolocation.getCurrentPosition(
+                (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
+                () => {
+                  navigator.geolocation.getCurrentPosition(
+                    (p2) => resolve({ lat: p2.coords.latitude, lon: p2.coords.longitude }),
+                    () => resolve(null),
+                    { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }
+                  );
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+              );
+            });
+
+            if (browserPos) {
+              lat = browserPos.lat;
+              lon = browserPos.lon;
+            }
+          }
+        }
+
+        if (!isCancelled && lat !== null && lon !== null) {
+          const res = await reverseGeocodeGoogle(lat, lon);
+          if (res && res.areaCity) {
+            setActiveCityZone(res.areaCity);
+            localStorage.setItem('quickserve_active_zone', res.areaCity);
+            const fullAddr = [
+              res.houseNo ? `House ${res.houseNo}` : '',
+              res.streetGali,
+              res.landmark ? `Near ${res.landmark}` : '',
+              res.areaCity
+            ].filter(Boolean).join(', ');
+            localStorage.setItem('quickserve_user_address', fullAddr);
+          }
+        }
+      } catch (err) {
+        console.warn('Auto live location detection notice:', err);
+      }
+    };
+
+    detectLiveLocationOnStart();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   // Auth Handlers

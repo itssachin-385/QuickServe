@@ -16,6 +16,9 @@ import { translations, Language } from '../utils/translations';
 import { playDoorbellChime } from '../utils/sound';
 import { LiveTrackingModal } from './LiveTrackingModal';
 import { BrandLogo } from './BrandLogo';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
+import { reverseGeocodeGoogle } from '../utils/googleMapsService';
 
 interface CleanCustomerAppProps {
   currentUser: CustomerUser;
@@ -142,6 +145,74 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   const [bookingService, setBookingService] = useState<HomeServiceCard | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState<Booking | null>(null);
+  const [isRefreshingLiveGps, setIsRefreshingLiveGps] = useState(false);
+
+  const handleQuickLiveGpsRefresh = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsRefreshingLiveGps(true);
+    playDoorbellChime();
+
+    try {
+      let lat: number | null = null;
+      let lon: number | null = null;
+
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const perm = await Geolocation.checkPermissions();
+          if (perm.location !== 'granted') await Geolocation.requestPermissions();
+          const pos = await Promise.race([
+            Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }),
+            new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]).catch(() => Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 4000, maximumAge: 0 }));
+          if (pos?.coords) {
+            lat = pos.coords.latitude;
+            lon = pos.coords.longitude;
+          }
+        } catch (e) {}
+      }
+
+      if (lat === null || lon === null) {
+        if (navigator.geolocation) {
+          const p = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+              () => {
+                navigator.geolocation.getCurrentPosition(
+                  (pos2) => resolve({ lat: pos2.coords.latitude, lon: pos2.coords.longitude }),
+                  () => resolve(null),
+                  { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }
+                );
+              },
+              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+          });
+          if (p) {
+            lat = p.lat;
+            lon = p.lon;
+          }
+        }
+      }
+
+      if (lat !== null && lon !== null) {
+        const res = await reverseGeocodeGoogle(lat, lon);
+        if (res && res.areaCity) {
+          onSelectZone(res.areaCity);
+          const fullAddr = [res.houseNo ? `House ${res.houseNo}` : '', res.streetGali, res.landmark ? `Near ${res.landmark}` : '', res.areaCity].filter(Boolean).join(', ');
+          localStorage.setItem('quickserve_user_address', fullAddr);
+          setSuccessToast(`📍 Live Location Updated: ${res.areaCity}`);
+          setTimeout(() => setSuccessToast(''), 3500);
+        }
+      } else {
+        setSuccessToast('GPS signal weak. Tap location to select area manually.');
+        setTimeout(() => setSuccessToast(''), 3000);
+      }
+    } catch (err) {
+      setSuccessToast('Location check error.');
+      setTimeout(() => setSuccessToast(''), 3000);
+    } finally {
+      setIsRefreshingLiveGps(false);
+    }
+  };
 
   // Auto-prompt location picker if no location is selected yet (for new users)
   useEffect(() => {
@@ -450,22 +521,36 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             </div>
           </div>
 
-          {/* Mobile Row 3: Dedicated Location Selector Bar (Delivering to ... >) */}
-          <button
-            type="button"
-            onClick={() => setIsLocationModalOpen(true)}
-            className="w-full flex items-center justify-between px-3 py-1.5 bg-pink-50/60 hover:bg-pink-100/70 active:bg-pink-100 rounded-xl border border-pink-200/80 text-left transition-all shadow-2xs group cursor-pointer"
-          >
-            <div className="flex items-center gap-1.5 min-w-0">
-              <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
-              <span className="text-[11px] font-semibold text-slate-700 truncate">
-                {lang === 'hi' ? 'डिलीवरी:' : 'Delivering to'} <strong className="text-pink-700 font-bold">{activeCityZone || (lang === 'hi' ? 'लोकेशन चुनें' : 'Select Location')}</strong>
+          {/* Mobile Row 3: Dedicated Location Selector Bar (Delivering to ... >) with 1-Tap Live GPS Refresh */}
+          <div className="w-full flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setIsLocationModalOpen(true)}
+              className="flex-1 flex items-center justify-between px-3 py-1.5 bg-pink-50/60 hover:bg-pink-100/70 active:bg-pink-100 rounded-xl border border-pink-200/80 text-left transition-all shadow-2xs group cursor-pointer min-w-0"
+            >
+              <div className="flex items-center gap-1.5 min-w-0">
+                <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                <span className="text-[11px] font-semibold text-slate-700 truncate">
+                  {lang === 'hi' ? 'डिलीवरी:' : 'Delivering to'} <strong className="text-pink-700 font-bold">{activeCityZone || (lang === 'hi' ? 'लोकेशन चुनें' : 'Select Location')}</strong>
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-pink-600 shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform">
+                &gt;
               </span>
-            </div>
-            <span className="text-[11px] font-bold text-pink-600 shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform">
-              &gt;
-            </span>
-          </button>
+            </button>
+
+            {/* 1-Tap Live GPS Quick Button */}
+            <button
+              type="button"
+              disabled={isRefreshingLiveGps}
+              onClick={handleQuickLiveGpsRefresh}
+              className="px-2.5 py-1.5 bg-white hover:bg-pink-50 active:scale-90 text-pink-600 border border-pink-200/90 rounded-xl shadow-2xs flex items-center gap-1 text-[11px] font-bold shrink-0 transition-all cursor-pointer"
+              title="Current live location fetch"
+            >
+              <Navigation className={`w-3.5 h-3.5 ${isRefreshingLiveGps ? 'animate-spin text-pink-500' : 'text-pink-600'}`} />
+              <span className="text-[10px] font-bold text-pink-700">GPS</span>
+            </button>
+          </div>
         </div>
 
       </header>
