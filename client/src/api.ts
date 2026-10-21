@@ -86,23 +86,26 @@ export async function fetchBookings(params?: { customer_phone?: string; pro_id?:
     if (params?.pro_id) query.append('pro_id', params.pro_id);
     const res = await fetch(`${API_BASE}/bookings?${query.toString()}`);
     if (res.ok) return await res.json();
+    return [];
   } catch (err) {
-    console.warn('Network offline, reading local bookings');
+    console.warn('Network offline or error fetching live bookings:', err);
+    return [];
   }
-  const local = JSON.parse(localStorage.getItem('quickserve_local_bookings') || '[]');
-  return local;
 }
 
 export async function createBooking(data: Partial<Booking>): Promise<{ success: boolean; booking: Booking }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(`${API_BASE}/bookings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
       signal: controller.signal
     });
+    clearTimeout(timeoutId);
+
     if (res.ok) {
       return await res.json();
     } else {
@@ -110,39 +113,12 @@ export async function createBooking(data: Partial<Booking>): Promise<{ success: 
       throw new Error(errJson.error || errJson.message || 'Server rejected booking');
     }
   } catch (err: any) {
-    if (err.name === 'AbortError' || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
-      console.warn('Backend server offline or slow, creating booking locally:', err);
-    } else {
-      throw err;
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError' || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || !navigator.onLine) {
+      throw new Error('Internet connection required. QuickServe works only online in real-time. Please turn on Wi-Fi or Mobile Data.');
     }
+    throw err;
   }
-
-  const newBooking: Booking = {
-    id: `bk-${Date.now()}`,
-    booking_reference: `QS-${Math.floor(100000 + Math.random() * 900000)}`,
-    customer_name: data.customer_name || 'Customer',
-    customer_phone: data.customer_phone || '',
-    service_id: data.service_id || 'cat-maid',
-    service_title: data.service_title || 'Home Help Services',
-    professional_name: data.professional_name || 'Rahul Kumar (QuickServe SuperPartner)',
-    professional_phone: data.professional_phone || '+91 95701 51834',
-    status: 'confirmed',
-    booking_mode: data.booking_mode || 'instant',
-    total_amount: data.total_amount || 149,
-    payment_status: data.payment_status || (data.payment_method === 'pay_after_work' ? 'pending' : 'paid'),
-    payment_method: (data.payment_method as any) || 'pay_after_work',
-    service_start_otp: String(Math.floor(1000 + Math.random() * 9000)),
-    service_completion_otp: String(Math.floor(1000 + Math.random() * 9000)),
-    locality: data.locality || 'Greater Noida',
-    created_at: new Date().toISOString(),
-    ...data
-  } as Booking;
-
-  const existing = JSON.parse(localStorage.getItem('quickserve_local_bookings') || '[]');
-  existing.unshift(newBooking);
-  localStorage.setItem('quickserve_local_bookings', JSON.stringify(existing));
-
-  return { success: true, booking: newBooking };
 }
 
 export async function updateBookingStatus(id: string, status: string, reason?: string): Promise<{ success: boolean; booking: Booking }> {

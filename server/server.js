@@ -153,6 +153,12 @@ app.get(['/download-apk', '/QuickServe_Latest.apk', '/QuickServe.apk', '/QuickSe
   res.status(404).send('APK not found on server');
 });
 
+// Lightweight Health & Ping Endpoint for Online-Only Verification
+app.get('/api/ping', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.json({ status: 'online', time: Date.now() });
+});
+
 // App Version & In-App Auto-Update Endpoint
 app.get('/api/app-version', (req, res) => {
   res.json({

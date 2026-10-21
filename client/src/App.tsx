@@ -4,8 +4,9 @@ import { CleanCustomerApp } from './components/CleanCustomerApp';
 import { CleanPartnerPortal } from './components/CleanPartnerPortal';
 import { AppSplashScreen } from './components/AppSplashScreen';
 import { InAppUpdateBanner } from './components/InAppUpdateBanner';
+import { OfflineScreen } from './components/OfflineScreen';
 import { CustomerUser, Booking, ServiceCategory } from './types';
-import { fetchCategories, fetchBookings } from './api';
+import { fetchCategories, fetchBookings, API_BASE } from './api';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -62,6 +63,11 @@ export function App() {
     return saved;
   });
 
+  // Online / Offline Real-time State (Strictly Online-Only like Pronto/Rapido)
+  const [isOnline, setIsOnline] = useState<boolean>(() => {
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  });
+
   // Global Data State
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -85,6 +91,76 @@ export function App() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Real-time Network Connectivity Monitoring (Strictly Online-Only)
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      loadData();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial ping check
+    const verifyConnectivity = async () => {
+      if (!navigator.onLine) {
+        setIsOnline(false);
+        return;
+      }
+      try {
+        const base = API_BASE.replace(/\/api\/?$/, '');
+        const res = await fetch(`${base}/api/ping`, {
+          method: 'GET',
+          cache: 'no-store',
+          signal: AbortSignal.timeout(3500)
+        }).catch(() => null);
+
+        if (!res) {
+          const googleTest = await fetch('https://www.google.com/favicon.ico', {
+            mode: 'no-cors',
+            cache: 'no-store',
+            signal: AbortSignal.timeout(3000)
+          }).catch(() => null);
+
+          if (!googleTest && !navigator.onLine) {
+            setIsOnline(false);
+          }
+        }
+      } catch (e) {
+        if (!navigator.onLine) setIsOnline(false);
+      }
+    };
+    verifyConnectivity();
+
+    let resumeListener: any = null;
+    if (Capacitor.isNativePlatform()) {
+      CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) {
+          if (!navigator.onLine) {
+            setIsOnline(false);
+          } else {
+            setIsOnline(true);
+            loadData();
+          }
+        }
+      }).then(handle => {
+        resumeListener = handle;
+      }).catch(() => {});
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      if (resumeListener && typeof resumeListener.remove === 'function') {
+        resumeListener.remove();
+      }
+    };
   }, []);
 
   // Automatic Live GPS Detection on App Launch & Resume
@@ -234,6 +310,18 @@ export function App() {
   // Splash Screen
   if (showSplash) {
     return <AppSplashScreen onFinish={() => setShowSplash(false)} />;
+  }
+
+  // Strict Online Enforcement (Like Pronto/Rapido/Swiggy)
+  if (!isOnline) {
+    return (
+      <OfflineScreen
+        onRetry={async () => {
+          setIsOnline(true);
+          await loadData();
+        }}
+      />
+    );
   }
 
   // 1. LOGIN / SIGN UP GATE
