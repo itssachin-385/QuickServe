@@ -209,8 +209,7 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
         <button
           type="button"
           onClick={() => {
-            const rawGithubUrl = 'https://raw.githubusercontent.com/itssachin-385/QuickServe/main/server/public/QuickServe_Latest.apk';
-            window.location.href = rawGithubUrl;
+            window.location.href = 'https://quickserve-3lhk.onrender.com/download-apk';
           }}
           className="px-3.5 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold rounded-xl border border-pink-200 flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer whitespace-nowrap shadow-2xs"
           title="Direct APK Download"

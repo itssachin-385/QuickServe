@@ -136,7 +136,7 @@ app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 app.use(express.static(path.join(__dirname, '../client/dist'), staticOptions));
 
 // Direct APK Download Endpoint with no-cache headers to prevent mobile browser caching
-app.get(['/download-apk', '/QuickServe_Latest.apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
+app.get(['/download', '/download-apk', '/QuickServe_Latest.apk', '/QuickServe.apk', '/QuickServe_v2.apk'], (req, res) => {
   // Try QuickServe_Latest.apk first, fallback to QuickServe_v2.apk
   const latestPath = path.resolve(__dirname, 'public/QuickServe_Latest.apk');
   const fallbackPath = path.resolve(__dirname, 'public/QuickServe_v2.apk');
@@ -162,12 +162,12 @@ app.get('/api/ping', (req, res) => {
 // App Version & In-App Auto-Update Endpoint
 app.get('/api/app-version', (req, res) => {
   res.json({
-    version: '4.6',
-    versionCode: 34,
-    minVersionCode: 34,
-    apkUrl: '/QuickServe_Latest.apk',
-    downloadUrl: 'https://raw.githubusercontent.com/itssachin-385/QuickServe/main/server/public/QuickServe_Latest.apk',
-    releaseNotes: 'Live Dual-Tier GPS Engine outdoors, Auto-Detection on App Open, & 1-Tap GPS Refresh Bar',
+    version: '4.7',
+    versionCode: 35,
+    minVersionCode: 35,
+    apkUrl: '/download-apk',
+    downloadUrl: 'https://quickserve-3lhk.onrender.com/download-apk',
+    releaseNotes: 'Partner Verification Audit Table (Accepted vs Rejected Records), Document Previews & Re-Approve',
     forceUpdate: false,
     updatedAt: new Date().toISOString()
   });

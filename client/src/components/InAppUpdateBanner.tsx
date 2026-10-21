@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { DownloadCloud, Sparkles, X, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { API_BASE } from '../api';
 
-export const CURRENT_APP_VERSION = '4.6';
-export const CURRENT_VERSION_CODE = 34;
+export const CURRENT_APP_VERSION = '4.7';
+export const CURRENT_VERSION_CODE = 35;
 
 export interface AppVersionInfo {
   version: string;
@@ -54,12 +54,12 @@ export const InAppUpdateBanner: React.FC<InAppUpdateBannerProps> = ({
 
   const handleStartUpdate = () => {
     setIsDownloading(true);
-    const permanentGithubApkUrl = 'https://raw.githubusercontent.com/itssachin-385/QuickServe/main/server/public/QuickServe_Latest.apk';
-    const apkUrl = updateInfo.downloadUrl && !updateInfo.downloadUrl.includes('trycloudflare')
+    const reliableDownloadUrl = 'https://quickserve-3lhk.onrender.com/download-apk';
+    const apkUrl = updateInfo.downloadUrl && !updateInfo.downloadUrl.includes('githubusercontent') && !updateInfo.downloadUrl.includes('trycloudflare')
       ? updateInfo.downloadUrl
-      : permanentGithubApkUrl;
+      : reliableDownloadUrl;
     
-    // Trigger direct APK download - Android prompts "Do you want to install an update to this app?"
+    // Trigger direct APK download - Android download manager starts download immediately
     window.location.href = apkUrl;
 
     setTimeout(() => {

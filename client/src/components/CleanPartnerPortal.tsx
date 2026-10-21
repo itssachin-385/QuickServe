@@ -759,8 +759,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      const base = API_BASE.replace(/\/api\/?$/, '');
-                      window.location.href = `${base}/QuickServe_Latest.apk`;
+                      window.location.href = 'https://quickserve-3lhk.onrender.com/download-apk';
                     }}
                     className="px-3 py-1.5 bg-pink-600/20 hover:bg-pink-600/30 text-pink-300 border border-pink-500/30 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer active:scale-95"
                     title="Download latest APK directly"
