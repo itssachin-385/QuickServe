@@ -161,8 +161,23 @@ export function App() {
 
     detectLiveLocationOnStart();
 
+    // Auto re-detect when user brings app back to foreground (e.g. travelled somewhere outdoors)
+    let resumeListener: any = null;
+    if (Capacitor.isNativePlatform()) {
+      CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive && !isCancelled) {
+          detectLiveLocationOnStart();
+        }
+      }).then(handle => {
+        resumeListener = handle;
+      }).catch(() => {});
+    }
+
     return () => {
       isCancelled = true;
+      if (resumeListener && typeof resumeListener.remove === 'function') {
+        resumeListener.remove();
+      }
     };
   }, []);
 
