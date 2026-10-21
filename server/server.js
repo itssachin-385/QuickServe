@@ -265,7 +265,11 @@ let gatewayConfig = {
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || 'qs_test_secret_123',
   upiVpa: process.env.UPI_VPA || 'sachinsb68741@nyes',
   merchantPhone: process.env.MERCHANT_PHONE || '9570151834',
-  upiMerchantName: process.env.UPI_MERCHANT_NAME || 'Sachin Kumar'
+  upiMerchantName: process.env.UPI_MERCHANT_NAME || 'Sachin Kumar',
+  whatsappAccessToken: process.env.WHATSAPP_ACCESS_TOKEN || '',
+  whatsappPhoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
+  whatsappTemplateName: process.env.WHATSAPP_TEMPLATE_NAME || 'quickserve_otp',
+  whatsappProvider: process.env.WHATSAPP_PROVIDER || 'meta' // 'meta' | 'fast2sms'
 };
 
 // Fast2SMS and Test numbers configuration
@@ -362,8 +366,144 @@ async function sendFast2SmsOtp(phone10, otp) {
   }
 }
 
-// WhatsApp OTP Endpoint (Instant 1-Click WhatsApp delivery)
-app.post('/api/auth/send-whatsapp-otp', (req, res) => {
+// Automated WhatsApp Dispatcher (Meta WhatsApp Cloud API & Fast2SMS WhatsApp)
+async function sendAutomatedWhatsAppOtp(cleanPhone, otp) {
+  const logEntry = {
+    id: `wa-${Date.now()}`,
+    phone: cleanPhone,
+    otp,
+    timestamp: new Date().toISOString(),
+    status: 'pending',
+    channel: 'whatsapp'
+  };
+
+  // 1. Meta Official WhatsApp Business Cloud API (Direct Inbox Push)
+  if (gatewayConfig.whatsappAccessToken && gatewayConfig.whatsappPhoneNumberId) {
+    try {
+      const url = `https://graph.facebook.com/v20.0/${gatewayConfig.whatsappPhoneNumberId}/messages`;
+      
+      // Attempt 1: Standard Authentication Template
+      const templatePayload = {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: `91${cleanPhone}`,
+        type: 'template',
+        template: {
+          name: gatewayConfig.whatsappTemplateName || 'quickserve_otp',
+          language: { code: 'en' },
+          components: [
+            {
+              type: 'body',
+              parameters: [{ type: 'text', text: otp }]
+            },
+            {
+              type: 'button',
+              sub_type: 'url',
+              index: '0',
+              parameters: [{ type: 'text', text: otp }]
+            }
+          ]
+        }
+      };
+
+      let metaRes = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${gatewayConfig.whatsappAccessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(templatePayload)
+      });
+
+      let metaData = await metaRes.json().catch(() => ({}));
+
+      // Fallback Attempt 2: Direct text message if template is pending review
+      if (!metaRes.ok) {
+        const textPayload = {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: `91${cleanPhone}`,
+          type: 'text',
+          text: {
+            preview_url: false,
+            body: `Your QuickServe Verification OTP is ${otp}. Valid for 10 minutes. Please enter this in QuickServe to continue.`
+          }
+        };
+
+        metaRes = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${gatewayConfig.whatsappAccessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(textPayload)
+        });
+        metaData = await metaRes.json().catch(() => ({}));
+      }
+
+      if (metaRes.ok && metaData.messages) {
+        logEntry.status = 'delivered';
+        logEntry.metaMessageId = metaData.messages[0]?.id;
+        logEntry.provider = 'meta_cloud_api';
+        smsLogs.unshift(logEntry);
+        console.log(`[REAL WHATSAPP DELIVERED] Meta API sent to +91 ${cleanPhone}. MsgId: ${metaData.messages[0]?.id}`);
+        return {
+          success: true,
+          automated: true,
+          provider: 'meta_cloud_api',
+          messageId: metaData.messages[0]?.id,
+          message: `Official WhatsApp OTP sent directly to +91 ${cleanPhone}`
+        };
+      } else {
+        console.warn('Meta WhatsApp API error response:', metaData);
+        logEntry.status = 'failed';
+        logEntry.error = metaData.error?.message || 'Meta API error';
+        smsLogs.unshift(logEntry);
+      }
+    } catch (err) {
+      console.error('Meta WhatsApp API network error:', err);
+      logEntry.status = 'network_error';
+      logEntry.error = err.message;
+      smsLogs.unshift(logEntry);
+    }
+  }
+
+  // 2. Fast2SMS WhatsApp Route (if configured)
+  if (gatewayConfig.fast2smsApiKey && gatewayConfig.whatsappProvider === 'fast2sms') {
+    try {
+      const waUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=wa&numbers=${cleanPhone}&message=${encodeURIComponent(`Your QuickServe OTP is ${otp}. Valid for 10 mins.`)}`;
+      const waRes = await fetch(waUrl, { method: 'GET' });
+      const waData = await waRes.json().catch(() => ({}));
+      if (waData.return === true) {
+        logEntry.status = 'delivered';
+        logEntry.provider = 'fast2sms_whatsapp';
+        smsLogs.unshift(logEntry);
+        return {
+          success: true,
+          automated: true,
+          provider: 'fast2sms_whatsapp',
+          message: `WhatsApp OTP sent via Fast2SMS to +91 ${cleanPhone}`
+        };
+      }
+    } catch (e) {
+      console.warn('Fast2SMS WhatsApp error:', e);
+    }
+  }
+
+  // 3. Fallback: Simulation / Deeplink ready
+  logEntry.status = 'ready';
+  logEntry.note = 'WhatsApp OTP generated with 1-click deeplink backup';
+  smsLogs.unshift(logEntry);
+  return {
+    success: true,
+    automated: false,
+    provider: 'deeplink_backup',
+    message: 'WhatsApp OTP generated'
+  };
+}
+
+// WhatsApp OTP Endpoint (Supports Automated Meta Cloud API + 1-Click Deeplink Fallback)
+app.post('/api/auth/send-whatsapp-otp', async (req, res) => {
   let { phone, otp: clientOtp } = req.body;
   if (!phone) return res.status(400).json({ error: 'Phone number is required' });
   const cleanPhone = phone.replace(/\D/g, '').slice(-10);
@@ -374,6 +514,9 @@ app.post('/api/auth/send-whatsapp-otp', (req, res) => {
     expiresAt: Date.now() + 10 * 60 * 1000
   };
 
+  // Automated delivery attempt
+  const dispatchResult = await sendAutomatedWhatsAppOtp(cleanPhone, otp);
+
   const whatsappText = `*QuickServe Verification Code*\n\nYour 4-digit login OTP is: *${otp}*\n\nValid for 10 minutes. Please enter this code in your QuickServe app to continue.`;
   const whatsappUrl = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(whatsappText)}`;
 
@@ -381,8 +524,12 @@ app.post('/api/auth/send-whatsapp-otp', (req, res) => {
     success: true,
     phone: cleanPhone,
     otp,
+    automated: dispatchResult.automated || false,
+    provider: dispatchResult.provider,
     whatsapp_url: whatsappUrl,
-    message: `WhatsApp OTP generated for +91 ${cleanPhone}`
+    message: dispatchResult.automated 
+      ? `Automated WhatsApp OTP delivered to +91 ${cleanPhone}` 
+      : `WhatsApp OTP generated for +91 ${cleanPhone}`
   });
 });
 
@@ -511,12 +658,25 @@ app.get('/api/gateways/config', (req, res) => {
       merchantPhone: gatewayConfig.merchantPhone,
       merchantName: gatewayConfig.upiMerchantName
     },
-    recentSmsLogs: smsLogs.slice(0, 10)
+    whatsapp: {
+      hasToken: Boolean(gatewayConfig.whatsappAccessToken),
+      maskedToken: gatewayConfig.whatsappAccessToken ? `${gatewayConfig.whatsappAccessToken.slice(0, 6)}...${gatewayConfig.whatsappAccessToken.slice(-4)}` : '',
+      phoneNumberId: gatewayConfig.whatsappPhoneNumberId || '',
+      templateName: gatewayConfig.whatsappTemplateName || 'quickserve_otp',
+      provider: gatewayConfig.whatsappProvider || 'meta'
+    },
+    recentSmsLogs: smsLogs.slice(0, 15)
   });
 });
 
 app.post('/api/gateways/config', (req, res) => {
-  const { fast2smsApiKey, fast2smsRoute, razorpayKeyId, razorpayKeySecret, upiVpa, merchantPhone, upiMerchantName } = req.body;
+  const { 
+    fast2smsApiKey, fast2smsRoute, 
+    razorpayKeyId, razorpayKeySecret, 
+    upiVpa, merchantPhone, upiMerchantName,
+    whatsappAccessToken, whatsappPhoneNumberId, whatsappTemplateName, whatsappProvider
+  } = req.body;
+
   if (fast2smsApiKey !== undefined) gatewayConfig.fast2smsApiKey = fast2smsApiKey.trim();
   if (fast2smsRoute !== undefined) gatewayConfig.fast2smsRoute = fast2smsRoute;
   if (razorpayKeyId !== undefined) gatewayConfig.razorpayKeyId = razorpayKeyId.trim();
@@ -524,6 +684,10 @@ app.post('/api/gateways/config', (req, res) => {
   if (upiVpa !== undefined) gatewayConfig.upiVpa = upiVpa.trim();
   if (merchantPhone !== undefined) gatewayConfig.merchantPhone = merchantPhone.trim();
   if (upiMerchantName !== undefined) gatewayConfig.upiMerchantName = upiMerchantName.trim();
+  if (whatsappAccessToken !== undefined) gatewayConfig.whatsappAccessToken = whatsappAccessToken.trim();
+  if (whatsappPhoneNumberId !== undefined) gatewayConfig.whatsappPhoneNumberId = whatsappPhoneNumberId.trim();
+  if (whatsappTemplateName !== undefined) gatewayConfig.whatsappTemplateName = whatsappTemplateName.trim();
+  if (whatsappProvider !== undefined) gatewayConfig.whatsappProvider = whatsappProvider;
 
   // Persist settings to .env file
   try {
@@ -536,7 +700,11 @@ app.post('/api/gateways/config', (req, res) => {
       `FAST2SMS_API_KEY=${gatewayConfig.fast2smsApiKey}`,
       `FAST2SMS_ROUTE=${gatewayConfig.fast2smsRoute}`,
       `RAZORPAY_KEY_ID=${gatewayConfig.razorpayKeyId}`,
-      `RAZORPAY_KEY_SECRET=${gatewayConfig.razorpayKeySecret}`
+      `RAZORPAY_KEY_SECRET=${gatewayConfig.razorpayKeySecret}`,
+      `WHATSAPP_ACCESS_TOKEN=${gatewayConfig.whatsappAccessToken}`,
+      `WHATSAPP_PHONE_NUMBER_ID=${gatewayConfig.whatsappPhoneNumberId}`,
+      `WHATSAPP_TEMPLATE_NAME=${gatewayConfig.whatsappTemplateName}`,
+      `WHATSAPP_PROVIDER=${gatewayConfig.whatsappProvider}`
     ].join('\n');
     fs.writeFileSync(envPath, envContent, 'utf-8');
   } catch (err) {
@@ -551,9 +719,23 @@ app.post('/api/gateways/config', (req, res) => {
       razorpayKeyId: gatewayConfig.razorpayKeyId,
       upiVpa: gatewayConfig.upiVpa,
       merchantPhone: gatewayConfig.merchantPhone,
-      upiMerchantName: gatewayConfig.upiMerchantName
+      upiMerchantName: gatewayConfig.upiMerchantName,
+      whatsapp: {
+        hasToken: Boolean(gatewayConfig.whatsappAccessToken),
+        phoneNumberId: gatewayConfig.whatsappPhoneNumberId,
+        provider: gatewayConfig.whatsappProvider
+      }
     }
   });
+});
+
+app.post('/api/gateways/whatsapp/send-test', async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+  const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+  const testOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  const result = await sendAutomatedWhatsAppOtp(cleanPhone, testOtp);
+  res.json({ ...result, testOtp });
 });
 
 app.post('/api/gateways/fast2sms/check-balance', async (req, res) => {

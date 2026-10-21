@@ -41,6 +41,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
   const [hintOtp, setHintOtp] = useState<string | null>(null);
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
   const [whatsAppOpened, setWhatsAppOpened] = useState(false);
+  const [isAutomatedSent, setIsAutomatedSent] = useState(false);
 
   const otpInputRefs = [
     useRef<HTMLInputElement>(null),
@@ -106,10 +107,15 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
       }
       setStep('otp');
       setResendSeconds(30);
-      setWhatsAppOpened(true);
 
-      if (res && res.whatsapp_url) {
-        window.open(res.whatsapp_url, '_blank');
+      if (res && res.automated) {
+        setIsAutomatedSent(true);
+      } else {
+        setIsAutomatedSent(false);
+        setWhatsAppOpened(true);
+        if (res && res.whatsapp_url) {
+          window.open(res.whatsapp_url, '_blank');
+        }
       }
 
       setTimeout(() => {
@@ -448,10 +454,16 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
               </button>
             </div>
 
-            {/* Real Carrier SMS Dispatched Status */}
+            {/* Delivery Status Indicator */}
             <div className="flex items-center gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="font-medium">Real SMS sent to <strong>+91 {phone}</strong></span>
+              <span className="font-medium">
+                {isAutomatedSent ? (
+                  <>Direct WhatsApp OTP sent to <strong>+91 {phone}</strong></>
+                ) : (
+                  <>Verification code sent to <strong>+91 {phone}</strong></>
+                )}
+              </span>
             </div>
 
             {/* 1-Click WhatsApp OTP Option */}

@@ -402,7 +402,7 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; messag
   };
 }
 
-export async function sendWhatsAppOtp(phone: string): Promise<{ success: boolean; message: string; phone: string; otp: string; whatsapp_url: string }> {
+export async function sendWhatsAppOtp(phone: string): Promise<{ success: boolean; message: string; phone: string; otp: string; whatsapp_url: string; automated?: boolean; provider?: string }> {
   const cleanPhone = phone.replace(/\D/g, '').slice(-10);
   const savedOtp = localStorage.getItem(`quickserve_otp_${cleanPhone}`) || Math.floor(1000 + Math.random() * 9000).toString();
   localStorage.setItem(`quickserve_otp_${cleanPhone}`, savedOtp);
@@ -426,9 +426,19 @@ export async function sendWhatsAppOtp(phone: string): Promise<{ success: boolean
     success: true,
     phone: cleanPhone,
     otp: savedOtp,
+    automated: false,
     whatsapp_url: `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(text)}`,
     message: 'WhatsApp OTP generated'
   };
+}
+
+export async function sendTestWhatsAppOtp(phone: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/gateways/whatsapp/send-test`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone })
+  });
+  return await res.json();
 }
 
 

@@ -60,6 +60,8 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   const [editFast2SmsKey, setEditFast2SmsKey] = useState('');
   const [editUpiVpa, setEditUpiVpa] = useState('');
   const [editMerchantPhone, setEditMerchantPhone] = useState('');
+  const [editWhatsappToken, setEditWhatsappToken] = useState('');
+  const [editWhatsappPhoneId, setEditWhatsappPhoneId] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Initialize payment order from server
@@ -83,6 +85,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
           setGatewayConfig(cfgRes);
           setEditUpiVpa(cfgRes.upi?.vpa || 'sachinsb68741@nyes');
           setEditMerchantPhone(cfgRes.upi?.merchantPhone || '9570151834');
+          if (cfgRes.whatsapp?.phoneNumberId) setEditWhatsappPhoneId(cfgRes.whatsapp.phoneNumberId);
         }
       } catch (err) {
         console.error('Failed to create payment order:', err);
@@ -199,7 +202,9 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
       await updateGatewayConfig({
         fast2smsApiKey: editFast2SmsKey ? editFast2SmsKey : undefined,
         upiVpa: editUpiVpa ? editUpiVpa : undefined,
-        merchantPhone: editMerchantPhone ? editMerchantPhone : undefined
+        merchantPhone: editMerchantPhone ? editMerchantPhone : undefined,
+        whatsappAccessToken: editWhatsappToken ? editWhatsappToken : undefined,
+        whatsappPhoneNumberId: editWhatsappPhoneId ? editWhatsappPhoneId : undefined
       });
       setSettingsSaved(true);
       setTimeout(() => setSettingsSaved(false), 2500);
@@ -630,6 +635,47 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
                     <p className="text-[10px] text-slate-400 mt-1">
                       {gatewayConfig?.fast2sms?.hasKey ? '✅ Fast2SMS API Key is ACTIVE' : 'ℹ️ Fast2SMS not set (using test OTP simulation)'}
                     </p>
+                  </div>
+
+                  {/* WhatsApp Business Cloud API Settings */}
+                  <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-emerald-950 font-bold text-xs">
+                        💬 Meta WhatsApp Cloud API (Automated OTP):
+                      </label>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white border border-emerald-200 text-emerald-700">
+                        {gatewayConfig?.whatsapp?.hasToken ? '✅ Meta API Active' : 'ℹ️ Deeplink Fallback'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-600 text-[11px] font-semibold mb-1">
+                        Meta Permanent Access Token:
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Paste WhatsApp Cloud Access Token"
+                        value={editWhatsappToken}
+                        onChange={(e) => setEditWhatsappToken(e.target.value)}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-600 text-[11px] font-semibold mb-1">
+                        Meta Phone Number ID:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 10482910291"
+                        value={editWhatsappPhoneId}
+                        onChange={(e) => setEditWhatsappPhoneId(e.target.value)}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono"
+                      />
+                      <span className="text-[10px] text-slate-400 block mt-1">
+                        WhatsApp Dashboard &gt; API Setup me milta hai. Jab set hoga, OTP direct inbox me deliver hoga.
+                      </span>
+                    </div>
                   </div>
 
                   {/* UPI VPA (Merchant ID) */}
