@@ -24,8 +24,16 @@ public class MainActivity extends BridgeActivity {
             }
         }
 
-        // WindowCompat.setDecorFitsSystemWindows with true guarantees WebView ends right at navigation bar
-        // Do not add double padding on contentView so there is no gap above the 3-button bar
+        // Apply Navigation Bar Bottom Insets as Padding to Root Content View
+        // Physically guarantees the 3-button navigation bar NEVER overlaps the app's bottom bar
+        View contentView = findViewById(android.R.id.content);
+        if (contentView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(contentView, (v, insets) -> {
+                Insets navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+                v.setPadding(0, 0, 0, navBars.bottom);
+                return insets;
+            });
+        }
 
         // Native Hardware Back Button Dispatcher for 3-Button Navigation
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {

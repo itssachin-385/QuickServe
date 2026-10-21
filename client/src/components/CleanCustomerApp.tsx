@@ -934,13 +934,13 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
       </main>
 
-      {/* Responsive Bottom Navigation Bar for Mobile - Flush against 3-button bar */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-1.5 py-1 flex items-stretch justify-around sm:hidden shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
+      {/* Responsive Bottom Navigation Bar for Mobile - Fixed 54px flush against 3-button bar */}
+      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-1 h-[54px] flex items-center justify-around sm:hidden shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
         {/* Tab 1: Home */}
         <button
           type="button"
           onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl transition-all cursor-pointer ${
             activeTab === 'home' && selectedCategoryKey === 'all'
               ? 'text-pink-600 font-bold bg-pink-50/70'
               : 'text-[#705869] hover:text-pink-600 font-medium'
@@ -954,7 +954,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => { setActiveTab('home'); setSelectedCategoryKey('cleaning'); }}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl transition-all cursor-pointer ${
             activeTab === 'home' && selectedCategoryKey !== 'all'
               ? 'text-pink-600 font-bold bg-pink-50/70'
               : 'text-[#705869] hover:text-pink-600 font-medium'
@@ -968,7 +968,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => onSwitchToPartnerPortal(false)}
-          className="flex-1 flex flex-col items-center justify-center py-1 rounded-xl text-[#705869] hover:text-pink-600 font-medium transition-all cursor-pointer"
+          className="flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl text-[#705869] hover:text-pink-600 font-medium transition-all cursor-pointer"
         >
           <Briefcase className="w-5 h-5" />
           <span className="text-[10px] mt-0.5 leading-none">Partner</span>
@@ -978,7 +978,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl relative transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl relative transition-all cursor-pointer ${
             activeTab === 'orders'
               ? 'text-pink-600 font-bold bg-pink-50/70'
               : 'text-[#705869] hover:text-pink-600 font-medium'
@@ -999,7 +999,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl transition-all cursor-pointer ${
             activeTab === 'profile'
               ? 'text-pink-600 font-bold bg-pink-50/70'
               : 'text-[#705869] hover:text-pink-600 font-medium'
@@ -1015,7 +1015,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={handleVoiceSearch}
-          className={`fixed bottom-20 right-4 sm:hidden z-30 w-12 h-12 rounded-full shadow-lg shadow-pink-900/30 flex items-center justify-center transition-all cursor-pointer active:scale-90 border-2 border-white ${
+          className={`fixed bottom-16 right-4 sm:hidden z-30 w-12 h-12 rounded-full shadow-lg shadow-pink-900/30 flex items-center justify-center transition-all cursor-pointer active:scale-90 border-2 border-white ${
             isListeningMic
               ? 'bg-rose-500 text-white animate-pulse'
               : 'bg-gradient-to-br from-purple-700 via-pink-600 to-rose-600 text-white'
