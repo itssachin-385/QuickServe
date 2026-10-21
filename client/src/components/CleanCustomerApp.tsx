@@ -439,120 +439,80 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           </div>
         </div>
 
-        {/* MOBILE HEADER (sm:hidden) - Photo 1 Design */}
-        <div className="sm:hidden px-3 pt-1 pb-2 space-y-2">
-          {/* Mobile Top Row: User Avatar (Left) + QuickServe Logo (Center) + Wishlist & Cart/Orders Badge (Right) */}
+        {/* MOBILE HEADER (sm:hidden) */}
+        <div className="sm:hidden px-3 pt-1 pb-2 space-y-2.5">
+          {/* Mobile Top Row: Enlarged Profile (Left) + Brand Logo (Right) */}
           <div className="flex items-center justify-between">
-            {/* Left: User Avatar & Greeting */}
+            {/* Left: Enlarged User Avatar & Greeting */}
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
-              className="flex items-center gap-1.5 text-left focus:outline-none cursor-pointer"
+              className="flex items-center gap-2 text-left focus:outline-none cursor-pointer py-1 px-1 rounded-xl hover:bg-pink-50 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full bg-pink-100 border border-pink-200 text-pink-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+              <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-pink-200 text-pink-700 flex items-center justify-center font-bold text-sm shadow-xs">
                 {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
                   ? currentUser.name.slice(0, 2).toUpperCase()
-                  : <User className="w-4 h-4 text-pink-600" />}
+                  : <User className="w-5 h-5 text-pink-600" />}
               </div>
-              <span className="text-xs font-bold text-[#1F121C] truncate max-w-[80px]">
-                {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
-                  ? currentUser.name.split(' ')[0]
-                  : (lang === 'hi' ? 'नमस्ते' : 'Profile')}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Account</span>
+                <span className="text-sm font-extrabold text-[#1F121C] truncate max-w-[140px]">
+                  {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
+                    ? currentUser.name.split(' ')[0]
+                    : 'Profile'}
+                </span>
+              </div>
             </button>
 
-            {/* Center: Brand Logo */}
+            {/* Right: Brand Logo */}
             <button
               type="button"
               onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-              className="focus:outline-none cursor-pointer"
+              className="focus:outline-none cursor-pointer pr-1"
             >
-              <BrandLogo size="sm" />
+              <BrandLogo size="md" />
             </button>
-
-            {/* Right: Wishlist Chime + Active Orders Cart Badge */}
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => playDoorbellChime()}
-                className="w-8 h-8 rounded-full bg-pink-50 border border-pink-200/80 text-pink-600 flex items-center justify-center hover:bg-pink-100 transition-colors shadow-2xs cursor-pointer"
-                title="Doorbell Chime"
-              >
-                <Heart className="w-4 h-4 text-pink-600" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('orders')}
-                className="w-8 h-8 rounded-full bg-pink-50 border border-pink-200/80 text-pink-600 flex items-center justify-center hover:bg-pink-100 transition-colors relative shadow-2xs cursor-pointer"
-                title={t.myOrders}
-              >
-                <ShoppingBag className="w-4 h-4 text-pink-600" />
-                {activeOrdersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-[9px] font-extrabold flex items-center justify-center shadow-xs">
-                    {activeOrdersCount}
-                  </span>
-                )}
-              </button>
-            </div>
           </div>
 
-          {/* Mobile Row 2: Search Bar with Mic Icon (Photo 1 Style) */}
+          {/* Mobile Row 2: Enlarged Search Bar (No Mic Icon) */}
           <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
-              <Search className="w-4 h-4" />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-pink-500">
+              <Search className="w-5 h-5" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={lang === 'hi' ? 'सर्विस या काम खोजें (उदा. प्लंबर, नौकरानी)...' : 'Search by service or chore (e.g. Maid, Plumber)...'}
-              className="w-full pl-9 pr-14 py-2 text-xs bg-pink-50/40 hover:bg-white focus:bg-white border border-pink-200/90 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-[#1F121C] placeholder-slate-400 transition-all"
+              placeholder="Search for plumber, electrician, cleaning..."
+              className="w-full pl-11 pr-10 py-3 text-sm bg-pink-50/50 hover:bg-white focus:bg-white border-2 border-pink-200 focus:border-pink-500 rounded-2xl shadow-xs focus:outline-none focus:ring-2 focus:ring-pink-500/20 text-[#1F121C] placeholder-slate-400 font-medium transition-all"
             />
-            <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-1 text-pink-500">
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="text-slate-400 hover:text-pink-600 p-0.5"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-              <span className="p-1 text-pink-500 cursor-pointer">
-                <Mic className="w-3.5 h-3.5" />
-              </span>
-            </div>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-pink-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {/* Mobile Row 3: Dedicated Location Selector Bar (Delivering to ... >) with 1-Tap Live GPS Refresh */}
-          <div className="w-full flex items-center gap-1.5">
+          {/* Mobile Row 3: Enlarged Dedicated Location Selector Bar (No GPS Button) */}
+          <div className="w-full">
             <button
               type="button"
               onClick={() => setIsLocationModalOpen(true)}
-              className="flex-1 flex items-center justify-between px-3 py-1.5 bg-pink-50/60 hover:bg-pink-100/70 active:bg-pink-100 rounded-xl border border-pink-200/80 text-left transition-all shadow-2xs group cursor-pointer min-w-0"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-pink-50/70 hover:bg-pink-100/80 active:bg-pink-100 rounded-2xl border border-pink-200 text-left transition-all shadow-2xs group cursor-pointer"
             >
-              <div className="flex items-center gap-1.5 min-w-0">
-                <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
-                <span className="text-[11px] font-semibold text-slate-700 truncate">
-                  {lang === 'hi' ? 'डिलीवरी:' : 'Delivering to'} <strong className="text-pink-700 font-bold">{activeCityZone || (lang === 'hi' ? 'लोकेशन चुनें' : 'Select Location')}</strong>
+              <div className="flex items-center gap-2 min-w-0">
+                <MapPin className="w-4 h-4 text-pink-600 shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 truncate">
+                  Delivering to <strong className="text-pink-700 font-bold">{activeCityZone || 'Select Location'}</strong>
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-pink-600 shrink-0 ml-1 group-hover:translate-x-0.5 transition-transform">
-                &gt;
+              <span className="text-xs font-bold text-pink-600 shrink-0 ml-1.5 group-hover:translate-x-0.5 transition-transform">
+                Change &gt;
               </span>
-            </button>
-
-            {/* 1-Tap Live GPS Quick Button */}
-            <button
-              type="button"
-              disabled={isRefreshingLiveGps}
-              onClick={handleQuickLiveGpsRefresh}
-              className="px-2.5 py-1.5 bg-white hover:bg-pink-50 active:scale-90 text-pink-600 border border-pink-200/90 rounded-xl shadow-2xs flex items-center gap-1 text-[11px] font-bold shrink-0 transition-all cursor-pointer"
-              title="Current live location fetch"
-            >
-              <Navigation className={`w-3.5 h-3.5 ${isRefreshingLiveGps ? 'animate-spin text-pink-500' : 'text-pink-600'}`} />
-              <span className="text-[10px] font-bold text-pink-700">GPS</span>
             </button>
           </div>
         </div>
@@ -1009,22 +969,6 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           <span className="text-[10px] mt-0.5 leading-none">{t.profile}</span>
         </button>
       </nav>
-
-      {/* Floating Voice Search Mic Button - Photo 2 Meesho Feature */}
-      {activeTab === 'home' && (
-        <button
-          type="button"
-          onClick={handleVoiceSearch}
-          className={`fixed bottom-16 right-4 sm:hidden z-30 w-12 h-12 rounded-full shadow-lg shadow-pink-900/30 flex items-center justify-center transition-all cursor-pointer active:scale-90 border-2 border-white ${
-            isListeningMic
-              ? 'bg-rose-500 text-white animate-pulse'
-              : 'bg-gradient-to-br from-purple-700 via-pink-600 to-rose-600 text-white'
-          }`}
-          title="Voice Search Domestic Services"
-        >
-          <Mic className={`w-5 h-5 ${isListeningMic ? 'animate-bounce' : ''}`} />
-        </button>
-      )}
 
       {/* Location Modal */}
       <CleanLocationModal
