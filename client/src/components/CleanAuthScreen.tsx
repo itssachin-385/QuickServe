@@ -21,7 +21,18 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 }) => {
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState(initialPhone.replace(/\D/g, '').slice(-10));
-  const [name, setName] = useState('');
+  const [name, setName] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('quickserve_user');
+      if (savedUser) {
+        const u = JSON.parse(savedUser);
+        if (u.name && u.name !== 'QuickServe Customer' && !u.name.includes('Guest')) return u.name;
+      }
+      return localStorage.getItem('quickserve_user_name') || '';
+    } catch (e) {
+      return '';
+    }
+  });
   const [whatsappUpdates, setWhatsappUpdates] = useState(true);
   const [otp, setOtp] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,15 +74,22 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
     // Allows instant guest browsing as requested by "Skip login" in Photo 1
     const guestUser: CustomerUser = {
       id: `guest-${Date.now()}`,
-      name: 'QuickServe Guest',
-      phone: '+91 95701 51834'
+      name: name.trim() || 'QuickServe Customer',
+      phone: phone.trim() ? `+91 ${phone.replace(/\D/g, '').slice(-10)}` : '+91 95701 51834'
     };
     onSuccess(guestUser);
   };
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // WhatsApp OTP Submission
+  const handleWhatsAppSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMessage('');
+
+    const trimmedName = name.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setErrorMessage('Please enter your full name (कृपया अपना नाम दर्ज करें)');
+      return;
+    }
 
     const cleanPhone = phone.replace(/\D/g, '').slice(-10);
     if (cleanPhone.length !== 10) {
@@ -79,6 +97,49 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
       return;
     }
 
+    localStorage.setItem('quickserve_user_name', trimmedName);
+    setIsSendingWhatsApp(true);
+    try {
+      const res = await sendWhatsAppOtp(cleanPhone);
+      if (res && res.otp) {
+        setHintOtp(res.otp);
+      }
+      setStep('otp');
+      setResendSeconds(30);
+      setWhatsAppOpened(true);
+
+      if (res && res.whatsapp_url) {
+        window.open(res.whatsapp_url, '_blank');
+      }
+
+      setTimeout(() => {
+        otpInputRefs[0]?.current?.focus();
+      }, 200);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Could not send WhatsApp OTP. Please use SMS.');
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
+
+  // Standard SMS Submission
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    const trimmedName = name.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setErrorMessage('Please enter your full name (कृपया अपना नाम दर्ज करें)');
+      return;
+    }
+
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      setErrorMessage('Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    localStorage.setItem('quickserve_user_name', trimmedName);
     setIsLoading(true);
     try {
       const res = await sendOtp(cleanPhone);
@@ -252,16 +313,43 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
           </div>
         )}
 
-        {/* STEP 1: Phone Entry */}
+        {/* STEP 1: Name & Phone Entry */}
         {step === 'phone' ? (
-          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+          <form onSubmit={handlePhoneSubmit} className="space-y-3.5">
             
-            <h3 className="text-xl font-extrabold text-[#1F121C] tracking-tight font-heading">
-              Log in or Sign up
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-extrabold text-[#1F121C] tracking-tight font-heading">
+                Log in or Sign up
+              </h3>
+              <span className="text-[11px] font-bold text-pink-600 bg-pink-50 border border-pink-100 px-2.5 py-0.5 rounded-full">
+                Instant 1-Click
+              </span>
+            </div>
 
-            {/* Mobile Number Input with +91 Separator */}
+            {/* 1. Full Customer Name (Mandatory / Required - Pahle) */}
             <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Full Name / आपका नाम <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-pink-300 focus-within:border-pink-600 rounded-2xl px-4 py-3 transition-colors shadow-2xs">
+                <User className="w-4 h-4 text-pink-600 mr-2.5 shrink-0" />
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name (जैसे: राहुल कुमार)"
+                  className="w-full text-sm font-medium text-[#1F121C] placeholder-slate-400 bg-transparent focus:outline-none tracking-wide"
+                />
+              </div>
+            </div>
+
+            {/* 2. Mobile Number Input with +91 Separator (Dusre) */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Mobile Number / मोबाइल नंबर <span className="text-rose-500">*</span>
+              </label>
               <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-pink-300 focus-within:border-pink-600 rounded-2xl px-4 py-3 transition-colors shadow-2xs">
                 <span className="text-sm font-extrabold text-[#1F121C] pr-3 border-r border-slate-300">
                   +91
@@ -270,52 +358,61 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                   type="tel"
                   maxLength={10}
                   required
-                  autoFocus
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  placeholder="Enter mobile number"
+                  placeholder="10-digit mobile number"
                   className="w-full pl-3 text-sm font-medium text-[#1F121C] placeholder-slate-400 bg-transparent focus:outline-none tracking-wide"
                 />
               </div>
             </div>
 
-            {/* Optional Customer Name Input */}
-            <div>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name (Optional)"
-                className="w-full px-4 py-2.5 text-xs text-[#1F121C] placeholder-slate-400 bg-pink-50/40 border border-pink-100 rounded-xl focus:bg-white focus:outline-none focus:border-pink-500 transition-colors"
-              />
-            </div>
-
             {/* WhatsApp Updates Checkbox */}
-            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-slate-700 select-none pt-0.5">
+            <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 select-none pt-0.5">
               <input
                 type="checkbox"
                 checked={whatsappUpdates}
                 onChange={(e) => setWhatsappUpdates(e.target.checked)}
                 className="w-4 h-4 rounded text-pink-600 border-slate-300 focus:ring-pink-500 accent-pink-600 cursor-pointer"
               />
-              <span className="font-medium text-[#1F121C]">Get updates on WhatsApp</span>
+              <span className="font-medium text-[#1F121C]">Get booking & service updates on WhatsApp</span>
             </label>
 
-            {/* Continue CTA Button */}
-            <button
-              type="submit"
-              disabled={isLoading || phone.length !== 10}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:bg-slate-200 disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-md shadow-pink-500/25 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Sending OTP...</span>
-                </>
-              ) : (
-                <span>Continue</span>
-              )}
-            </button>
+            {/* 3. Action Buttons: Get OTP on WhatsApp (Neeche) + SMS Option */}
+            <div className="pt-1 space-y-2">
+              <button
+                type="button"
+                onClick={handleWhatsAppSubmit}
+                disabled={isLoading || isSendingWhatsApp || phone.length !== 10 || !name.trim()}
+                className="w-full py-3.5 px-4 bg-[#25D366] hover:bg-[#20ba5a] active:scale-98 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-md shadow-emerald-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <MessageCircle className="w-5 h-5 text-white shrink-0 fill-white/20" />
+                <span>{isSendingWhatsApp ? 'Opening WhatsApp...' : 'Get OTP on WhatsApp (व्हाट्सएप पर OTP)'}</span>
+              </button>
+
+              <div className="relative flex items-center justify-center my-1">
+                <div className="border-t border-slate-200 w-full"></div>
+                <span className="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Ya / Or
+                </span>
+                <div className="border-t border-slate-200 w-full"></div>
+              </div>
+
+              {/* Get OTP via SMS Button */}
+              <button
+                type="submit"
+                disabled={isLoading || isSendingWhatsApp || phone.length !== 10 || !name.trim()}
+                className="w-full py-3 px-4 bg-pink-50/80 hover:bg-pink-100/80 border border-pink-200 text-pink-700 disabled:bg-slate-50 disabled:border-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed font-bold text-xs rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-pink-600" />
+                    <span>Sending SMS OTP...</span>
+                  </>
+                ) : (
+                  <span>Get OTP via SMS (SMS से OTP पाएं)</span>
+                )}
+              </button>
+            </div>
 
             {/* Terms & Privacy Note */}
             <p className="text-[11px] text-slate-500 text-center leading-relaxed pt-1">
@@ -337,7 +434,9 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-extrabold text-[#1F121C] tracking-tight">Enter Verification Code</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Sent to +91 {phone}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Hello <strong className="text-slate-800">{name || 'User'}</strong>, code sent to <strong>+91 {phone}</strong>
+                </p>
               </div>
               <button
                 type="button"
