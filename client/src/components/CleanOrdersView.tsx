@@ -219,7 +219,7 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 font-sans">
+    <div className="max-w-4xl mx-auto px-0 sm:px-4 py-2 sm:py-6 font-sans">
       
       {/* Header - Matching Photo 2 Clean Meesho Layout */}
       <div className="mb-5 pb-4 border-b border-pink-100">

@@ -54,8 +54,10 @@ export const InAppUpdateBanner: React.FC<InAppUpdateBannerProps> = ({
 
   const handleStartUpdate = () => {
     setIsDownloading(true);
-    const base = API_BASE.replace(/\/api\/?$/, '');
-    const apkUrl = updateInfo.downloadUrl || `${base}/QuickServe_Latest.apk`;
+    const permanentGithubApkUrl = 'https://raw.githubusercontent.com/itssachin-385/QuickServe/main/server/public/QuickServe_Latest.apk';
+    const apkUrl = updateInfo.downloadUrl && !updateInfo.downloadUrl.includes('trycloudflare')
+      ? updateInfo.downloadUrl
+      : permanentGithubApkUrl;
     
     // Trigger direct APK download - Android prompts "Do you want to install an update to this app?"
     window.location.href = apkUrl;

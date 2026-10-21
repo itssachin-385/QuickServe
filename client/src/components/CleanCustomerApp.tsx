@@ -450,10 +450,14 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
               className="flex items-center gap-1.5 text-left focus:outline-none cursor-pointer"
             >
               <div className="w-8 h-8 rounded-full bg-pink-100 border border-pink-200 text-pink-700 flex items-center justify-center font-bold text-xs shadow-2xs">
-                {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : <User className="w-4 h-4" />}
+                {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
+                  ? currentUser.name.slice(0, 2).toUpperCase()
+                  : <User className="w-4 h-4 text-pink-600" />}
               </div>
               <span className="text-xs font-bold text-[#1F121C] truncate max-w-[80px]">
-                {currentUser?.name || (lang === 'hi' ? 'नमस्ते' : 'Hi')}
+                {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
+                  ? currentUser.name.split(' ')[0]
+                  : (lang === 'hi' ? 'नमस्ते' : 'Profile')}
               </span>
             </button>
 
@@ -564,7 +568,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
       )}
 
       {/* MAIN CONTENT CONTAINER (Responsive ~1200-1400px maximum) */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-6 lg:px-8 pt-2.5 pb-20 sm:py-6">
         
         {/* VIEW 1: HOME CATALOG VIEW */}
         {activeTab === 'home' && (
@@ -930,8 +934,8 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
       </main>
 
-      {/* Responsive Bottom Navigation Bar for Mobile - Photo 1 Design */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-pink-100 z-40 px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),16px)] flex items-stretch justify-around sm:hidden shadow-lg shadow-pink-900/5">
+      {/* Responsive Bottom Navigation Bar for Mobile - Flush against 3-button bar */}
+      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-1.5 py-1 flex items-stretch justify-around sm:hidden shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
         {/* Tab 1: Home */}
         <button
           type="button"

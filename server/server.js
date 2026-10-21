@@ -160,7 +160,7 @@ app.get('/api/app-version', (req, res) => {
     versionCode: 34,
     minVersionCode: 34,
     apkUrl: '/QuickServe_Latest.apk',
-    downloadUrl: 'https://quickserve-3lhk.onrender.com/QuickServe_Latest.apk',
+    downloadUrl: 'https://raw.githubusercontent.com/itssachin-385/QuickServe/main/server/public/QuickServe_Latest.apk',
     releaseNotes: 'Live Dual-Tier GPS Engine outdoors, Auto-Detection on App Open, & 1-Tap GPS Refresh Bar',
     forceUpdate: false,
     updatedAt: new Date().toISOString()
