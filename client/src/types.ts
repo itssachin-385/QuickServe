@@ -116,6 +116,14 @@ export interface Professional {
   selfie_doc?: string;
   locality?: string;
   email?: string;
+  registered_at?: string;
+  verification_updated_at?: string;
+  status_history?: Array<{
+    state: string;
+    reason?: string;
+    timestamp: string;
+    by?: string;
+  }>;
   notifications?: Array<{
     id: string;
     title: string;

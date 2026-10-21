@@ -4,7 +4,7 @@ import {
   Wrench, CheckCircle2, Clock, MapPin, Phone, 
   Wallet, ShieldCheck, AlertCircle, ArrowLeft, ArrowRight,
   Calendar, RefreshCw, UserCheck, Briefcase, 
-  FileText, Camera, UploadCloud, Eye, X, 
+  FileText, Camera, UploadCloud, Eye, X, XCircle,
   Lock, ShieldAlert, Sparkles, Check, Banknote,
   AlertTriangle, QrCode, Copy, Save, Send, Plus, Search,
   DollarSign, TrendingUp, UserPlus, CheckCircle, Navigation, ChevronRight, Activity, DownloadCloud
@@ -86,7 +86,8 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   const [allPartners, setAllPartners] = useState<Professional[]>([]);
   const [isLoadingAdminDesk, setIsLoadingAdminDesk] = useState(false);
   const [adminActionLoadingId, setAdminActionLoadingId] = useState<string | null>(null);
-  const [adminTab, setAdminTab] = useState<'pending' | 'live_roster' | 'assign_work'>('pending');
+  const [adminTab, setAdminTab] = useState<'pending' | 'audit_history' | 'live_roster' | 'assign_work'>('pending');
+  const [auditFilter, setAuditFilter] = useState<'all' | 'verified' | 'rejected' | 'pending'>('all');
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
   const [previewDocUrl, setPreviewDocUrl] = useState<{ title: string; url: string } | null>(null);
 
@@ -794,25 +795,23 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   <p className="text-[10px] text-slate-400">Waiting for audit</p>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-                  <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Live & Approved</p>
-                  <p className="text-xl font-bold text-white mt-0.5">
+                  <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Accepted / Verified</p>
+                  <p className="text-xl font-bold text-emerald-400 mt-0.5">
                     {allPartners.filter(p => p.verification_state === 'verified').length}
                   </p>
-                  <p className="text-[10px] text-slate-400">Active working partners</p>
+                  <p className="text-[10px] text-slate-400">Active approved partners</p>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-                  <p className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">Total Completed Jobs</p>
-                  <p className="text-xl font-bold text-white mt-0.5">
-                    {allPartners.reduce((acc, p) => acc + (p.completed_jobs_count || 0), 0) + jobs.filter(j => j.status === 'completed').length}
+                  <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider">Rejected Records</p>
+                  <p className="text-xl font-bold text-rose-400 mt-0.5">
+                    {allPartners.filter(p => p.verification_state === 'rejected').length}
                   </p>
-                  <p className="text-[10px] text-slate-400">Completed platform work</p>
+                  <p className="text-[10px] text-slate-400">Failed verification</p>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-                  <p className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider">Live Partner Earnings</p>
-                  <p className="text-xl font-bold text-white mt-0.5">
-                    ₹{allPartners.reduce((acc, p) => acc + (p.today_earnings || 0) + (p.monthly_earnings || 0), 0)}
-                  </p>
-                  <p className="text-[10px] text-slate-400">Distributed earnings</p>
+                  <p className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">Total Registered</p>
+                  <p className="text-xl font-bold text-white mt-0.5">{allPartners.length}</p>
+                  <p className="text-[10px] text-slate-400">Total database records</p>
                 </div>
               </div>
             </div>
@@ -830,9 +829,25 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   }`}
                 >
                   <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Table 1: Pending Approvals</span>
+                  <span>Table 1: Pending Queue</span>
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600">
                     {pendingPartners.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAdminTab('audit_history')}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                    adminTab === 'audit_history'
+                      ? 'bg-[#0F172A] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Table 2: Audit & History (Accepted / Rejected)</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-700">
+                    {allPartners.length}
                   </span>
                 </button>
 
@@ -846,7 +861,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   }`}
                 >
                   <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Table 2: Live Officials & Earnings</span>
+                  <span>Table 3: Live Officials</span>
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-700">
                     {allPartners.filter(p => p.verification_state === 'verified').length}
                   </span>
@@ -862,7 +877,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   }`}
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Section 3: Assign Personal Work</span>
+                  <span>Section 4: Assign Work</span>
                 </button>
               </div>
 
@@ -1151,7 +1166,359 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
             )}
 
             {/* ======================================================== */}
-            {/* TAB 2: LIVE & APPROVED OFFICIALS ROSTER & EARNINGS       */}
+            {/* TAB 2: AUDIT & HISTORY RECORDS TABLE (ACCEPTED / REJECTED) */}
+            {/* ======================================================== */}
+            {adminTab === 'audit_history' && (
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs space-y-0">
+                {/* Audit Header */}
+                <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/70">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span>Partner Registration & Verification Audit Directory</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Har partner application ka complete record — kiska Accept hua, kiska Reject hua, rejection reason, aur documents preview.
+                    </p>
+                  </div>
+
+                  {/* Sub-Filter Tabs (All / Accepted / Rejected / Pending) */}
+                  <div className="flex flex-wrap items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 self-start md:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('all')}
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        auditFilter === 'all'
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      All Records ({allPartners.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('verified')}
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                        auditFilter === 'verified'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-emerald-700 hover:bg-emerald-50'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>Accepted ({allPartners.filter(p => p.verification_state === 'verified').length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('rejected')}
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                        auditFilter === 'rejected'
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'text-rose-700 hover:bg-rose-50'
+                      }`}
+                    >
+                      <XCircle className="w-3 h-3" />
+                      <span>Rejected ({allPartners.filter(p => p.verification_state === 'rejected').length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('pending')}
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                        auditFilter === 'pending'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'text-amber-700 hover:bg-amber-50'
+                      }`}
+                    >
+                      <Clock className="w-3 h-3" />
+                      <span>Pending ({allPartners.filter(p => p.verification_state === 'pending' || p.verification_state === 'under_review' || p.verification_state === 'action_required').length})</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Audit Records Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        <th className="py-3 px-4">Partner Profile & Phone</th>
+                        <th className="py-3 px-4">Trade & Locality</th>
+                        <th className="py-3 px-4">Aadhaar & Uploads</th>
+                        <th className="py-3 px-4">Decision Status</th>
+                        <th className="py-3 px-4">Rejection Reason / Remarks</th>
+                        <th className="py-3 px-4 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {allPartners
+                        .filter((pro) => {
+                          if (auditFilter === 'verified') return pro.verification_state === 'verified';
+                          if (auditFilter === 'rejected') return pro.verification_state === 'rejected';
+                          if (auditFilter === 'pending') {
+                            return pro.verification_state === 'pending' || pro.verification_state === 'under_review' || pro.verification_state === 'action_required';
+                          }
+                          return true;
+                        })
+                        .filter((pro) => {
+                          if (!adminSearchQuery.trim()) return true;
+                          const q = adminSearchQuery.toLowerCase();
+                          return (
+                            pro.name.toLowerCase().includes(q) ||
+                            pro.phone.toLowerCase().includes(q) ||
+                            (pro.aadhaar_number || '').includes(q) ||
+                            (pro.locality || '').toLowerCase().includes(q) ||
+                            (pro.service_name || '').toLowerCase().includes(q)
+                          );
+                        })
+                        .map((pro) => {
+                          const isVerified = pro.verification_state === 'verified';
+                          const isRejected = pro.verification_state === 'rejected';
+                          const isPending = pro.verification_state === 'pending' || pro.verification_state === 'under_review';
+                          const isActionReq = pro.verification_state === 'action_required';
+
+                          const formattedDate = pro.registered_at 
+                            ? new Date(pro.registered_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : pro.joined_date || 'Recent';
+
+                          const decisionDate = pro.verification_updated_at 
+                            ? new Date(pro.verification_updated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                            : '';
+
+                          return (
+                            <tr key={pro.id} className="hover:bg-slate-50/80 transition-colors">
+                              {/* Partner Profile */}
+                              <td className="py-3.5 px-4 align-top">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={pro.avatar || pro.selfie_doc || sampleSelfie}
+                                    alt={pro.name}
+                                    className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                                  />
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                                      <span>{pro.name}</span>
+                                    </p>
+                                    <a
+                                      href={`tel:${pro.phone}`}
+                                      className="text-slate-600 hover:text-pink-600 font-mono text-[11px] flex items-center gap-1 font-semibold"
+                                    >
+                                      <Phone className="w-2.5 h-2.5 text-slate-400" />
+                                      <span>{pro.phone}</span>
+                                    </a>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Applied: {formattedDate}</p>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Trade & Locality */}
+                              <td className="py-3.5 px-4 align-top">
+                                <span className="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-800 rounded font-bold text-[11px] border border-indigo-200">
+                                  {pro.service_name || 'Service Partner'}
+                                </span>
+                                <div className="flex items-center gap-1 text-slate-600 text-[11px] font-medium mt-1">
+                                  <MapPin className="w-3 h-3 text-pink-500 shrink-0" />
+                                  <span>{pro.locality || pro.zone_name || 'Greater Noida'}</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-0.5">{pro.experience_years || 1} yrs experience</p>
+                              </td>
+
+                              {/* Aadhaar & Uploads */}
+                              <td className="py-3.5 px-4 align-top">
+                                <p className="font-mono text-[11px] font-bold text-slate-800">
+                                  {formatAadhaar(pro.aadhaar_number || '') || 'Aadhaar on file'}
+                                </p>
+                                <div className="flex items-center gap-1 mt-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewDocUrl({
+                                      title: `Aadhaar Front: ${pro.name}`,
+                                      url: pro.aadhaar_front_doc || pro.aadhaar_doc || sampleAadhaarFront
+                                    })}
+                                    className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"
+                                  >
+                                    Front 📄
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewDocUrl({
+                                      title: `Aadhaar Back: ${pro.name}`,
+                                      url: pro.aadhaar_back_doc || sampleAadhaarBack
+                                    })}
+                                    className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"
+                                  >
+                                    Back 📄
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewDocUrl({
+                                      title: `Live Selfie: ${pro.name}`,
+                                      url: pro.selfie_doc || pro.avatar || sampleSelfie
+                                    })}
+                                    className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"
+                                  >
+                                    Selfie 🤳
+                                  </button>
+                                </div>
+                              </td>
+
+                              {/* Decision Status */}
+                              <td className="py-3.5 px-4 align-top">
+                                {isVerified && (
+                                  <div>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-[11px] font-bold">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span>Accepted / Verified</span>
+                                    </span>
+                                    {decisionDate && (
+                                      <p className="text-[10px] text-slate-400 mt-1">On: {decisionDate}</p>
+                                    )}
+                                  </div>
+                                )}
+                                {isRejected && (
+                                  <div>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-full text-[11px] font-bold">
+                                      <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                                      <span>Rejected</span>
+                                    </span>
+                                    {decisionDate && (
+                                      <p className="text-[10px] text-slate-400 mt-1">On: {decisionDate}</p>
+                                    )}
+                                  </div>
+                                )}
+                                {isPending && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold">
+                                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Pending Audit</span>
+                                  </span>
+                                )}
+                                {isActionReq && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 text-orange-800 border border-orange-200 rounded-full text-[11px] font-bold">
+                                    <AlertCircle className="w-3.5 h-3.5 text-orange-600" />
+                                    <span>Action Required</span>
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Rejection Reason / Remarks */}
+                              <td className="py-3.5 px-4 align-top max-w-xs">
+                                {isRejected ? (
+                                  <div className="p-2 bg-rose-50/70 border border-rose-200 rounded-xl">
+                                    <p className="text-[10px] font-bold text-rose-800 uppercase tracking-wider">Rejection Reason:</p>
+                                    <p className="text-[11px] font-medium text-rose-900 mt-0.5">
+                                      {pro.admin_action_reason || 'Application did not meet security & quality criteria.'}
+                                    </p>
+                                  </div>
+                                ) : isVerified ? (
+                                  <div className="p-2 bg-emerald-50/60 border border-emerald-200 rounded-xl">
+                                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Approval Notes:</p>
+                                    <p className="text-[11px] font-medium text-emerald-900 mt-0.5">
+                                      {pro.admin_notes || 'All Aadhaar & selfie checks verified successfully.'}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <p className="text-[11px] text-slate-500 italic">
+                                    Application awaiting admin document audit in Table 1 queue.
+                                  </p>
+                                )}
+                              </td>
+
+                              {/* Quick Actions */}
+                              <td className="py-3.5 px-4 align-top text-right">
+                                <div className="flex flex-col items-end gap-1.5">
+                                  {/* If rejected, allow 1-click Re-Approve */}
+                                  {isRejected && (
+                                    <button
+                                      type="button"
+                                      disabled={adminActionLoadingId === pro.id}
+                                      onClick={() => handleAdminAction(pro.id, 'approve', 'Re-approved from audit history by Admin Desk')}
+                                      className="px-3 py-1.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer active:scale-95 disabled:opacity-50"
+                                      title="Re-approve this partner"
+                                    >
+                                      {adminActionLoadingId === pro.id ? (
+                                        <RefreshCw className="w-3 h-3 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <Check className="w-3 h-3" />
+                                          <span>Re-Approve ✓</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  )}
+
+                                  {/* If verified, allow Revoking/Rejecting if needed */}
+                                  {isVerified && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setRejectModalPro(pro);
+                                        setRejectReasonInput('');
+                                      }}
+                                      className="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                      title="Reject or revoke verification"
+                                    >
+                                      <X className="w-3 h-3" />
+                                      <span>Revoke / Reject</span>
+                                    </button>
+                                  )}
+
+                                  {/* If pending, jump to review queue */}
+                                  {isPending && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setAdminTab('pending')}
+                                      className="px-3 py-1.5 text-[11px] font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <span>Audit Now</span>
+                                    </button>
+                                  )}
+
+                                  <a
+                                    href={`tel:${pro.phone}`}
+                                    className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium"
+                                  >
+                                    <Phone className="w-2.5 h-2.5" />
+                                    <span>Call</span>
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Empty State */}
+                {allPartners
+                  .filter((pro) => {
+                    if (auditFilter === 'verified') return pro.verification_state === 'verified';
+                    if (auditFilter === 'rejected') return pro.verification_state === 'rejected';
+                    if (auditFilter === 'pending') {
+                      return pro.verification_state === 'pending' || pro.verification_state === 'under_review' || pro.verification_state === 'action_required';
+                    }
+                    return true;
+                  })
+                  .filter((pro) => {
+                    if (!adminSearchQuery.trim()) return true;
+                    const q = adminSearchQuery.toLowerCase();
+                    return (
+                      pro.name.toLowerCase().includes(q) ||
+                      pro.phone.toLowerCase().includes(q) ||
+                      (pro.locality || '').toLowerCase().includes(q) ||
+                      (pro.service_name || '').toLowerCase().includes(q)
+                    );
+                  }).length === 0 && (
+                  <div className="p-12 text-center">
+                    <FileText className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                    <h4 className="text-sm font-bold text-slate-700">No Records Found</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                      Is filter ya search query ke liye koi partner registration record nahi mila.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* TAB 3: LIVE & APPROVED OFFICIALS ROSTER & EARNINGS       */}
             {/* ======================================================== */}
             {adminTab === 'live_roster' && (
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">

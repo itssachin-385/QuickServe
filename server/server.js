@@ -1107,7 +1107,17 @@ app.post('/api/professionals/register', (req, res) => {
     upi_id: `${phone.replace(/\D/g, '').slice(-10)}@upi`,
     current_lat: zone.lat + (Math.random() - 0.5) * 0.01,
     current_lng: zone.lng + (Math.random() - 0.5) * 0.01,
-    joined_date: new Date().toISOString().split('T')[0]
+    joined_date: new Date().toISOString().split('T')[0],
+    registered_at: new Date().toISOString(),
+    verification_updated_at: new Date().toISOString(),
+    status_history: [
+      {
+        state: 'pending',
+        reason: 'Partner application submitted via mobile app',
+        timestamp: new Date().toISOString(),
+        by: 'Partner'
+      }
+    ]
   };
 
   professionals.unshift(newPro);
@@ -1198,6 +1208,8 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
   if (!pro) return res.status(404).json({ error: 'Professional not found' });
 
   if (!pro.notifications) pro.notifications = [];
+  if (!pro.status_history) pro.status_history = [];
+  pro.verification_updated_at = new Date().toISOString();
 
   if (action === 'approve') {
     pro.verification_state = 'verified';
@@ -1206,6 +1218,14 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
     pro.verifications.police_clearance = true;
     pro.verifications.skill_trade_test = true;
     pro.admin_notes = notes || 'Profile and documents approved by Admin.';
+    pro.admin_action_reason = '';
+
+    pro.status_history.unshift({
+      state: 'verified',
+      reason: notes || 'Application approved by Admin Desk',
+      timestamp: new Date().toISOString(),
+      by: 'Admin Desk'
+    });
 
     // Push in-app congratulations notification
     pro.notifications.unshift({
@@ -1228,6 +1248,13 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
     pro.is_available = false;
     pro.admin_action_reason = notes || 'Additional identity documentation required.';
 
+    pro.status_history.unshift({
+      state: 'action_required',
+      reason: notes || 'Documents verification failed - action required',
+      timestamp: new Date().toISOString(),
+      by: 'Admin Desk'
+    });
+
     pro.notifications.unshift({
       id: `notif-${Date.now()}`,
       title: '⚠️ Action Required: Re-upload Documents',
@@ -1239,6 +1266,13 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
     pro.verification_state = 'rejected';
     pro.is_available = false;
     pro.admin_action_reason = notes || 'Application did not meet quality requirements.';
+
+    pro.status_history.unshift({
+      state: 'rejected',
+      reason: notes || 'Application rejected by Admin Desk',
+      timestamp: new Date().toISOString(),
+      by: 'Admin Desk'
+    });
 
     // Push in-app rejection notification
     pro.notifications.unshift({
@@ -1257,6 +1291,43 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
       } catch (e) {}
     }
   }
+
+  try { db.saveProfessionals(professionals); } catch (e) {}
+
+  res.json({ success: true, professional: pro });
+});
+
+// Admin Direct Partner Status Management (Re-Approve, Revoke, etc.)
+app.post('/api/admin/partners/:id/status', verifyAdminPin, (req, res) => {
+  const { status, reason } = req.body; // 'verified', 'rejected', 'pending'
+  const pro = professionals.find(p => p.id === req.params.id);
+  if (!pro) return res.status(404).json({ error: 'Partner record not found' });
+
+  pro.verification_state = status;
+  pro.verification_updated_at = new Date().toISOString();
+
+  if (status === 'verified') {
+    pro.is_available = true;
+    pro.verifications.aadhaar = true;
+    pro.verifications.police_clearance = true;
+    pro.verifications.skill_trade_test = true;
+    pro.admin_notes = reason || 'Re-approved by Admin Desk';
+    pro.admin_action_reason = '';
+  } else if (status === 'rejected') {
+    pro.is_available = false;
+    pro.admin_action_reason = reason || 'Marked as Rejected by Admin';
+  } else if (status === 'pending') {
+    pro.is_available = false;
+    pro.admin_notes = reason || 'Moved to Pending Review';
+  }
+
+  if (!pro.status_history) pro.status_history = [];
+  pro.status_history.unshift({
+    state: status,
+    reason: reason || `Status updated to ${status} by Admin`,
+    timestamp: new Date().toISOString(),
+    by: 'Admin Desk'
+  });
 
   try { db.saveProfessionals(professionals); } catch (e) {}
 
@@ -1423,9 +1494,14 @@ app.post('/api/professionals/:id/settle-dues', (req, res) => {
   });
 });
 
-// Admin All Partners Roster
+// Admin All Partners Roster & Complete Audit Records
 app.get('/api/admin/partners', (req, res) => {
-  res.json(professionals);
+  const sorted = [...professionals].sort((a, b) => {
+    const timeA = new Date(a.verification_updated_at || a.registered_at || a.joined_date || 0).getTime();
+    const timeB = new Date(b.verification_updated_at || b.registered_at || b.joined_date || 0).getTime();
+    return timeB - timeA;
+  });
+  res.json(sorted);
 });
 
 // ==========================================
