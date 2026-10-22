@@ -224,6 +224,80 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
     }
   }, [activeCityZone]);
 
+  // Hierarchical Android & In-App Back Navigation Flow
+  useEffect(() => {
+    let lastBackPressTime = 0;
+
+    const handleBack = (e: Event) => {
+      // 1. Modals first
+      if (selectedTrackingOrder) {
+        e.preventDefault();
+        setSelectedTrackingOrder(null);
+        return;
+      }
+      if (bookingService) {
+        e.preventDefault();
+        setBookingService(null);
+        return;
+      }
+      if (isLocationModalOpen) {
+        e.preventDefault();
+        setIsLocationModalOpen(false);
+        return;
+      }
+
+      // 2. Search query
+      if (searchQuery.trim()) {
+        e.preventDefault();
+        setSearchQuery('');
+        return;
+      }
+
+      // 3. Quick filter / sort
+      if (quickFilter !== 'all' || sortBy !== 'popular') {
+        e.preventDefault();
+        setQuickFilter('all');
+        setSortBy('popular');
+        return;
+      }
+
+      // 4. Specific category view
+      if (selectedCategoryKey !== 'all') {
+        e.preventDefault();
+        setSelectedCategoryKey('all');
+        return;
+      }
+
+      // 5. Active tab to Home
+      if (activeTab !== 'home') {
+        e.preventDefault();
+        setActiveTab('home');
+        return;
+      }
+
+      // 6. Double-tap to exit on root Home screen
+      const now = Date.now();
+      if (now - lastBackPressTime > 2000) {
+        lastBackPressTime = now;
+        e.preventDefault();
+        setSuccessToast('Press back again to exit QuickServe');
+        setTimeout(() => setSuccessToast(null), 2000);
+      }
+    };
+
+    window.addEventListener('quickserve:back', handleBack);
+    return () => window.removeEventListener('quickserve:back', handleBack);
+  }, [
+    selectedTrackingOrder,
+    bookingService,
+    isLocationModalOpen,
+    searchQuery,
+    quickFilter,
+    sortBy,
+    selectedCategoryKey,
+    activeTab
+  ]);
+
   // Active customer orders count & current active booking
   const myCleanPhone = (currentUser.phone || '').replace(/\D/g, '').slice(-10);
   const activeOrdersCount = useMemo(() => {
@@ -324,7 +398,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF7F9] text-[#1F121C] flex flex-col pb-28 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
+    <div className="min-h-screen bg-[#F4F6F9] text-[#1F121C] flex flex-col pb-28 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
       
       {/* 1. COMPACT, REFINED HEADER WITH AUTO SAFE AREA */}
       <header className="bg-white/95 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 transition-all pt-[max(12px,env(safe-area-inset-top,0px))]">
@@ -441,36 +515,36 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
         {/* MOBILE HEADER (sm:hidden) */}
         <div className="sm:hidden px-3 pt-1 pb-2 space-y-2.5">
-          {/* Mobile Top Row: Enlarged Profile (Left) + Brand Logo (Right) */}
+          {/* Mobile Top Row: Brand Logo (Left) + Enlarged Profile (Right) */}
           <div className="flex items-center justify-between">
-            {/* Left: Enlarged User Avatar & Greeting */}
+            {/* Left: Brand Logo */}
+            <button
+              type="button"
+              onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
+              className="focus:outline-none cursor-pointer pl-1 active:scale-95 transition-transform"
+            >
+              <BrandLogo size="md" />
+            </button>
+
+            {/* Right: Enlarged User Avatar & Account Profile */}
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
-              className="flex items-center gap-2 text-left focus:outline-none cursor-pointer py-1 px-1 rounded-xl hover:bg-pink-50 transition-colors"
+              className="flex items-center gap-2 text-right focus:outline-none cursor-pointer py-1 px-1.5 rounded-2xl hover:bg-slate-100 active:scale-95 transition-all"
             >
-              <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-pink-200 text-pink-700 flex items-center justify-center font-bold text-sm shadow-xs">
-                {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
-                  ? currentUser.name.slice(0, 2).toUpperCase()
-                  : <User className="w-5 h-5 text-pink-600" />}
-              </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col items-end">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Account</span>
-                <span className="text-sm font-extrabold text-[#1F121C] truncate max-w-[140px]">
+                <span className="text-xs font-extrabold text-[#1F121C] truncate max-w-[120px]">
                   {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
                     ? currentUser.name.split(' ')[0]
                     : 'Profile'}
                 </span>
               </div>
-            </button>
-
-            {/* Right: Brand Logo */}
-            <button
-              type="button"
-              onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-              className="focus:outline-none cursor-pointer pr-1"
-            >
-              <BrandLogo size="md" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center font-bold text-sm shadow-xs border-2 border-white">
+                {currentUser?.name && !currentUser.name.toLowerCase().includes('quickserve')
+                  ? currentUser.name.slice(0, 2).toUpperCase()
+                  : <User className="w-5 h-5 text-white" />}
+              </div>
             </button>
           </div>
 
@@ -616,10 +690,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategoryKey(isSelected ? 'all' : cat.id)}
-                      className={`p-3.5 sm:p-4 rounded-2xl border text-center flex flex-col items-center justify-center transition-all duration-200 cursor-pointer group ${
+                      className={`p-3.5 sm:p-4 rounded-2xl border text-center flex flex-col items-center justify-center transition-all duration-200 cursor-pointer group active:scale-95 ${
                         isSelected
                           ? 'bg-gradient-to-r from-pink-600 to-rose-600 border-pink-600 text-white shadow-md shadow-pink-500/25 -translate-y-0.5'
-                          : 'bg-white border-pink-100 text-[#1F121C] hover:border-pink-300 hover:shadow-[0_4px_20px_-2px_rgba(219,39,119,0.1)] hover:-translate-y-0.5'
+                          : 'bg-white border-slate-200/80 text-[#1F121C] hover:border-pink-300 hover:shadow-md hover:-translate-y-0.5 shadow-xs'
                       }`}
                     >
                       <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-2.5 transition-colors ${
@@ -740,7 +814,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                     return (
                       <div
                         key={service.id}
-                        className="bg-white rounded-2xl border border-pink-100/90 overflow-hidden shadow-[0_2px_12px_-2px_rgba(219,39,119,0.05)] hover:shadow-[0_8px_24px_-4px_rgba(219,39,119,0.12)] hover:border-pink-300 transition-all duration-200 flex flex-col justify-between group"
+                        className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md hover:border-pink-300 transition-all duration-200 flex flex-col justify-between group active:scale-[0.98]"
                       >
                         {/* Photo Container with Wishlist & Badge Overlays */}
                         <div className="relative aspect-square w-full overflow-hidden bg-pink-50/40">
@@ -889,21 +963,22 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             onOpenLocationModal={() => setIsLocationModalOpen(true)}
             onSwitchToPartnerPortal={() => onSwitchToPartnerPortal(false)}
             onOpenAdminDesk={() => onSwitchToPartnerPortal(true)}
+            onNavigateHome={() => setActiveTab('home')}
           />
         )}
 
       </main>
 
-      {/* Responsive Bottom Navigation Bar for Mobile - Fixed 54px flush against 3-button bar */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-1 h-[54px] flex items-center justify-around sm:hidden shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
+      {/* Responsive Bottom Navigation Bar for Mobile - Elevated & Tactile Micro-Interactions */}
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 z-40 px-2 h-[56px] flex items-center justify-around sm:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         {/* Tab 1: Home */}
         <button
           type="button"
           onClick={() => { setActiveTab('home'); setSelectedCategoryKey('all'); setSearchQuery(''); }}
-          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-1 rounded-xl transition-all active:scale-90 cursor-pointer ${
             activeTab === 'home' && selectedCategoryKey === 'all'
-              ? 'text-pink-600 font-bold bg-pink-50/70'
-              : 'text-[#705869] hover:text-pink-600 font-medium'
+              ? 'text-pink-600 font-extrabold bg-pink-50/80 shadow-2xs'
+              : 'text-slate-500 hover:text-pink-600 font-medium'
           }`}
         >
           <Home className={`w-5 h-5 ${activeTab === 'home' && selectedCategoryKey === 'all' ? 'stroke-[2.5]' : ''}`} />
@@ -914,10 +989,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => { setActiveTab('home'); setSelectedCategoryKey('cleaning'); }}
-          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-1 rounded-xl transition-all active:scale-90 cursor-pointer ${
             activeTab === 'home' && selectedCategoryKey !== 'all'
-              ? 'text-pink-600 font-bold bg-pink-50/70'
-              : 'text-[#705869] hover:text-pink-600 font-medium'
+              ? 'text-pink-600 font-extrabold bg-pink-50/80 shadow-2xs'
+              : 'text-slate-500 hover:text-pink-600 font-medium'
           }`}
         >
           <LayoutGrid className="w-5 h-5" />
@@ -928,7 +1003,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => onSwitchToPartnerPortal(false)}
-          className="flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl text-[#705869] hover:text-pink-600 font-medium transition-all cursor-pointer"
+          className="flex-1 flex flex-col items-center justify-center h-full py-1 rounded-xl text-slate-500 hover:text-pink-600 font-medium transition-all active:scale-90 cursor-pointer"
         >
           <Briefcase className="w-5 h-5" />
           <span className="text-[10px] mt-0.5 leading-none">Partner</span>
@@ -938,10 +1013,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl relative transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-1 rounded-xl relative transition-all active:scale-90 cursor-pointer ${
             activeTab === 'orders'
-              ? 'text-pink-600 font-bold bg-pink-50/70'
-              : 'text-[#705869] hover:text-pink-600 font-medium'
+              ? 'text-pink-600 font-extrabold bg-pink-50/80 shadow-2xs'
+              : 'text-slate-500 hover:text-pink-600 font-medium'
           }`}
         >
           <div className="relative">
@@ -959,10 +1034,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex flex-col items-center justify-center h-full py-0.5 rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 flex flex-col items-center justify-center h-full py-1 rounded-xl transition-all active:scale-90 cursor-pointer ${
             activeTab === 'profile'
-              ? 'text-pink-600 font-bold bg-pink-50/70'
-              : 'text-[#705869] hover:text-pink-600 font-medium'
+              ? 'text-pink-600 font-extrabold bg-pink-50/80 shadow-2xs'
+              : 'text-slate-500 hover:text-pink-600 font-medium'
           }`}
         >
           <User className={`w-5 h-5 ${activeTab === 'profile' ? 'stroke-[2.5]' : ''}`} />

@@ -8,7 +8,7 @@ import {
   ChevronRight, RefreshCw, FileText, Image as ImageIcon, 
   ShieldCheck, Star, MessageCircle, Download, Printer, 
   X, Sparkles, Volume2, Check, Navigation, QrCode,
-  Search, Filter, Banknote
+  Search, Filter, Banknote, ArrowLeft
 } from 'lucide-react';
 import { LiveTrackingModal } from './LiveTrackingModal';
 import { RazorpayModal } from './RazorpayModal';
@@ -226,6 +226,16 @@ export const CleanOrdersView: React.FC<CleanOrdersViewProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
+              {onNavigateHome && (
+                <button
+                  type="button"
+                  onClick={onNavigateHome}
+                  className="p-1.5 -ml-1 text-slate-700 hover:text-pink-600 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer mr-0.5"
+                  title="Back to Home"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              )}
               <h1 className="text-xl sm:text-2xl font-black text-[#1F121C] tracking-tight uppercase font-heading">
                 My Orders
               </h1>

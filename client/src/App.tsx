@@ -40,7 +40,15 @@ export function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.id === 'cust-ananya' || parsed.name === 'Ananya Sharma') {
+        if (
+          !parsed ||
+          parsed.id === 'cust-ananya' ||
+          parsed.name === 'Ananya Sharma' ||
+          parsed.name === 'QuickServe Customer' ||
+          (parsed.phone && parsed.phone.includes('9570151834')) ||
+          (parsed.phone && parsed.phone.includes('95701 51834')) ||
+          (parsed.id && typeof parsed.id === 'string' && parsed.id.startsWith('guest'))
+        ) {
           localStorage.removeItem('quickserve_user');
           return null;
         }
@@ -283,11 +291,19 @@ export function App() {
       if (appMode === 'partner') {
         setAppMode('customer');
         setOpenAdminDirect(false);
-      } else {
-        try {
-          CapacitorApp.minimizeApp();
-        } catch (e) {}
+        return;
       }
+
+      // Dispatch custom back event so active views/modals can handle it hierarchically
+      const backEvt = new CustomEvent('quickserve:back', { cancelable: true });
+      const handled = !window.dispatchEvent(backEvt);
+      if (handled) {
+        return; // Handled by modal, filter, or sub-tab
+      }
+
+      try {
+        CapacitorApp.minimizeApp();
+      } catch (e) {}
     };
 
     const initBackButton = async () => {

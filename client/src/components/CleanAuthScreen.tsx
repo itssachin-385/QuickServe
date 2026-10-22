@@ -72,11 +72,11 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
   }, [step, resendSeconds]);
 
   const handleSkipLogin = () => {
-    // Allows instant guest browsing as requested by "Skip login" in Photo 1
+    // Allows instant clean guest browsing with no dummy phone numbers
     const guestUser: CustomerUser = {
       id: `guest-${Date.now()}`,
-      name: name.trim() || 'QuickServe Customer',
-      phone: phone.trim() ? `+91 ${phone.replace(/\D/g, '').slice(-10)}` : '+91 95701 51834'
+      name: name.trim() || 'Guest',
+      phone: phone.trim() ? `+91 ${phone.replace(/\D/g, '').slice(-10)}` : ''
     };
     onSuccess(guestUser);
   };
