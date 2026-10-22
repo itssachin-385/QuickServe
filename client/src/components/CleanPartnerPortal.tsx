@@ -21,7 +21,7 @@ const apiUrl = (path: string) => {
 };
 
 const buildWhatsAppCongratsText = (pro: Professional) => {
-  return `🎉 *Badhai ho ${pro.name}!* \n\nAapka *QuickServe Service Partner* account successfully *VERIFIED & ACTIVE* ho gaya hai! ✅\n\nAb aap QuickServe Partner App open karke live customer orders accept kar sakte hain aur rozana achhi kamai shuru kar sakte hain.\n\n📋 *Partner Details:*\n• Name: ${pro.name}\n• Service: ${pro.service_name || 'Service Partner'}\n• Locality: ${pro.locality || 'Greater Noida'}\n• Status: 🟢 Active & Ready for Orders\n\n📲 *QuickServe Partner App Link:*\nhttps://quickserve-3lhk.onrender.com/download-apk\n\n📞 *Partner Helpline:* +91 95701 51834\n\nQuickServe Operations Team ki taraf se hardik shubhkaamnayein! 🚀`;
+  return `🎉 *Congratulations ${pro.name}!* \n\nYour *QuickServe Partner Account* has been successfully *VERIFIED & ACTIVATED*! ✅\n\nYou are now an authorized QuickServe Service Official. You can open the partner app, accept live customer bookings, and start earning every day.\n\n📋 *Partner Profile Details:*\n• Official Name: ${pro.name}\n• Registered Trade: ${pro.service_name || 'Service Partner'}\n• Operating Locality: ${pro.locality || 'Greater Noida'}\n• Verification Status: 🟢 Verified & Active\n\n📲 *QuickServe Partner App Download:*\nhttps://quickserve-3lhk.onrender.com/download-apk\n\n📞 *Partner Support Helpline:* +91 95701 51834\n\nWelcome to the QuickServe Family! Wishing you great success! 🚀`;
 };
 
 const buildWhatsAppCongratsUrl = (pro: Professional) => {
@@ -31,19 +31,19 @@ const buildWhatsAppCongratsUrl = (pro: Professional) => {
 
 const buildSmsCongratsUrl = (pro: Professional) => {
   const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
-  const msg = `QuickServe Alert: Badhai ho ${pro.name}! Aapka Partner account VERIFIED & ACTIVE ho gaya hai. Ab aap app me jobs accept kar sakte hain. Help: 9570151834 App: https://quickserve-3lhk.onrender.com/download-apk`;
+  const msg = `QuickServe Alert: Congratulations ${pro.name}! Your Partner account is now VERIFIED & ACTIVE. Open app to accept doorstep bookings. Help: 9570151834 App: https://quickserve-3lhk.onrender.com/download-apk`;
   return `sms:+91${cleanPhone}?body=${encodeURIComponent(msg)}`;
 };
 
 const buildWhatsAppRejectUrl = (pro: Professional, reason?: string) => {
   const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
-  const msg = `⚠️ *QuickServe Partner Update*\n\nNamaste ${pro.name},\n\nAapke partner application verification me samasya aayi hai:\n*Reason:* ${reason || 'Documents re-upload required'}.\n\nKripya QuickServe Partner App open karke clear Aadhaar front, back aur live selfie photo dubara upload karein taaki hum aapka account approve kar sakein.\n\n📞 *Helpline:* +91 95701 51834\nQuickServe Trust & Safety Desk`;
+  const msg = `⚠️ *QuickServe Partner Verification Notice*\n\nHello ${pro.name},\n\nYour partner onboarding verification requires your attention:\n*Reason:* ${reason || 'Document re-upload required'}.\n\nPlease open the QuickServe Partner App to upload clear photos of your Aadhaar card (front & back) and a clear selfie so our verification team can approve your account.\n\n📞 *Partner Support Helpline:* +91 95701 51834\nQuickServe Trust & Safety Desk`;
   return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(msg)}`;
 };
 
 const buildSmsRejectUrl = (pro: Professional, reason?: string) => {
   const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
-  const msg = `QuickServe Alert: Namaste ${pro.name}, partner verification me attention required: ${reason || 'Re-upload documents'}. Helpline: 9570151834`;
+  const msg = `QuickServe Alert: Hello ${pro.name}, your partner application requires document re-upload: ${reason || 'Check app'}. Helpline: 9570151834`;
   return `sms:+91${cleanPhone}?body=${encodeURIComponent(msg)}`;
 };
 
@@ -498,8 +498,8 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
     const pin = sessionStorage.getItem('quickserve_admin_pin') || '9570';
     try {
       const defaultNotes = action === 'approve'
-        ? 'Aapke sabhi documents aur background check approve ho gaye hain. Badhai ho!'
-        : 'Aadhaar front/back ya selfie photo spashth nahi hai. Kripya valid documents dubara upload karein.';
+        ? 'All documents and background checks have been verified and approved. Welcome aboard!'
+        : 'Aadhaar front/back or selfie photo is unclear. Please re-upload clear documents.';
 
       const targetPro = pendingPartners.find(p => p.id === proId) 
         || allPartners.find(p => p.id === proId) 
@@ -1235,7 +1235,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                           {/* 100% Clickable Action Footer (Full Width, No Horizontal Scroll Barrier) */}
                           <div className="p-4 bg-slate-50/90 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                             <p className="text-xs text-slate-500 font-medium">
-                              Approve karein to partner ko turant congratulation message jayega. Reject karne par reason ke sath alert jayega.
+                              Approving dispatches an instant WhatsApp & SMS congratulation message to the partner. Rejecting sends a detailed reason alert.
                             </p>
 
                             <div className="flex flex-wrap items-center gap-2.5">
@@ -1255,7 +1255,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                 disabled={adminActionLoadingId === pro.id}
                                 onClick={() => {
                                   setRejectModalPro(pro);
-                                  setRejectReasonInput('Aadhaar front/back spashth nahi hai. Kripya clear photo dubara upload karein.');
+                                  setRejectReasonInput('Aadhaar front or back side is unclear. Please re-upload clear photos.');
                                 }}
                                 className="flex-1 sm:flex-initial min-h-[48px] px-4 py-2.5 text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-300 transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
                               >
@@ -2076,18 +2076,18 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                   </div>
 
                   <p className="text-xs text-slate-500">
-                    Kripya rejection ka karan chunein ya likhein. Partner ke app me yehi notification aur SMS jayega taaki wo correct documents upload kar sakein.
+                    Please select or specify the rejection reason. The partner will receive this notification and SMS so they can re-upload valid documents.
                   </p>
 
                   <div className="space-y-1.5">
                     <p className="text-[11px] font-bold text-slate-700">Quick Reason Presets:</p>
                     <div className="flex flex-wrap gap-1.5">
                       {[
-                        'Aadhaar Front Side clear nahi hai',
-                        'Aadhaar Back Side missing hai',
-                        'Live Selfie photo match nahi kar rahi',
-                        'Police verification record mismatch',
-                        'Trade experience verification required'
+                        'Aadhaar front photo is unclear',
+                        'Aadhaar back address photo is missing',
+                        'Live selfie does not match Aadhaar photo',
+                        'Background verification check mismatch',
+                        'Trade certification or experience proof required'
                       ].map((preset) => (
                         <button
                           key={preset}
@@ -2110,7 +2110,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                       value={rejectReasonInput}
                       onChange={(e) => setRejectReasonInput(e.target.value)}
                       className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium"
-                      placeholder="Partner ko bhejne ke liye reason likhein..."
+                      placeholder="Enter reason or instructions for the partner..."
                     />
                   </div>
 
@@ -2726,9 +2726,9 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                     <CheckCircle2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold">🎉 Badhai Ho {partnerProfile.name}! Aapka Account Verified Hai</h3>
+                    <h3 className="text-sm font-bold">🎉 Congratulations {partnerProfile.name}! Your Account is Verified</h3>
                     <p className="text-xs text-emerald-100 mt-0.5">
-                      Aapka Aadhaar aur Security check verify ho gaya hai. Aap doorstep customer orders ke liye fully active hain.
+                      Your Aadhaar identity and background verification checks are approved. You are fully active to receive customer bookings.
                     </p>
                   </div>
                 </div>

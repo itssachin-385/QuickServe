@@ -508,11 +508,11 @@ async function sendPartnerNotification(pro, type = 'approve', notes = '') {
   let smsText = '';
 
   if (type === 'approve') {
-    messageText = `🎉 *Badhai ho ${pro.name}!* \n\nAapka *QuickServe Service Partner* account successfully *VERIFIED & ACTIVE* ho gaya hai! ✅\n\nAb aap QuickServe Partner App open karke live customer bookings accept kar sakte hain aur har roz kamai shuru kar sakte hain.\n\n📋 *Partner Details:*\n• Name: ${pro.name}\n• Service: ${pro.service_name || 'Service Partner'}\n• Locality: ${pro.locality || 'Greater Noida'}\n• Status: 🟢 Active & Ready for Orders\n\n📲 *App Download Link:*\nhttps://quickserve-3lhk.onrender.com/download-apk\n\n📞 *Partner Helpline:* +91 95701 51834\n\nQuickServe Operations Team ki taraf se hardik shubhkaamnayein! 🚀`;
-    smsText = `QuickServe: Badhai ho ${pro.name}! Aapka Partner account VERIFIED & ACTIVE ho gaya hai. Ab aap app me jobs accept kar sakte hain. Helpline: 9570151834 App: https://quickserve-3lhk.onrender.com/download-apk`;
+    messageText = `🎉 *Congratulations ${pro.name}!* \n\nYour *QuickServe Partner Account* has been successfully *VERIFIED & ACTIVATED*! ✅\n\nYou are now an authorized QuickServe Service Official. You can open the partner app, accept live customer bookings, and start earning every day.\n\n📋 *Partner Profile Details:*\n• Official Name: ${pro.name}\n• Registered Trade: ${pro.service_name || 'Service Partner'}\n• Operating Locality: ${pro.locality || 'Greater Noida'}\n• Verification Status: 🟢 Verified & Active\n\n📲 *QuickServe Partner App Download:*\nhttps://quickserve-3lhk.onrender.com/download-apk\n\n📞 *Partner Support Helpline:* +91 95701 51834\n\nWelcome to the QuickServe Family! Wishing you great success! 🚀`;
+    smsText = `QuickServe Alert: Congratulations ${pro.name}! Your Partner account is now VERIFIED & ACTIVE. Open app to accept doorstep bookings. Help: 9570151834 App: https://quickserve-3lhk.onrender.com/download-apk`;
   } else if (type === 'reject') {
-    messageText = `⚠️ *QuickServe Partner Update*\n\nNamaste ${pro.name},\n\nAapke partner application verification me samasya aayi hai:\n*Karan:* ${notes || 'Documents re-upload required'}.\n\nKripya QuickServe Partner App open karke valid documents (Aadhaar Front/Back, Live Selfie) dubara upload karein taaki hum aapka account approve kar sakein.\n\n📞 *Helpline:* +91 95701 51834\nQuickServe Trust & Safety Desk`;
-    smsText = `QuickServe Alert: Namaste ${pro.name}, partner verification me attention required: ${notes || 'Re-upload documents'}. Helpline: 9570151834`;
+    messageText = `⚠️ *QuickServe Partner Verification Notice*\n\nHello ${pro.name},\n\nYour partner onboarding verification requires your attention:\n*Reason:* ${notes || 'Document re-upload required'}.\n\nPlease open the QuickServe Partner App to upload clear photos of your Aadhaar card (front & back) and a clear selfie so our verification team can approve your account.\n\n📞 *Partner Support Helpline:* +91 95701 51834\nQuickServe Trust & Safety Desk`;
+    smsText = `QuickServe Alert: Hello ${pro.name}, your partner application requires document re-upload: ${notes || 'Check app'}. Helpline: 9570151834`;
   }
 
   // 1. Meta Official WhatsApp Cloud API
@@ -1294,8 +1294,8 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, async (req, res)
     // Push in-app congratulations notification
     pro.notifications.unshift({
       id: `notif-${Date.now()}`,
-      title: '🎉 Badhai Ho! Verification Approved',
-      message: notes ? `Congratulations ${pro.name}! ${notes}` : `Congratulations ${pro.name}! Aapka QuickServe Partner account verified & active ho gaya hai. Ab aap app me customer bookings accept kar sakte hain.`,
+      title: '🎉 Congratulations! Verification Approved',
+      message: notes ? `Congratulations ${pro.name}! ${notes}` : `Congratulations ${pro.name}! Your QuickServe Partner account has been verified & activated. You can now accept doorstep customer bookings.`,
       type: 'congratulations',
       timestamp: new Date().toISOString()
     });
@@ -1316,7 +1316,7 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, async (req, res)
     pro.notifications.unshift({
       id: `notif-${Date.now()}`,
       title: '⚠️ Action Required: Re-upload Documents',
-      message: notes || 'Documents verification verify nahi ho payi. Kripya valid documents dubara upload karein.',
+      message: notes || 'Document verification could not be completed. Please re-upload clear Aadhaar and selfie photos.',
       type: 'rejection',
       timestamp: new Date().toISOString()
     });
@@ -1338,7 +1338,7 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, async (req, res)
     pro.notifications.unshift({
       id: `notif-${Date.now()}`,
       title: '❌ Application Rejected',
-      message: notes || 'Aapka partner application reject kiya gaya hai. Kripya sahi Aadhaar aur Selfie photo upload karein.',
+      message: notes || 'Your partner application could not be approved. Please upload clear Aadhaar front, back and selfie photos.',
       type: 'rejection',
       timestamp: new Date().toISOString()
     });
