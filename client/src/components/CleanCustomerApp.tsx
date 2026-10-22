@@ -361,33 +361,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
     return list;
   }, [searchQuery, selectedCategoryKey, quickFilter, sortBy]);
 
-  // Dual-Language Support (English & Hindi)
-  const [lang, setLang] = useState<Language>(() => {
-    return (localStorage.getItem('quickserve_lang') as Language) || 'en';
-  });
-
-  const toggleLanguage = () => {
-    const next: Language = lang === 'en' ? 'hi' : 'en';
-    setLang(next);
-    localStorage.setItem('quickserve_lang', next);
-  };
-
-  const t = translations[lang];
-
-  const getCategoryName = (id: string, defaultName: string) => {
-    if (lang === 'hi') {
-      switch (id) {
-        case 'cleaning': return 'सफाई व मेड';
-        case 'plumber': return 'प्लंबर (नल व पाइप)';
-        case 'electrician': return 'इलेक्ट्रीशियन (बिजली)';
-        case 'ac_appliances': return 'एसी व उपकरण';
-        case 'cook': return 'रसोइया / कुक';
-        case 'moving': return 'शिफ्टिंग व ट्रांसपोर्ट';
-        default: return defaultName;
-      }
-    }
-    return defaultName;
-  };
+  // Strict English Language (No Hindi text per user request)
+  const lang: Language = 'en';
+  const t = translations.en;
+  const getCategoryName = (_id: string, defaultName: string) => defaultName;
 
   const handleBookingPlaced = (newBooking: Booking) => {
     onRefreshBookings();
@@ -398,11 +375,14 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] text-[#1F121C] flex flex-col pb-28 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
+    <div className="min-h-screen bg-[#EAEFF5] text-[#1F121C] flex flex-col pb-28 md:pb-8 selection:bg-pink-100 selection:text-pink-900">
       
-      {/* 1. COMPACT, REFINED HEADER WITH AUTO SAFE AREA */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-pink-100 sticky top-0 z-30 transition-all pt-[max(12px,env(safe-area-inset-top,0px))]">
+      {/* 1. COMPACT, REFINED HEADER WITH TOP BORDER & SAFE AREA */}
+      <header className="bg-white border-t-2 border-slate-300 border-b border-slate-200/90 sticky top-0 z-30 transition-all shadow-xs">
         
+        {/* Status Bar Clearance Spacer (Prevents overlap with Android clock/battery/notch) */}
+        <div className="h-7 sm:h-0 w-full shrink-0" />
+
         {/* DESKTOP HEADER (sm and up) */}
         <div className="hidden sm:flex max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 items-center justify-between gap-4 lg:gap-6">
           {/* Left: QuickServe Logo + Location Pill */}
@@ -424,10 +404,10 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             >
               <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
               <span className="text-xs font-semibold text-[#1F121C] truncate">
-                {activeCityZone || (lang === 'hi' ? 'लोकेशन चुनें' : 'Select Location')}
+                {activeCityZone || 'Select Location'}
               </span>
               <span className="text-[10px] text-pink-600 font-bold shrink-0 ml-0.5 group-hover:underline">
-                {lang === 'hi' ? 'बदलें' : 'Change'}
+                Change
               </span>
             </button>
           </div>
@@ -457,20 +437,8 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             </div>
           </div>
 
-          {/* Right Header Navigation: Language Switcher, Orders, Profile, Partner Portal */}
+          {/* Right Header Navigation: Orders, Profile, Partner Portal */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-pink-200 bg-pink-50/60 hover:bg-pink-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              title="Switch Language / भाषा बदलें"
-            >
-              <Globe className="w-3.5 h-3.5 text-pink-600" />
-              <span className={lang === 'en' ? 'text-pink-600 font-extrabold' : 'text-slate-400'}>EN</span>
-              <span className="text-pink-200">|</span>
-              <span className={lang === 'hi' ? 'text-pink-600 font-extrabold' : 'text-slate-400'}>हिंदी</span>
-            </button>
-
             <button
               type="button"
               onClick={() => onSwitchToPartnerPortal(false)}
@@ -665,8 +633,8 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
             {/* 4. CATEGORY NAVIGATION (Pink Accent Cards) */}
             <div>
               <div className="flex items-center justify-between mb-3 gap-2">
-                <h2 className="text-xs font-bold text-pink-900/70 uppercase tracking-wider">
-                  {lang === 'hi' ? 'सेवा श्रेणियां' : 'Service Categories'}
+                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Service Categories
                 </h2>
                 {selectedCategoryKey !== 'all' && (
                   <button
@@ -674,7 +642,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
                     onClick={() => setSelectedCategoryKey('all')}
                     className="text-xs font-semibold text-pink-600 hover:text-pink-700 hover:underline shrink-0 cursor-pointer"
                   >
-                    {lang === 'hi' ? 'सभी श्रेणियां देखें' : 'View All Categories'}
+                    View All Categories
                   </button>
                 )}
               </div>
@@ -982,7 +950,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           }`}
         >
           <Home className={`w-5 h-5 ${activeTab === 'home' && selectedCategoryKey === 'all' ? 'stroke-[2.5]' : ''}`} />
-          <span className="text-[10px] mt-0.5 leading-none">{lang === 'hi' ? 'होम' : 'Home'}</span>
+          <span className="text-[10px] mt-0.5 leading-none">Home</span>
         </button>
 
         {/* Tab 2: Categories */}
@@ -996,7 +964,7 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
           }`}
         >
           <LayoutGrid className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5 leading-none">{lang === 'hi' ? 'कैटेगरी' : 'Categories'}</span>
+          <span className="text-[10px] mt-0.5 leading-none">Categories</span>
         </button>
 
         {/* Tab 3: Partner Hub */}

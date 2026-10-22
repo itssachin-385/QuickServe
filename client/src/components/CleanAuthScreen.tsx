@@ -88,7 +88,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length < 2) {
-      setErrorMessage('Please enter your full name (कृपया अपना नाम दर्ज करें)');
+      setErrorMessage('Please enter your full name');
       return;
     }
 
@@ -135,7 +135,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length < 2) {
-      setErrorMessage('Please enter your full name (कृपया अपना नाम दर्ज करें)');
+      setErrorMessage('Please enter your full name');
       return;
     }
 
@@ -253,16 +253,18 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
 
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#FFF7F9] flex flex-col justify-between max-w-md mx-auto relative overflow-y-auto selection:bg-pink-100">
+    <div className="min-h-screen min-h-[100dvh] bg-[#EAEFF5] flex flex-col justify-between max-w-md mx-auto relative overflow-y-auto selection:bg-pink-100">
       
-      {/* 1. TOP CURVED BRAND BANNER (Universal Safe-Area Clearance for Status Bar & Notch) */}
+      {/* 1. TOP STATUS BAR BAND & BORDER (Separates Android status bar icons from content) */}
+      <div className="w-full bg-pink-700 h-8 sm:h-2 border-t-2 border-pink-400/60 shrink-0" />
+
+      {/* TOP CURVED BRAND BANNER */}
       <div 
-        className="relative bg-gradient-to-b from-pink-600 via-rose-600 to-pink-700 text-white pb-6 sm:pb-8 px-5 rounded-b-[36px] shadow-lg shadow-pink-600/20 shrink-0"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 48px)' }}
+        className="relative bg-gradient-to-b from-pink-600 via-rose-600 to-pink-700 text-white pb-6 sm:pb-8 px-5 rounded-b-[36px] shadow-lg shadow-pink-600/20 shrink-0 pt-2"
       >
         
-        {/* Skip login button in top right - safe from notch & status bar */}
-        <div className="flex justify-end mb-3 sm:mb-4">
+        {/* Skip login button in top right */}
+        <div className="flex justify-end mb-2 sm:mb-3">
           <button
             type="button"
             onClick={handleSkipLogin}
@@ -332,10 +334,10 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
               </span>
             </div>
 
-            {/* 1. Full Customer Name (Mandatory / Required - Pahle) */}
+            {/* 1. Full Customer Name */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Full Name / आपका नाम <span className="text-rose-500">*</span>
+                Full Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-pink-300 focus-within:border-pink-600 rounded-2xl px-4 py-3 transition-colors shadow-2xs">
                 <User className="w-4 h-4 text-pink-600 mr-2.5 shrink-0" />
@@ -345,16 +347,16 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                   autoFocus
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name (जैसे: राहुल कुमार)"
+                  placeholder="Enter your full name (e.g. Rahul Kumar)"
                   className="w-full text-sm font-medium text-[#1F121C] placeholder-slate-400 bg-transparent focus:outline-none tracking-wide"
                 />
               </div>
             </div>
 
-            {/* 2. Mobile Number Input with +91 Separator (Dusre) */}
+            {/* 2. Mobile Number Input with +91 Separator */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Mobile Number / मोबाइल नंबर <span className="text-rose-500">*</span>
+                Mobile Number <span className="text-rose-500">*</span>
               </label>
               <div className="relative flex items-center bg-white border-2 border-slate-200 hover:border-pink-300 focus-within:border-pink-600 rounded-2xl px-4 py-3 transition-colors shadow-2xs">
                 <span className="text-sm font-extrabold text-[#1F121C] pr-3 border-r border-slate-300">
@@ -383,7 +385,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
               <span className="font-medium text-[#1F121C]">Get booking & service updates on WhatsApp</span>
             </label>
 
-            {/* 3. Action Buttons: Get OTP on WhatsApp (Neeche) + SMS Option */}
+            {/* 3. Action Buttons: Get OTP on WhatsApp + SMS Option */}
             <div className="pt-1 space-y-2">
               <button
                 type="button"
@@ -392,13 +394,13 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                 className="w-full py-3.5 px-4 bg-[#25D366] hover:bg-[#20ba5a] active:scale-98 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-md shadow-emerald-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <MessageCircle className="w-5 h-5 text-white shrink-0 fill-white/20" />
-                <span>{isSendingWhatsApp ? 'Opening WhatsApp...' : 'Get OTP on WhatsApp (व्हाट्सएप पर OTP)'}</span>
+                <span>{isSendingWhatsApp ? 'Opening WhatsApp...' : 'Get OTP on WhatsApp'}</span>
               </button>
 
               <div className="relative flex items-center justify-center my-1">
                 <div className="border-t border-slate-200 w-full"></div>
                 <span className="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Ya / Or
+                  Or
                 </span>
                 <div className="border-t border-slate-200 w-full"></div>
               </div>
@@ -415,7 +417,7 @@ export const CleanAuthScreen: React.FC<CleanAuthScreenProps> = ({
                     <span>Sending SMS OTP...</span>
                   </>
                 ) : (
-                  <span>Get OTP via SMS (SMS से OTP पाएं)</span>
+                  <span>Get OTP via SMS</span>
                 )}
               </button>
             </div>

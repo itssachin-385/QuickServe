@@ -162,12 +162,12 @@ app.get('/api/ping', (req, res) => {
 // App Version & In-App Auto-Update Endpoint
 app.get('/api/app-version', (req, res) => {
   res.json({
-    version: '4.8',
-    versionCode: 35,
-    minVersionCode: 35,
+    version: '4.9',
+    versionCode: 36,
+    minVersionCode: 36,
     apkUrl: '/download-apk',
     downloadUrl: 'https://quickserve-3lhk.onrender.com/download-apk',
-    releaseNotes: 'Fresh Clean UI, Soft Platinum Theme, Swapped Header, Fixed Service Photos, Purged Dummy Data & Hierarchical Back Flow',
+    releaseNotes: 'Top Border & Safe-Area Clearance, Pure English (No Hindi), High-Contrast Cool Slate #EAEFF5 Background',
     forceUpdate: false,
     updatedAt: new Date().toISOString()
   });

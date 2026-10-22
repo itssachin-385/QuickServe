@@ -173,9 +173,9 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
-              <span>QuickServe v4.8</span>
+              <span>QuickServe v4.9</span>
               <span className="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-[10px] font-bold">
-                Latest (Code 35)
+                Latest (Code 36)
               </span>
             </h4>
             <p className="text-[11px] text-slate-500 mt-0.5 truncate">
