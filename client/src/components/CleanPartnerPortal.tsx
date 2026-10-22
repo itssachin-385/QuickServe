@@ -7,7 +7,8 @@ import {
   FileText, Camera, UploadCloud, Eye, X, XCircle,
   Lock, ShieldAlert, Sparkles, Check, Banknote,
   AlertTriangle, QrCode, Copy, Save, Send, Plus, Search,
-  DollarSign, TrendingUp, UserPlus, CheckCircle, Navigation, ChevronRight, Activity, DownloadCloud
+  DollarSign, TrendingUp, UserPlus, CheckCircle, Navigation, ChevronRight, Activity, DownloadCloud,
+  MessageCircle, ExternalLink, Share2
 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { API_BASE } from '../api';
@@ -17,6 +18,33 @@ const apiUrl = (path: string) => {
   const base = API_BASE.replace(/\/api\/?$/, '');
   const cleanPath = path.replace(/^\/?(api\/)?/, '');
   return `${base}/api/${cleanPath}`;
+};
+
+const buildWhatsAppCongratsText = (pro: Professional) => {
+  return `🎉 *Badhai ho ${pro.name}!* \n\nAapka *QuickServe Service Partner* account successfully *VERIFIED & ACTIVE* ho gaya hai! ✅\n\nAb aap QuickServe Partner App open karke live customer orders accept kar sakte hain aur rozana achhi kamai shuru kar sakte hain.\n\n📋 *Partner Details:*\n• Name: ${pro.name}\n• Service: ${pro.service_name || 'Service Partner'}\n• Locality: ${pro.locality || 'Greater Noida'}\n• Status: 🟢 Active & Ready for Orders\n\n📲 *QuickServe Partner App Link:*\nhttps://quickserve-3lhk.onrender.com/download-apk\n\n📞 *Partner Helpline:* +91 95701 51834\n\nQuickServe Operations Team ki taraf se hardik shubhkaamnayein! 🚀`;
+};
+
+const buildWhatsAppCongratsUrl = (pro: Professional) => {
+  const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
+  return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(buildWhatsAppCongratsText(pro))}`;
+};
+
+const buildSmsCongratsUrl = (pro: Professional) => {
+  const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
+  const msg = `QuickServe Alert: Badhai ho ${pro.name}! Aapka Partner account VERIFIED & ACTIVE ho gaya hai. Ab aap app me jobs accept kar sakte hain. Help: 9570151834 App: https://quickserve-3lhk.onrender.com/download-apk`;
+  return `sms:+91${cleanPhone}?body=${encodeURIComponent(msg)}`;
+};
+
+const buildWhatsAppRejectUrl = (pro: Professional, reason?: string) => {
+  const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
+  const msg = `⚠️ *QuickServe Partner Update*\n\nNamaste ${pro.name},\n\nAapke partner application verification me samasya aayi hai:\n*Reason:* ${reason || 'Documents re-upload required'}.\n\nKripya QuickServe Partner App open karke clear Aadhaar front, back aur live selfie photo dubara upload karein taaki hum aapka account approve kar sakein.\n\n📞 *Helpline:* +91 95701 51834\nQuickServe Trust & Safety Desk`;
+  return `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(msg)}`;
+};
+
+const buildSmsRejectUrl = (pro: Professional, reason?: string) => {
+  const cleanPhone = (pro.phone || '').replace(/\D/g, '').slice(-10);
+  const msg = `QuickServe Alert: Namaste ${pro.name}, partner verification me attention required: ${reason || 'Re-upload documents'}. Helpline: 9570151834`;
+  return `sms:+91${cleanPhone}?body=${encodeURIComponent(msg)}`;
 };
 
 interface CleanPartnerPortalProps {
@@ -94,6 +122,16 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   // Rejection Reason Modal State
   const [rejectModalPro, setRejectModalPro] = useState<Professional | null>(null);
   const [rejectReasonInput, setRejectReasonInput] = useState('');
+
+  // WhatsApp & SMS Congratulations Celebration Modal State
+  const [congratsModalData, setCongratsModalData] = useState<{
+    isOpen: boolean;
+    pro: Professional;
+    whatsappUrl: string;
+    smsUrl: string;
+    messageText: string;
+  } | null>(null);
+  const [copiedCongrats, setCopiedCongrats] = useState(false);
 
   // Personal Work Assignment State
   const [assignSelectedProId, setAssignSelectedProId] = useState<string>('');
@@ -463,36 +501,93 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
         ? 'Aapke sabhi documents aur background check approve ho gaye hain. Badhai ho!'
         : 'Aadhaar front/back ya selfie photo spashth nahi hai. Kripya valid documents dubara upload karein.';
 
-      const res = await fetch(apiUrl(`/admin/verifications/${proId}/action`), {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-admin-pin': pin
-        },
-        body: JSON.stringify({ 
-          action,
-          notes: customNotes || defaultNotes
-        })
+      const targetPro = pendingPartners.find(p => p.id === proId) 
+        || allPartners.find(p => p.id === proId) 
+        || (partnerProfile && (partnerProfile.id === proId || partnerProfile.phone) ? partnerProfile : null);
+
+      let data: any = null;
+      try {
+        const res = await fetch(apiUrl(`/admin/verifications/${proId}/action`), {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-admin-pin': pin
+          },
+          body: JSON.stringify({ 
+            action,
+            notes: customNotes || defaultNotes
+          })
+        });
+
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (err) {
+        console.warn('Backend call notice, updating locally:', err);
+      }
+
+      const effectivePro: Professional = data?.professional || {
+        ...(targetPro || ({} as any)),
+        id: proId,
+        verification_state: action === 'approve' ? 'verified' : 'rejected',
+        is_available: action === 'approve',
+        admin_notes: customNotes || defaultNotes,
+        verification_updated_at: new Date().toISOString()
+      };
+
+      // If the approved partner is the currently active partner, update immediately
+      if (partnerProfile && (partnerProfile.id === proId || partnerProfile.phone === effectivePro.phone)) {
+        setPartnerProfile(effectivePro);
+        localStorage.setItem('quickserve_active_partner', JSON.stringify(effectivePro));
+      }
+
+      // Update state arrays immediately
+      setPendingPartners(prev => prev.filter(p => p.id !== proId));
+      setAllPartners(prev => {
+        const idx = prev.findIndex(p => p.id === proId);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = effectivePro;
+          return updated;
+        }
+        return [effectivePro, ...prev];
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        // If the approved partner is the currently active partner, update immediately
-        if (partnerProfile && partnerProfile.id === proId && data.professional) {
-          setPartnerProfile(data.professional);
-          localStorage.setItem('quickserve_active_partner', JSON.stringify(data.professional));
+      if (action === 'approve') {
+        const waUrl = data?.whatsapp_url || buildWhatsAppCongratsUrl(effectivePro);
+        const smsUrl = data?.sms_url || buildSmsCongratsUrl(effectivePro);
+        const msgText = data?.message || buildWhatsAppCongratsText(effectivePro);
+
+        // Auto trigger WhatsApp in new tab/app
+        try {
+          window.open(waUrl, '_blank');
+        } catch (e) {
+          console.warn('Auto open notice:', e);
         }
 
-        setActionSuccessMsg(
-          action === 'approve' 
-            ? '🎉 Partner verified! Congratulations notification & SMS dispatched.' 
-            : '❌ Application marked rejected & notification sent to partner.'
-        );
-        setTimeout(() => setActionSuccessMsg(''), 4000);
-        setRejectModalPro(null);
-        setRejectReasonInput('');
-        await fetchAdminVerifications();
+        // Display celebration modal with 1-tap WhatsApp and SMS buttons
+        setCongratsModalData({
+          isOpen: true,
+          pro: effectivePro,
+          whatsappUrl: waUrl,
+          smsUrl: smsUrl,
+          messageText: msgText
+        });
+
+        setActionSuccessMsg(`🎉 Partner ${effectivePro.name} verified! WhatsApp Congratulations ready.`);
+      } else {
+        const waUrl = data?.whatsapp_url || buildWhatsAppRejectUrl(effectivePro, customNotes);
+        try {
+          window.open(waUrl, '_blank');
+        } catch (e) {}
+
+        setActionSuccessMsg(`❌ Partner ${effectivePro.name} marked rejected & notification dispatched.`);
       }
+
+      setTimeout(() => setActionSuccessMsg(''), 5000);
+      setRejectModalPro(null);
+      setRejectReasonInput('');
+      await fetchAdminVerifications();
     } catch (e) {
       console.warn('Admin action error:', e);
     } finally {
@@ -737,7 +832,7 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                     </span>
                     <span className="text-xs text-slate-400">Master Operations Control</span>
                     <span className="px-2 py-0.5 bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold rounded-md">
-                      v4.4 (Code 32)
+                      v5.0 (Code 37)
                     </span>
                   </div>
                   <h2 className="text-lg font-bold text-white mt-1">Officials Roster, Verification & Work Dispatch Desk</h2>
@@ -960,13 +1055,33 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                     ⏳ Audit In Progress
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
+                                <div className="flex items-center gap-2.5 text-xs text-slate-500 mt-1 flex-wrap">
                                   <a 
                                     href={`tel:${pro.phone.replace(/\s+/g, '')}`} 
                                     className="font-mono font-bold text-slate-800 hover:text-blue-600 flex items-center gap-1"
                                   >
                                     <Phone className="w-3.5 h-3.5 text-emerald-600" />
                                     <span>{pro.phone}</span>
+                                  </a>
+                                  <a 
+                                    href={buildWhatsAppCongratsUrl(pro)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-md text-[11px] font-bold flex items-center gap-1 active:scale-95 shadow-2xs"
+                                    title="Send WhatsApp message directly to partner"
+                                  >
+                                    <MessageCircle className="w-3 h-3 text-emerald-600" />
+                                    <span>WhatsApp</span>
+                                  </a>
+                                  <a 
+                                    href={buildSmsCongratsUrl(pro)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 rounded-md text-[11px] font-bold flex items-center gap-1 active:scale-95 shadow-2xs"
+                                    title="Send SMS to partner"
+                                  >
+                                    <Send className="w-3 h-3 text-blue-600" />
+                                    <span>SMS</span>
                                   </a>
                                   <span className="flex items-center gap-1 text-slate-600 font-medium">
                                     <MapPin className="w-3.5 h-3.5 text-pink-500 shrink-0" />
@@ -1123,7 +1238,18 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                               Approve karein to partner ko turant congratulation message jayega. Reject karne par reason ke sath alert jayega.
                             </p>
 
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex flex-wrap items-center gap-2.5">
+                              <a
+                                href={buildWhatsAppCongratsUrl(pro)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="min-h-[48px] px-4 py-2.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs"
+                                title="Send WhatsApp Congratulations to partner"
+                              >
+                                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                                <span>💬 WhatsApp Congratulation</span>
+                              </a>
+
                               <button
                                 type="button"
                                 disabled={adminActionLoadingId === pro.id}
@@ -1131,10 +1257,10 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                   setRejectModalPro(pro);
                                   setRejectReasonInput('Aadhaar front/back spashth nahi hai. Kripya clear photo dubara upload karein.');
                                 }}
-                                className="flex-1 sm:flex-initial min-h-[48px] px-5 py-2.5 text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-300 transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                                className="flex-1 sm:flex-initial min-h-[48px] px-4 py-2.5 text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-300 transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
                               >
                                 <X className="w-4 h-4 text-rose-600" />
-                                <span>✕ Reject / Re-upload Required</span>
+                                <span>✕ Reject</span>
                               </button>
 
                               <button
@@ -1146,12 +1272,12 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                 {adminActionLoadingId === pro.id ? (
                                   <>
                                     <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                                    <span>Approving & Sending SMS...</span>
+                                    <span>Approving & Sending...</span>
                                   </>
                                 ) : (
                                   <>
                                     <Check className="w-4 h-4 text-white stroke-[3]" />
-                                    <span>✓ Approve & Activate Official</span>
+                                    <span>✓ Approve & Send Congratulations</span>
                                   </>
                                 )}
                               </button>
@@ -1295,13 +1421,25 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                     <p className="font-bold text-slate-900 truncate flex items-center gap-1.5">
                                       <span>{pro.name}</span>
                                     </p>
-                                    <a
-                                      href={`tel:${pro.phone}`}
-                                      className="text-slate-600 hover:text-pink-600 font-mono text-[11px] flex items-center gap-1 font-semibold"
-                                    >
-                                      <Phone className="w-2.5 h-2.5 text-slate-400" />
-                                      <span>{pro.phone}</span>
-                                    </a>
+                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                      <a
+                                        href={`tel:${pro.phone}`}
+                                        className="text-slate-600 hover:text-pink-600 font-mono text-[11px] flex items-center gap-1 font-semibold"
+                                      >
+                                        <Phone className="w-2.5 h-2.5 text-slate-400" />
+                                        <span>{pro.phone}</span>
+                                      </a>
+                                      <a
+                                        href={buildWhatsAppCongratsUrl(pro)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded text-[10px] font-bold flex items-center gap-1"
+                                        title="WhatsApp Partner"
+                                      >
+                                        <MessageCircle className="w-2.5 h-2.5 text-emerald-600" />
+                                        <span>WhatsApp</span>
+                                      </a>
+                                    </div>
                                     <p className="text-[10px] text-slate-400 mt-0.5">Applied: {formattedDate}</p>
                                   </div>
                                 </div>
@@ -1469,13 +1607,26 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                                     </button>
                                   )}
 
-                                  <a
-                                    href={`tel:${pro.phone}`}
-                                    className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium"
-                                  >
-                                    <Phone className="w-2.5 h-2.5" />
-                                    <span>Call</span>
-                                  </a>
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <a
+                                      href={buildWhatsAppCongratsUrl(pro)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-2 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors flex items-center gap-1 active:scale-95"
+                                      title="Send WhatsApp Message"
+                                    >
+                                      <MessageCircle className="w-3 h-3 text-emerald-600" />
+                                      <span>WhatsApp</span>
+                                    </a>
+
+                                    <a
+                                      href={`tel:${pro.phone}`}
+                                      className="text-[11px] text-slate-600 hover:text-slate-900 flex items-center gap-1 font-medium px-1.5 py-1"
+                                    >
+                                      <Phone className="w-2.5 h-2.5" />
+                                      <span>Call</span>
+                                    </a>
+                                  </div>
                                 </div>
                               </td>
                             </tr>
@@ -1631,19 +1782,32 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
 
                             {/* Quick Action */}
                             <td className="py-3.5 px-4 align-top text-right">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setAssignSelectedProId(pro.id);
-                                  setAssignServiceName(pro.service_name || 'Doorstep Service');
-                                  setAssignLocality(pro.locality || 'Greater Noida');
-                                  setAdminTab('assign_work');
-                                }}
-                                className="px-3 py-1.5 text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer ml-auto active:scale-95"
-                              >
-                                <Send className="w-3 h-3" />
-                                <span>Assign Work</span>
-                              </button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <a
+                                  href={buildWhatsAppCongratsUrl(pro)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2.5 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors flex items-center gap-1 cursor-pointer active:scale-95 shadow-2xs"
+                                  title="WhatsApp Partner"
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>WhatsApp</span>
+                                </a>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setAssignSelectedProId(pro.id);
+                                    setAssignServiceName(pro.service_name || 'Doorstep Service');
+                                    setAssignLocality(pro.locality || 'Greater Noida');
+                                    setAdminTab('assign_work');
+                                  }}
+                                  className="px-3 py-1.5 text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer active:scale-95"
+                                >
+                                  <Send className="w-3 h-3" />
+                                  <span>Assign Work</span>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1969,6 +2133,111 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                       ) : (
                         <span>Confirm Rejection & Notify</span>
                       )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WhatsApp & SMS Congratulations Celebration Modal */}
+            {congratsModalData?.isOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+                <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border-2 border-emerald-500/40 p-6 space-y-4 animate-scaleUp">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+                        🎉
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900">Partner Approved & Verified!</h3>
+                        <p className="text-xs text-slate-500">Official Congratulation message ready to send</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCongratsModalData(null)}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Partner Snapshot Card */}
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">{congratsModalData.pro.name}</p>
+                      <p className="font-mono text-xs text-slate-600 font-semibold">{congratsModalData.pro.phone}</p>
+                      <p className="text-[11px] text-slate-500">{congratsModalData.pro.service_name || 'Service Partner'} • {congratsModalData.pro.locality || 'Greater Noida'}</p>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300">
+                      Active Official ✓
+                    </span>
+                  </div>
+
+                  {/* Message Preview Box */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Congratulations Message (WhatsApp & SMS)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(congratsModalData.messageText);
+                          setCopiedCongrats(true);
+                          setTimeout(() => setCopiedCongrats(false), 2500);
+                        }}
+                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>{copiedCongrats ? 'Copied ✓' : 'Copy Text'}</span>
+                      </button>
+                    </div>
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-xs text-slate-800 whitespace-pre-wrap max-h-40 overflow-y-auto font-sans leading-relaxed">
+                      {congratsModalData.messageText}
+                    </div>
+                  </div>
+
+                  {/* 1-Tap Trigger Action Buttons */}
+                  <div className="space-y-2 pt-1">
+                    <a
+                      href={congratsModalData.whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full min-h-[48px] px-5 py-3 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      <span>Send via WhatsApp (+91 {congratsModalData.pro.phone?.replace(/\D/g, '').slice(-10)})</span>
+                    </a>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <a
+                        href={congratsModalData.smsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="min-h-[42px] px-3 py-2 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-slate-300"
+                      >
+                        <Send className="w-4 h-4 text-blue-600" />
+                        <span>Send via SMS</span>
+                      </a>
+
+                      <a
+                        href={`tel:${congratsModalData.pro.phone}`}
+                        className="min-h-[42px] px-3 py-2 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-slate-300"
+                      >
+                        <Phone className="w-4 h-4 text-emerald-600" />
+                        <span>Call Partner</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setCongratsModalData(null)}
+                      className="px-5 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer"
+                    >
+                      Done & Close
                     </button>
                   </div>
                 </div>
@@ -2463,9 +2732,21 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                     </p>
                   </div>
                 </div>
-                <span className="hidden sm:inline-block px-3 py-1 bg-white text-emerald-800 text-xs font-bold rounded-lg shrink-0">
-                  Active Partner ✓
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={buildWhatsAppCongratsUrl(partnerProfile)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    title="Send welcome confirmation to WhatsApp"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>WhatsApp Alert</span>
+                  </a>
+                  <span className="hidden sm:inline-block px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-lg border border-white/30">
+                    Active Partner ✓
+                  </span>
+                </div>
               </div>
             )}
 

@@ -498,7 +498,69 @@ async function sendAutomatedWhatsAppOtp(cleanPhone, otp) {
     success: true,
     automated: false,
     provider: 'deeplink_backup',
-    message: 'WhatsApp OTP generated'
+// Automated Partner WhatsApp & SMS Notification Dispatch
+async function sendPartnerNotification(pro, type = 'approve', notes = '') {
+  if (!pro || !pro.phone) return null;
+  const cleanPhone = pro.phone.replace(/\D/g, '').slice(-10);
+  if (!cleanPhone || cleanPhone.length < 10) return null;
+
+  let messageText = '';
+  let smsText = '';
+
+  if (type === 'approve') {
+    messageText = `🎉 *Badhai ho ${pro.name}!* \n\nAapka *QuickServe Service Partner* account successfully *VERIFIED & ACTIVE* ho gaya hai! ✅\n\nAb aap QuickServe Partner App open karke live customer bookings accept kar sakte hain aur har roz kamai shuru kar sakte hain.\n\n📋 *Partner Details:*\n• Name: ${pro.name}\n• Service: ${pro.service_name || 'Service Partner'}\n• Locality: ${pro.locality || 'Greater Noida'}\n• Status: 🟢 Active & Ready for Orders\n\n📲 *App Download Link:*\nhttps://quickserve-3lhk.onrender.com/download-apk\n\n📞 *Partner Helpline:* +91 95701 51834\n\nQuickServe Operations Team ki taraf se hardik shubhkaamnayein! 🚀`;
+    smsText = `QuickServe: Badhai ho ${pro.name}! Aapka Partner account VERIFIED & ACTIVE ho gaya hai. Ab aap app me jobs accept kar sakte hain. Helpline: 9570151834 App: https://quickserve-3lhk.onrender.com/download-apk`;
+  } else if (type === 'reject') {
+    messageText = `⚠️ *QuickServe Partner Update*\n\nNamaste ${pro.name},\n\nAapke partner application verification me samasya aayi hai:\n*Karan:* ${notes || 'Documents re-upload required'}.\n\nKripya QuickServe Partner App open karke valid documents (Aadhaar Front/Back, Live Selfie) dubara upload karein taaki hum aapka account approve kar sakein.\n\n📞 *Helpline:* +91 95701 51834\nQuickServe Trust & Safety Desk`;
+    smsText = `QuickServe Alert: Namaste ${pro.name}, partner verification me attention required: ${notes || 'Re-upload documents'}. Helpline: 9570151834`;
+  }
+
+  // 1. Meta Official WhatsApp Cloud API
+  if (gatewayConfig.whatsappAccessToken && gatewayConfig.whatsappPhoneNumberId) {
+    try {
+      const url = `https://graph.facebook.com/v20.0/${gatewayConfig.whatsappPhoneNumberId}/messages`;
+      await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${gatewayConfig.whatsappAccessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: `91${cleanPhone}`,
+          type: 'text',
+          text: { preview_url: false, body: messageText }
+        })
+      }).catch(err => console.warn('[Partner WhatsApp Err]:', err.message));
+    } catch (e) {}
+  }
+
+  // 2. Fast2SMS WhatsApp Route
+  if (gatewayConfig.fast2smsApiKey && gatewayConfig.whatsappProvider === 'fast2sms') {
+    try {
+      const waUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=wa&numbers=${cleanPhone}&message=${encodeURIComponent(messageText)}`;
+      await fetch(waUrl).catch(() => {});
+    } catch (e) {}
+  }
+
+  // 3. Fast2SMS Quick SMS Route
+  if (gatewayConfig.fast2smsApiKey) {
+    try {
+      const smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(smsText)}&language=english&flash=0&numbers=${cleanPhone}`;
+      await fetch(smsUrl).catch(() => {});
+    } catch (e) {}
+  }
+
+  const whatsappUrl = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(messageText)}`;
+  const smsUrl = `sms:+91${cleanPhone}?body=${encodeURIComponent(smsText)}`;
+
+  return {
+    phone: cleanPhone,
+    whatsapp_url: whatsappUrl,
+    sms_url: smsUrl,
+    message: messageText,
+    sms_text: smsText
   };
 }
 
@@ -1202,7 +1264,7 @@ app.get('/api/admin/verifications', verifyAdminPin, (req, res) => {
   res.json(pendingOrUnderReview);
 });
 
-app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
+app.post('/api/admin/verifications/:id/action', verifyAdminPin, async (req, res) => {
   const { action, notes } = req.body; // 'approve', 'reject', 'action_required'
   const pro = professionals.find(p => p.id === req.params.id);
   if (!pro) return res.status(404).json({ error: 'Professional not found' });
@@ -1210,6 +1272,8 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
   if (!pro.notifications) pro.notifications = [];
   if (!pro.status_history) pro.status_history = [];
   pro.verification_updated_at = new Date().toISOString();
+
+  let notifyData = null;
 
   if (action === 'approve') {
     pro.verification_state = 'verified';
@@ -1236,13 +1300,7 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
       timestamp: new Date().toISOString()
     });
 
-    // Send Fast2SMS Confirmation to partner
-    if (gatewayConfig.fast2smsApiKey && pro.phone) {
-      const cleanPhone = pro.phone.replace(/\D/g, '').slice(-10);
-      try {
-        fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(`QuickServe: Badhai ho ${pro.name}! Aapka QuickServe Partner account VERIFY ho gaya hai. Ab aap app me doorstep jobs accept kar sakte hain.`)}&language=english&flash=0&numbers=${cleanPhone}`).catch(() => {});
-      } catch (e) {}
-    }
+    notifyData = await sendPartnerNotification(pro, 'approve', notes);
   } else if (action === 'action_required') {
     pro.verification_state = 'action_required';
     pro.is_available = false;
@@ -1262,6 +1320,8 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
       type: 'rejection',
       timestamp: new Date().toISOString()
     });
+
+    notifyData = await sendPartnerNotification(pro, 'reject', notes || 'Documents re-upload required');
   } else if (action === 'reject') {
     pro.verification_state = 'rejected';
     pro.is_available = false;
@@ -1283,28 +1343,30 @@ app.post('/api/admin/verifications/:id/action', verifyAdminPin, (req, res) => {
       timestamp: new Date().toISOString()
     });
 
-    // Send Fast2SMS Rejection to partner
-    if (gatewayConfig.fast2smsApiKey && pro.phone) {
-      const cleanPhone = pro.phone.replace(/\D/g, '').slice(-10);
-      try {
-        fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(gatewayConfig.fast2smsApiKey)}&route=q&message=${encodeURIComponent(`QuickServe Alert: Namaste ${pro.name}, aapka partner application reject kiya gaya hai: ${notes || 'Documents re-upload required'}. Kripya app me details check karein.`)}&language=english&flash=0&numbers=${cleanPhone}`).catch(() => {});
-      } catch (e) {}
-    }
+    notifyData = await sendPartnerNotification(pro, 'reject', notes);
   }
 
   try { db.saveProfessionals(professionals); } catch (e) {}
 
-  res.json({ success: true, professional: pro });
+  res.json({
+    success: true,
+    professional: pro,
+    whatsapp_url: notifyData?.whatsapp_url,
+    sms_url: notifyData?.sms_url,
+    message: notifyData?.message
+  });
 });
 
 // Admin Direct Partner Status Management (Re-Approve, Revoke, etc.)
-app.post('/api/admin/partners/:id/status', verifyAdminPin, (req, res) => {
+app.post('/api/admin/partners/:id/status', verifyAdminPin, async (req, res) => {
   const { status, reason } = req.body; // 'verified', 'rejected', 'pending'
   const pro = professionals.find(p => p.id === req.params.id);
   if (!pro) return res.status(404).json({ error: 'Partner record not found' });
 
   pro.verification_state = status;
   pro.verification_updated_at = new Date().toISOString();
+
+  let notifyData = null;
 
   if (status === 'verified') {
     pro.is_available = true;
@@ -1313,9 +1375,11 @@ app.post('/api/admin/partners/:id/status', verifyAdminPin, (req, res) => {
     pro.verifications.skill_trade_test = true;
     pro.admin_notes = reason || 'Re-approved by Admin Desk';
     pro.admin_action_reason = '';
+    notifyData = await sendPartnerNotification(pro, 'approve', reason);
   } else if (status === 'rejected') {
     pro.is_available = false;
     pro.admin_action_reason = reason || 'Marked as Rejected by Admin';
+    notifyData = await sendPartnerNotification(pro, 'reject', reason);
   } else if (status === 'pending') {
     pro.is_available = false;
     pro.admin_notes = reason || 'Moved to Pending Review';
@@ -1331,7 +1395,22 @@ app.post('/api/admin/partners/:id/status', verifyAdminPin, (req, res) => {
 
   try { db.saveProfessionals(professionals); } catch (e) {}
 
-  res.json({ success: true, professional: pro });
+  res.json({
+    success: true,
+    professional: pro,
+    whatsapp_url: notifyData?.whatsapp_url,
+    sms_url: notifyData?.sms_url,
+    message: notifyData?.message
+  });
+});
+
+// Direct Partner WhatsApp & SMS Trigger Endpoint
+app.post('/api/admin/professionals/:id/notify', verifyAdminPin, async (req, res) => {
+  const pro = professionals.find(p => p.id === req.params.id);
+  if (!pro) return res.status(404).json({ error: 'Professional not found' });
+  const { type = 'approve', notes = '' } = req.body;
+  const notifyData = await sendPartnerNotification(pro, type, notes);
+  res.json({ success: true, professional: pro, ...notifyData });
 });
 
 // Partner In-App Notifications Endpoint
