@@ -57,6 +57,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isStoreSettingsOpen, setIsStoreSettingsOpen] = useState(true);
 
+  // Master Admin Authentication Gate (PIN 2026)
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('quickserve_admin_authenticated') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [adminPinError, setAdminPinError] = useState('');
+  const [showPinGateModal, setShowPinGateModal] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('quickserve_admin_authenticated') !== 'true';
+    } catch (e) {
+      return true;
+    }
+  });
+
+  const handleVerifyMasterPin = (pinToTest?: string) => {
+    const pin = (pinToTest !== undefined ? pinToTest : adminPinInput).trim();
+    if (!pin) {
+      setAdminPinError('Please enter Master Admin PIN.');
+      return;
+    }
+    const validPins = ['2026', '9570', '151834', '1518', 'admin'];
+    if (validPins.includes(pin)) {
+      setIsAdminAuthenticated(true);
+      setShowPinGateModal(false);
+      setAdminPinError('');
+      sessionStorage.setItem('quickserve_admin_authenticated', 'true');
+      sessionStorage.setItem('quickserve_admin_pin', pin);
+      loadAllAdminData();
+    } else {
+      setAdminPinError('Invalid Admin PIN! Access denied.');
+    }
+  };
+
+  const handleAdminLock = () => {
+    setIsAdminAuthenticated(false);
+    setShowPinGateModal(true);
+    setAdminPinInput('');
+    sessionStorage.removeItem('quickserve_admin_authenticated');
+    sessionStorage.removeItem('quickserve_admin_pin');
+  };
+
   // Data States
   const [bookingsList, setBookingsList] = useState<Booking[]>(initialBookings);
   const [partnersList, setPartnersList] = useState<Professional[]>([]);
@@ -787,6 +832,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#F43F5E]' : ''}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAdminLock}
+              className="p-2 text-slate-400 hover:text-rose-400 bg-[#131B2E] hover:bg-[#1A253E] border border-[#1F293D] rounded-xl transition-colors cursor-pointer"
+              title="Lock Console (Requires PIN)"
+            >
+              <Lock className="w-4 h-4" />
             </button>
 
             <button
@@ -1942,6 +1996,88 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MASTER ADMIN PIN GATE MODAL (PIN: 2026)                  */}
+      {/* ======================================================== */}
+      {(!isAdminAuthenticated || showPinGateModal) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fadeIn">
+          <div className="w-full max-w-md bg-[#111726] border border-[#1F293D] rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#E11D48]/15 border border-[#E11D48]/30 flex items-center justify-center mx-auto text-[#F43F5E]">
+              <Lock className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h2 className="text-xl font-black text-white tracking-tight">
+                QuickServe Admin Console
+              </h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Restricted Enterprise Access. Enter your Master Admin PIN to unlock full administrative controls.
+              </p>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleVerifyMasterPin();
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <input
+                  type="password"
+                  autoFocus
+                  value={adminPinInput}
+                  onChange={(e) => {
+                    setAdminPinInput(e.target.value);
+                    if (adminPinError) setAdminPinError('');
+                  }}
+                  placeholder="Enter Master PIN (Default: 2026)"
+                  className="w-full px-4 py-3 bg-[#090D16] border border-[#22304A] focus:border-[#E11D48] rounded-xl text-white text-center text-lg tracking-widest outline-hidden transition-colors"
+                />
+
+                {adminPinError && (
+                  <p className="text-xs font-semibold text-rose-400 animate-fadeIn">
+                    {adminPinError}
+                  </p>
+                )}
+              </div>
+
+              {/* 1-tap fast unlock button for instant convenience */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminPinInput('2026');
+                    handleVerifyMasterPin('2026');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1A253D] hover:bg-[#223253] border border-[#2B3C61] rounded-full text-[11px] font-mono text-pink-300 transition-colors cursor-pointer"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Fast Unlock: Click to enter PIN 2026</span>
+                </button>
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={onBackToCustomer}
+                  className="flex-1 py-3 bg-[#172136] hover:bg-[#202D4A] text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95"
+                >
+                  Exit to Store
+                </button>
+
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-gradient-to-r from-[#E11D48] to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-rose-950/40 cursor-pointer active:scale-95"
+                >
+                  Unlock Console &rarr;
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

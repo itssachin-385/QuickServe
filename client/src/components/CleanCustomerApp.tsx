@@ -450,6 +450,16 @@ export const CleanCustomerApp: React.FC<CleanCustomerAppProps> = ({
 
             <button
               type="button"
+              onClick={() => onSwitchToPartnerPortal(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0B0F19] hover:bg-black rounded-xl border border-slate-700 shadow-xs transition-all active:scale-95 cursor-pointer"
+              title="Enterprise Dark SaaS Admin Console"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Admin Console</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('orders')}
               className={`relative p-2 rounded-xl border transition-colors cursor-pointer ${
                 activeTab === 'orders'

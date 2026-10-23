@@ -19,9 +19,22 @@ export function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [appMode, setAppMode] = useState<'customer' | 'partner' | 'admin'>(() => {
     if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname.toLowerCase();
       const params = new URLSearchParams(window.location.search);
-      if (params.get('admin') === 'true' || window.location.hash === '#admin') {
+      if (
+        params.get('admin') === 'true' || 
+        window.location.hash === '#admin' ||
+        pathname.startsWith('/admin') ||
+        pathname === '/admin'
+      ) {
         return 'admin';
+      }
+      if (
+        params.get('partner') === 'true' ||
+        window.location.hash === '#partner' ||
+        pathname.startsWith('/partner')
+      ) {
+        return 'partner';
       }
     }
     return 'customer';
@@ -353,17 +366,7 @@ export function App() {
     );
   }
 
-  // 1. LOGIN / SIGN UP GATE
-  // If user is not logged in, show clean Login / Sign Up screen
-  if (!currentUser) {
-    return (
-      <CleanAuthScreen
-        onSuccess={handleAuthSuccess}
-      />
-    );
-  }
-
-  // 2. ENTERPRISE DARK SAAS ADMIN CONSOLE (Matching Photos 1 & 2)
+  // 1. ENTERPRISE DARK SAAS ADMIN CONSOLE (Direct access for website /admin & admin mode)
   if (appMode === 'admin') {
     return (
       <div className="flex flex-col min-h-screen bg-[#0B0F19]">
@@ -372,14 +375,19 @@ export function App() {
           categories={categories}
           bookings={bookings}
           onRefreshAll={loadData}
-          onBackToCustomer={() => setAppMode('customer')}
+          onBackToCustomer={() => {
+            if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+              window.history.pushState({}, '', '/');
+            }
+            setAppMode('customer');
+          }}
           onSwitchToPartnerPortal={() => setAppMode('partner')}
         />
       </div>
     );
   }
 
-  // 3. SEPARATE PARTNER PORTAL / TECHNICIAN ONBOARDING ROUTE
+  // 2. SEPARATE PARTNER PORTAL / TECHNICIAN ONBOARDING ROUTE
   if (appMode === 'partner') {
     return (
       <div className="flex flex-col min-h-screen">
@@ -387,6 +395,9 @@ export function App() {
         <CleanPartnerPortal
           categories={categories}
           onBackToCustomer={() => {
+            if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+              window.history.pushState({}, '', '/');
+            }
             setOpenAdminDirect(false);
             setAppMode('customer');
           }}
@@ -394,6 +405,15 @@ export function App() {
           initialShowAdminDesk={openAdminDirect}
         />
       </div>
+    );
+  }
+
+  // 3. LOGIN / SIGN UP GATE (For Customer App only)
+  if (!currentUser) {
+    return (
+      <CleanAuthScreen
+        onSuccess={handleAuthSuccess}
+      />
     );
   }
 
