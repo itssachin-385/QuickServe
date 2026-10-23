@@ -9,10 +9,11 @@ import {
   DownloadCloud, Lock, RefreshCw, Sliders, Building2, 
   Sparkles, Menu, X, ArrowLeft, Check, ShieldCheck,
   CreditCard, Globe, Code, Bell, UserCheck, Layers,
-  Trash2, DollarSign, ArrowUpRight, Share2, Copy
+  Trash2, DollarSign, ArrowUpRight, Share2, Copy, Radio
 } from 'lucide-react';
 import { Booking, Professional, ServiceCategory, ServiceZone } from '../types';
 import { API_BASE } from '../api';
+import { AdminFlightControl } from './AdminFlightControl';
 
 interface AdminDashboardProps {
   categories?: ServiceCategory[];
@@ -43,16 +44,17 @@ const buildSmsCongratsUrl = (pro: Professional) => {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   categories: initialCategories = [],
   bookings: initialBookings = [],
+  zones = [],
   onRefreshAll,
   onBackToCustomer,
   onSwitchToPartnerPortal
 }) => {
   // Navigation & View State
   const [activeNav, setActiveNav] = useState<
-    'orders' | 'dashboard' | 'categories' | 'brands' | 'trademarks' | 
+    'orders' | 'flight_control' | 'dashboard' | 'categories' | 'brands' | 'trademarks' | 
     'certificates' | 'products' | 'add_product' | 'users' | 'offers' | 
     'contacts' | 'blogs' | 'settings' | 'assign_work'
-  >('orders');
+  >('flight_control');
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isStoreSettingsOpen, setIsStoreSettingsOpen] = useState(true);
@@ -510,6 +512,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-1">
               <button
                 type="button"
+                onClick={() => { setActiveNav('flight_control'); setIsSidebarOpen(false); }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  activeNav === 'flight_control'
+                    ? 'bg-gradient-to-r from-[#2A1728] to-[#1E1120] border-l-4 border-[#E11D48] text-[#F43F5E] font-bold shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#131B2E]'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+                  <span>Flight Control</span>
+                </div>
+                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[9px] font-bold rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live
+                </span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => { setActiveNav('dashboard'); setIsSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors cursor-pointer ${
                   activeNav === 'dashboard'
@@ -805,6 +825,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <div className="min-w-0">
               <h1 className="text-base md:text-lg font-bold text-white truncate">
+                {activeNav === 'flight_control' && 'Flight Control & Hyperlocal Operations Radar'}
                 {activeNav === 'orders' && 'Customer Orders & Delivery Tracking'}
                 {activeNav === 'dashboard' && 'Operations Overview & Performance Analytics'}
                 {activeNav === 'certificates' && 'Partner Certificates & KYC Verification Audit'}
@@ -815,10 +836,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {['brands', 'trademarks', 'products', 'users', 'offers', 'contacts', 'blogs'].includes(activeNav) && `${activeNav.toUpperCase()} Management`}
               </h1>
               <p className="text-xs text-slate-400 hidden sm:block truncate">
+                {activeNav === 'flight_control' && 'Urban Company & Pronto style real-time GPS fleet tracking, proximity radar, and auto-dispatch'}
                 {activeNav === 'orders' && 'Assign delivery IDs, update order statuses, and track shipments'}
                 {activeNav === 'certificates' && 'Review Aadhaar identity, face photo verification, and dispatch WhatsApp congratulation'}
                 {activeNav === 'add_product' && 'Create structured service offerings with custom pricing, cover image, and SEO'}
-                {activeNav !== 'orders' && activeNav !== 'certificates' && activeNav !== 'add_product' && 'QuickServe Enterprise Control Console'}
+                {activeNav !== 'orders' && activeNav !== 'certificates' && activeNav !== 'add_product' && activeNav !== 'flight_control' && 'QuickServe Enterprise Control Console'}
               </p>
             </div>
           </div>
@@ -865,6 +887,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* Dynamic Section Render */}
         <main className="flex-1 p-4 md:p-8 space-y-6">
           
+          {/* ======================================================== */}
+          {/* VIEW 0: FLIGHT CONTROL TOWER & RADAR (OPERATIONS HUB)    */}
+          {/* ======================================================== */}
+          {activeNav === 'flight_control' && (
+            <AdminFlightControl
+              bookings={displayBookings}
+              partners={partnersList}
+              zones={zones}
+              onRefresh={loadAllAdminData}
+            />
+          )}
+
           {/* ======================================================== */}
           {/* VIEW 1: ORDERS & DELIVERY TRACKING (EXACT PHOTO 1 MATCH) */}
           {/* ======================================================== */}

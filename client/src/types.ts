@@ -238,6 +238,8 @@ export interface Booking {
   service_started_at?: string;
   hub_id?: string;
   hub_name?: string;
+  delivery_lat?: number;
+  delivery_lng?: number;
 }
 
 export interface SupportTicket {
