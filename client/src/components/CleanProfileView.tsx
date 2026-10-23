@@ -197,8 +197,17 @@ export const CleanProfileView: React.FC<CleanProfileViewProps> = ({
         </button>
       </div>
 
-      {/* Discreet Partner & Admin Link at the very bottom */}
-      <div className="pt-3 pb-2 text-center">
+      {/* Partner & Admin Quick Access at the very bottom */}
+      <div className="pt-3 pb-2 flex flex-col items-center gap-2.5 text-center">
+        <button
+          type="button"
+          onClick={() => onOpenAdminDesk ? onOpenAdminDesk() : onSwitchToPartnerPortal()}
+          className="px-4 py-2 bg-[#0D121F] hover:bg-[#1A253E] text-slate-200 border border-[#1F293D] text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-xs active:scale-95 cursor-pointer"
+        >
+          <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-pulse" />
+          <span>Super Admin Console (Dark SaaS) &rarr;</span>
+        </button>
+
         <button
           type="button"
           onClick={() => onSwitchToPartnerPortal()}

@@ -50,12 +50,14 @@ const buildSmsRejectUrl = (pro: Professional, reason?: string) => {
 interface CleanPartnerPortalProps {
   categories: ServiceCategory[];
   onBackToCustomer: () => void;
+  onOpenAdminConsole?: () => void;
   initialShowAdminDesk?: boolean;
 }
 
 export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
   categories,
   onBackToCustomer,
+  onOpenAdminConsole,
   initialShowAdminDesk = false
 }) => {
   // Check if active partner saved in storage
@@ -842,6 +844,17 @@ export const CleanPartnerPortal: React.FC<CleanPartnerPortalProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  {onOpenAdminConsole && (
+                    <button
+                      type="button"
+                      onClick={onOpenAdminConsole}
+                      className="px-3.5 py-1.5 bg-gradient-to-r from-[#E11D48] to-rose-600 hover:from-[#F43F5E] hover:to-rose-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                      title="Open Enterprise Dark SaaS Admin Console"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Enterprise Dark Console &rarr;</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={fetchAdminVerifications}

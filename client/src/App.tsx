@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CleanAuthScreen } from './components/CleanAuthScreen';
 import { CleanCustomerApp } from './components/CleanCustomerApp';
 import { CleanPartnerPortal } from './components/CleanPartnerPortal';
+import { AdminDashboard } from './components/AdminDashboard';
 import { AppSplashScreen } from './components/AppSplashScreen';
 import { InAppUpdateBanner } from './components/InAppUpdateBanner';
 import { OfflineScreen } from './components/OfflineScreen';
@@ -16,7 +17,15 @@ import { reverseGeocodeGoogle } from './utils/googleMapsService';
 
 export function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [appMode, setAppMode] = useState<'customer' | 'partner'>('customer');
+  const [appMode, setAppMode] = useState<'customer' | 'partner' | 'admin'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' || window.location.hash === '#admin') {
+        return 'admin';
+      }
+    }
+    return 'customer';
+  });
   const [openAdminDirect, setOpenAdminDirect] = useState(false);
 
   // Native StatusBar & Inset Configuration
@@ -288,6 +297,10 @@ export function App() {
   useEffect(() => {
     let backListener: any;
     const handleBackAction = () => {
+      if (appMode === 'admin') {
+        setAppMode('customer');
+        return;
+      }
       if (appMode === 'partner') {
         setAppMode('customer');
         setOpenAdminDirect(false);
@@ -350,7 +363,23 @@ export function App() {
     );
   }
 
-  // 2. SEPARATE PARTNER PORTAL / ADMIN DESK ROUTE
+  // 2. ENTERPRISE DARK SAAS ADMIN CONSOLE (Matching Photos 1 & 2)
+  if (appMode === 'admin') {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#0B0F19]">
+        <InAppUpdateBanner />
+        <AdminDashboard
+          categories={categories}
+          bookings={bookings}
+          onRefreshAll={loadData}
+          onBackToCustomer={() => setAppMode('customer')}
+          onSwitchToPartnerPortal={() => setAppMode('partner')}
+        />
+      </div>
+    );
+  }
+
+  // 3. SEPARATE PARTNER PORTAL / TECHNICIAN ONBOARDING ROUTE
   if (appMode === 'partner') {
     return (
       <div className="flex flex-col min-h-screen">
@@ -361,13 +390,14 @@ export function App() {
             setOpenAdminDirect(false);
             setAppMode('customer');
           }}
+          onOpenAdminConsole={() => setAppMode('admin')}
           initialShowAdminDesk={openAdminDirect}
         />
       </div>
     );
   }
 
-  // 3. CLEAN CUSTOMER APP (Default Experience)
+  // 4. CLEAN CUSTOMER APP (Default Experience)
   return (
     <div className="flex flex-col min-h-screen">
       <InAppUpdateBanner />
@@ -380,8 +410,12 @@ export function App() {
         activeCityZone={activeCityZone}
         onSelectZone={handleSelectZone}
         onSwitchToPartnerPortal={(directAdmin) => {
-          setOpenAdminDirect(Boolean(directAdmin));
-          setAppMode('partner');
+          if (directAdmin) {
+            setAppMode('admin');
+          } else {
+            setOpenAdminDirect(false);
+            setAppMode('partner');
+          }
         }}
       />
     </div>
